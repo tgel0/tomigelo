@@ -1,0 +1,14 @@
+{
+  "name": "Tomi Gelo",
+  "short_name": "Tomi Gelo",
+  "description": "Personal website of Tomi Gelo — software engineer, maker, and dad.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#111111",
+  "icons": [
+    { "src": "/icon-192.webp", "sizes": "192x192", "type": "image/webp" },
+    { "src": "/icon-512.webp", "sizes": "512x512", "type": "image/webp" }
+  ]
+}

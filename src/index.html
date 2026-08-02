@@ -3,44 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="title" content="Tomi Gelo - Personal Portfolio">
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#faf9f6">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#121212">
     <meta name="description" content="The personal website of Tomi Gelo. A software engineer, maker, and dad. Explore projects, work, and personal updates.">
-    <meta name="keywords" content="tomi gelo, tgel0, tomislav, portfolio, projects, software engineer, personal website">
-    <title>Tomi Gelo</title>
-    <link rel="stylesheet" href="styles.css?v=2">
+    <meta name="author" content="Tomi Gelo">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://tomigelo.com/">
+    <title>Tomi Gelo — Software engineer, maker &amp; dad</title>
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://tomigelo.com/">
+    <meta property="og:site_name" content="Tomi Gelo">
+    <meta property="og:title" content="Tomi Gelo — Software engineer, maker & dad">
+    <meta property="og:description" content="The personal website of Tomi Gelo. A software engineer, maker, and dad. Explore projects, work, and personal updates.">
+    <meta property="og:image" content="https://tomigelo.com/og-image.webp">
+    <meta property="og:image:secure_url" content="https://tomigelo.com/og-image.webp">
+    <meta property="og:image:width" content="1000">
+    <meta property="og:image:height" content="1000">
+    <meta property="og:image:alt" content="Portrait of Tomi Gelo">
+    <meta property="og:locale" content="en">
+
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Tomi Gelo — Software engineer, maker & dad">
+    <meta name="twitter:description" content="The personal website of Tomi Gelo. A software engineer, maker, and dad. Explore projects, work, and personal updates.">
+    <meta name="twitter:image" content="https://tomigelo.com/og-image.webp">
+    <meta name="twitter:image:alt" content="Portrait of Tomi Gelo">
+
+    <link rel="preconnect" href="https://plausible.io" crossorigin>
+    <link rel="stylesheet" href="styles.css?v=6">
     <script defer data-domain="tomigelo.com" src="https://plausible.io/js/plausible.js"></script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Tomi Gelo",
+      "url": "https://tomigelo.com",
+      "image": "https://tomigelo.com/og-image.webp",
+      "jobTitle": "Data Engineer",
+      "worksFor": { "@type": "Organization", "name": "MediaMarktSaturn" },
+      "address": { "@type": "PostalAddress", "addressLocality": "Berlin", "addressCountry": "DE" },
+      "sameAs": [
+        "https://x.com/tgel0",
+        "https://www.threads.com/@tgel0",
+        "https://bsky.app/profile/tomigelo.com",
+        "https://github.com/tgel0"
+      ],
+      "email": "hi@tomigelo.com"
+    }
+    </script>
 </head>
 <body>
+    <a href="#main" class="skip-link">Skip to content</a>
+    <div class="scroll-progress" aria-hidden="true"></div>
     <div class="page-shell">
         <header class="hero">
             <div class="hero-profile">
-                <img src="avatar.webp" alt="Portrait of Tomi Gelo" class="avatar">
+                <img src="avatar.webp?v=3" alt="Portrait of Tomi Gelo" class="avatar" width="88" height="88" fetchpriority="high" decoding="async">
                 <div class="hero-intro">
-                    <p class="eyebrow">Profile</p>
-                    <p class="hero-name">Tomi Gelo</p>
+                    <h1 class="hero-name">Tomi Gelo</h1>
+                    <p class="hero-lede">Software engineer, maker, and dad.</p>
                 </div>
             </div>
-            <div class="hero-meta">
-                <p><span>Based</span> Berlin, DE</p>
-                <p><span>Personal</span> (dog) Dad</p>
-                <p><span>Work</span> Data Engineer @ MediaMarktSaturn</p>
-                <p><span>Contact</span> <a href="https://www.threads.com/@tgel0" target="_blank" rel="noopener noreferrer">Threads</a>, <a href="https://bsky.app/profile/tomigelo.com" target="_blank" rel="noopener noreferrer">Bluesky</a>, <a href="mailto:hi@tomigelo.com">email</a></p>
-            </div>
+            <dl class="frontmatter">
+                <div><dt>based</dt><dd>Berlin, DE</dd></div>
+                <div><dt>personal</dt><dd>(dog) dad</dd></div>
+                <div><dt>work</dt><dd>Data Engineer @ MediaMarktSaturn</dd></div>
+                <div><dt>contact</dt><dd><a href="https://x.com/tgel0" target="_blank" rel="noopener noreferrer me">X</a>, <a href="https://www.threads.com/@tgel0" target="_blank" rel="noopener noreferrer me">Threads</a>, <a href="https://bsky.app/profile/tomigelo.com" target="_blank" rel="noopener noreferrer me">Bluesky</a>, <a href="mailto:hi@tomigelo.com">email</a></dd></div>
+            </dl>
         </header>
 
-        <main class="content-grid">
-            <section class="content-section">
-                <div class="section-heading">
-                    <p class="eyebrow">Side projects</p>
-                </div>
+        <main id="main" class="content-grid">
+            <section class="content-section" aria-labelledby="projects-heading">
+                <h2 class="section-title" id="projects-heading">Side projects</h2>
 
                 <ul id="projects-grid" class="entry-list">
                     <li>
                         <a href="https://stocktalkerai.com" target="_blank" rel="noopener noreferrer" class="entry-link">
                             <span class="entry-label">AI • Finance</span>
                             <h3>StockTalker AI</h3>
-                            <p>Stocks and crypto alerts by typing what you want.</p>
+                            <p>Agent-first stock alerts by typing what you want.</p>
                         </a>
                     </li>
                     <li>
@@ -75,23 +122,23 @@
             </section>
 
             <aside class="sidebar">
-                <section class="sidebar-section sidebar-section-support">
-                    <p class="eyebrow">Support</p>
-                    <p>If you like what I build, you can help fund the next experiment here;</p>
+                <section class="sidebar-section sidebar-section-support" aria-labelledby="support-heading">
+                    <h2 class="section-title" id="support-heading">Support</h2>
+                    <p>If you like what I build, you can help fund the next experiment here:</p>
                     <a href="https://buymeacoffee.com/tgel0" target="_blank" rel="noopener noreferrer" class="text-link">buymeacoffee.com/tgel0</a>
                 </section>
 
                 <!--
                 <section class="sidebar-section">
                     <p class="eyebrow">Featured note</p>
-                    <h2>Google Cloud Blog Interview</h2>
+                    <h2 class="display-title">Google Cloud Blog Interview</h2>
                     <p>Interview I did back in 2022 for the Google Cloud Data Heroes series.</p>
                     <a href="https://cloud.google.com/blog/products/data-analytics/google-cloud-data-hero-series-meet-tomi" target="_blank" rel="noopener noreferrer" class="text-link">Read the interview</a>
                 </section>
                 -->
 
-                <section class="sidebar-section">
-                    <p class="eyebrow">Past experiments</p>
+                <section class="sidebar-section" aria-labelledby="experiments-heading">
+                    <h2 class="section-title" id="experiments-heading">Past experiments</h2>
                     <ul class="archive-list">
                         <li>
                             <a href="https://quarantify.com/" target="_blank" rel="noopener noreferrer"><span class="archived-title">Quarantify</span></a>
@@ -105,6 +152,10 @@
                 </section>
             </aside>
         </main>
+
+        <footer class="doc-foot">
+            <p><em>last updated 2026-08-02</em></p>
+        </footer>
     </div>
 </body>
 </html>
