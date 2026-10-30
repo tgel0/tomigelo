@@ -4,11 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="color-scheme" content="dark">
-    <meta name="theme-color" content="#111111">
+    <meta name="theme-color" content="#080a10">
     <meta name="robots" content="noindex">
-    <title>404 — Page not found · Tomi Gelo</title>
+    <title>404 — Red Card / Offside · Tomi Gelo FC</title>
     <style>
-        :root { color-scheme: dark; }
+        :root {
+            color-scheme: dark;
+            --bg-pitch: #080a10;
+            --bg-top: #0c0f18;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --neon-cyan: #00f5ff;
+            --neon-cyan-glow: rgba(0, 245, 255, 0.28);
+            --neon-red: #ef4444;
+            --neon-red-glow: rgba(239, 68, 68, 0.3);
+            --rule-cyber: rgba(0, 245, 255, 0.18);
+            --font-display: "DIN Alternate", "Franklin Gothic Medium", "Arial Narrow", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            --font-mono: "SFMono-Regular", "SF Mono", "Menlo", "Consolas", monospace;
+            --cut-corner-md: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+            --cut-corner-sm: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+        }
         * { box-sizing: border-box; }
         body {
             margin: 0;
@@ -16,61 +31,92 @@
             display: grid;
             place-items: center;
             padding: 40px 20px;
-            color: #f4efe8;
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
-            line-height: 1.6;
-            text-align: center;
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background:
-                radial-gradient(circle at top left, rgba(215, 165, 107, 0.1), transparent 24%),
-                linear-gradient(180deg, #171717 0%, #111111 50%, #0a0a0a 100%);
+                radial-gradient(ellipse 80% 40% at 50% -5%, rgba(239, 68, 68, 0.15), transparent 70%),
+                linear-gradient(180deg, var(--bg-top) 0%, var(--bg-pitch) 100%);
+            text-align: center;
         }
         .panel {
-            max-width: 460px;
-            padding: 36px 28px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            background: linear-gradient(180deg, rgba(28, 28, 28, 0.96), rgba(19, 19, 19, 0.96));
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.22);
+            max-width: 480px;
+            width: 100%;
+            padding: 40px 32px;
+            background: linear-gradient(175deg, #131929 0%, #0d121f 60%, #090c13 100%);
+            border: 1px solid var(--neon-red);
+            clip-path: var(--cut-corner-md);
+            box-shadow: 0 0 30px var(--neon-red-glow), 0 20px 40px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+        .ref-card {
+            width: 40px;
+            height: 56px;
+            background: var(--neon-red);
+            border-radius: 4px;
+            box-shadow: 0 0 16px var(--neon-red-glow);
+            margin-bottom: 6px;
         }
         .code {
-            margin: 0 0 12px;
-            color: #d7a56b;
-            font-weight: 700;
-            letter-spacing: 0.12em;
-            font-size: 0.8rem;
+            margin: 0;
+            color: var(--neon-red);
+            font-family: var(--font-mono);
+            font-weight: 800;
+            letter-spacing: 0.15em;
+            font-size: 0.82rem;
             text-transform: uppercase;
         }
         h1 {
+            margin: 0;
+            font-family: var(--font-display);
+            font-size: 2.2rem;
+            font-weight: 900;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            line-height: 1.1;
+        }
+        p {
             margin: 0 0 12px;
-            font-size: 2rem;
-            font-weight: 650;
-            letter-spacing: -0.04em;
-            line-height: 1.05;
+            color: var(--text-secondary);
+            font-size: 0.94rem;
+            line-height: 1.5;
         }
-        p { margin: 0 0 24px; color: #b1a79a; }
         a {
-            display: inline-block;
-            padding: 12px 22px;
-            border: 1px solid rgba(215, 165, 107, 0.5);
-            border-radius: 10px;
-            color: #d7a56b;
-            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 12px 24px;
+            background: var(--neon-cyan);
+            color: var(--bg-pitch);
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 0.95rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
             text-decoration: none;
-            transition: background 0.2s ease, color 0.2s ease;
+            clip-path: var(--cut-corner-sm);
+            box-shadow: 0 0 16px var(--neon-cyan-glow);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
         }
-        a:hover { background: rgba(215, 165, 107, 0.12); }
-        a:focus-visible { outline: 2px solid #d7a56b; outline-offset: 3px; }
-        @media (prefers-reduced-motion: reduce) {
-            a { transition: none; }
+        a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 24px var(--neon-cyan-glow);
+        }
+        a:focus-visible {
+            outline: 2px solid #fff;
+            outline-offset: 3px;
         }
     </style>
 </head>
 <body>
     <div class="panel">
-        <p class="code">404</p>
-        <h1>Page not found</h1>
-        <p>The page you're looking for doesn't exist or may have moved.</p>
-        <a href="/">Back to tomigelo.com</a>
+        <div class="ref-card" aria-hidden="true"></div>
+        <p class="code">VAR DECISION // 404</p>
+        <h1>Play Disallowed</h1>
+        <p>The tactical coordinate or page you requested is offside or does not exist on this squad roster.</p>
+        <a href="/">Return to Tactical Hub ↗</a>
     </div>
 </body>
 </html>

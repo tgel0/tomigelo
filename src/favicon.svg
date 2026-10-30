@@ -1,5 +1,6 @@
-<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Tomi Gelo">
-  <rect width="64" height="64" rx="14" fill="#111111"/>
-  <rect x="12" y="15" width="40" height="8" fill="#d7a56b"/>
-  <rect x="28.5" y="15" width="7" height="36" fill="#d7a56b"/>
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Tomi Gelo FC">
+  <polygon points="0,10 10,0 54,0 64,10 64,54 54,64 10,64 0,54" fill="#080a10" stroke="#00f5ff" stroke-width="2"/>
+  <rect x="12" y="15" width="40" height="8" fill="#00f5ff"/>
+  <rect x="28.5" y="15" width="7" height="36" fill="#00f5ff"/>
+  <polygon points="46,42 54,34 54,42" fill="#d946ef"/>
 </svg>
