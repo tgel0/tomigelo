@@ -106,6 +106,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     ];
 
+    // Fisher-Yates shuffle on load so every session starts with a random song and random order
+    for (let i = SOUNDTRACKS.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [SOUNDTRACKS[i], SOUNDTRACKS[j]] = [SOUNDTRACKS[j], SOUNDTRACKS[i]];
+    }
+
     /* ======================================================================
        3. HYBRID YOUTUBE RADIO + WEB AUDIO UI SFX ENGINE
        ====================================================================== */
@@ -462,6 +468,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const traxChyron = document.getElementById('trax-chyron');
     const chyronTrackTitle = document.getElementById('chyron-track-title');
     const chyronTrackArtist = document.getElementById('chyron-track-artist');
+
+    // Sync initial HUD labels with the randomly selected starting song
+    const initialTrack = audio.getCurrentTrack();
+    if (hudTrackName && initialTrack) hudTrackName.textContent = initialTrack.title;
+    if (chyronTrackTitle && initialTrack) chyronTrackTitle.textContent = initialTrack.title;
+    if (chyronTrackArtist && initialTrack) chyronTrackArtist.textContent = initialTrack.artist;
 
     const blades = Array.from(document.querySelectorAll('.fc-blade'));
     const billboards = {
