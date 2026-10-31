@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="color-scheme" content="light dark">
-    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#faf9f6">
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#121212">
-    <meta name="description" content="The personal website of Tomi Gelo. A software engineer, maker, and dad. Explore projects, work, and personal updates.">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#06080c">
+    <meta name="description" content="Tomi Gelo — EA SPORTS FC inspired interactive portfolio. Explore Projects (Kick Off / Matches &amp; Teams) and Work (Manager Career Mode).">
     <meta name="author" content="Tomi Gelo">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://tomigelo.com/">
-    <title>Tomi Gelo — Software engineer, maker &amp; dad</title>
+    <title>EA SPORTS FC™ 26 — Tomi Gelo Portfolio Edition</title>
 
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -18,9 +17,9 @@
 
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://tomigelo.com/">
-    <meta property="og:site_name" content="Tomi Gelo">
-    <meta property="og:title" content="Tomi Gelo — Software engineer, maker & dad">
-    <meta property="og:description" content="The personal website of Tomi Gelo. A software engineer, maker, and dad. Explore projects, work, and personal updates.">
+    <meta property="og:site_name" content="Tomi Gelo FC 26">
+    <meta property="og:title" content="EA SPORTS FC™ 26 — Tomi Gelo Portfolio Edition">
+    <meta property="og:description" content="Step onto the pitch: An EA SPORTS FC video-game-inspired personal portfolio for Tomi Gelo.">
     <meta property="og:image" content="https://tomigelo.com/og-image.webp">
     <meta property="og:image:secure_url" content="https://tomigelo.com/og-image.webp">
     <meta property="og:image:width" content="1000">
@@ -29,14 +28,15 @@
     <meta property="og:locale" content="en">
 
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" content="Tomi Gelo — Software engineer, maker & dad">
-    <meta name="twitter:description" content="The personal website of Tomi Gelo. A software engineer, maker, and dad. Explore projects, work, and personal updates.">
+    <meta name="twitter:title" content="EA SPORTS FC™ 26 — Tomi Gelo Portfolio Edition">
+    <meta name="twitter:description" content="Step onto the pitch: An EA SPORTS FC video-game-inspired personal portfolio for Tomi Gelo.">
     <meta name="twitter:image" content="https://tomigelo.com/og-image.webp">
     <meta name="twitter:image:alt" content="Portrait of Tomi Gelo">
 
     <link rel="preconnect" href="https://plausible.io" crossorigin>
-    <link rel="stylesheet" href="styles.css?v=6">
+    <link rel="stylesheet" href="styles.css?v=eafc1">
     <script defer data-domain="tomigelo.com" src="https://plausible.io/js/plausible.js"></script>
+    <script defer src="script.js?v=eafc1"></script>
 
     <script type="application/ld+json">
     {
@@ -59,103 +59,704 @@
     </script>
 </head>
 <body>
-    <a href="#main" class="skip-link">Skip to content</a>
-    <div class="scroll-progress" aria-hidden="true"></div>
-    <div class="page-shell">
-        <header class="hero">
-            <div class="hero-profile">
-                <img src="avatar.webp?v=3" alt="Portrait of Tomi Gelo" class="avatar" width="88" height="88" fetchpriority="high" decoding="async">
-                <div class="hero-intro">
-                    <h1 class="hero-name">Tomi Gelo</h1>
-                    <p class="hero-lede">Software engineer, maker, and dad.</p>
+    <!-- STADIUM FLOODLIGHT & TACTICAL GEOMETRY BACKGROUND -->
+    <div class="stadium-backdrop" aria-hidden="true">
+        <canvas id="stadium-canvas"></canvas>
+        <div class="stadium-floodlights"></div>
+        <div class="stadium-pitch-lines"></div>
+        <div class="stadium-vignette"></div>
+        <div class="stadium-scanlines"></div>
+    </div>
+
+    <!-- 16:9 WIDESCREEN CONSOLE VIEWPORT SHELL -->
+    <div id="console-viewport" class="console-viewport" data-active-screen="boot">
+
+        <!-- =================================================================
+             1. BOOT & LOADING SCREEN (EA SPORTS FC INTRO + TITLE SPLASH)
+             ================================================================= -->
+        <section id="screen-boot" class="game-screen screen-boot active" aria-label="EA SPORTS FC Loading and Title Screen">
+            <!-- Top-left HyperMotion / Engine Watermark -->
+            <div class="boot-top-bar">
+                <div class="hypermotion-badge">
+                    <span class="hm-icon">▲</span>
+                    <span class="hm-text">HYPERMOTION V // FROSTBITE WEB ENGINE</span>
+                </div>
+                <div class="boot-build-tag">BUILD 26.01.ITER1 // WIDESCREEN 16:9</div>
+            </div>
+
+            <!-- Center Stage: Kinetic FC Triangle & Cover Athlete Card -->
+            <div class="boot-center-stage">
+                <div class="fc-kinetic-emblem" id="boot-emblem">
+                    <svg class="fc-triangle-svg" viewBox="0 0 240 210" aria-hidden="true">
+                        <defs>
+                            <linearGradient id="fcVoltGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#00ff68" />
+                                <stop offset="100%" stop-color="#b8ff00" />
+                            </linearGradient>
+                        </defs>
+                        <!-- Outer kinetic triangle -->
+                        <polygon class="tri-outer" points="120,10 230,198 10,198" fill="none" stroke="url(#fcVoltGrad)" stroke-width="5" />
+                        <!-- Inner speed cut -->
+                        <polygon class="tri-inner" points="120,36 204,182 36,182" fill="rgba(0, 255, 104, 0.06)" stroke="rgba(255,255,255,0.22)" stroke-width="1.5" />
+                    </svg>
+                    <div class="fc-emblem-typography">
+                        <span class="ea-eyebrow">EA SPORTS™</span>
+                        <div class="fc-giant-letters">FC<span class="fc-26-sup">26</span></div>
+                    </div>
+                </div>
+
+                <div class="boot-cover-identity">
+                    <div class="cover-avatar-frame">
+                        <img src="avatar.webp?v=3" alt="Tomi Gelo Cover Portrait" class="cover-avatar-img" width="96" height="96">
+                        <span class="cover-ovr-pill">93 OVR</span>
+                    </div>
+                    <h1 class="boot-main-title">TOMI GELO</h1>
+                    <p class="boot-subtitle">PORTFOLIO EDITION // SOFTWARE ENGINEER &bull; MAKER &bull; DAD</p>
+                </div>
+
+                <!-- Phase A: Shader & Squad Sync Progress Bar -->
+                <div id="boot-loader-box" class="boot-loader-box" role="status" aria-live="polite">
+                    <div class="boot-loader-header">
+                        <span id="boot-status-text" class="boot-status-text">INITIALIZING PERSONALITY ENGINE...</span>
+                        <span id="boot-percent-text" class="boot-percent-text">0%</span>
+                    </div>
+                    <div class="boot-progress-track">
+                        <div id="boot-progress-fill" class="boot-progress-fill"></div>
+                    </div>
+                    <div class="boot-telemetry-sub">
+                        <span id="boot-telemetry-detail">SHADER CACHE: COMPILING STADIUM LIGHTS</span>
+                        <span class="boot-spinner-inline" aria-hidden="true"></span>
+                    </div>
+                </div>
+
+                <!-- Phase B: Press Any Button / Click to Start (Revealed at 100%) -->
+                <div id="boot-start-prompt" class="boot-start-prompt" hidden>
+                    <button type="button" id="btn-press-start" class="btn-press-start">
+                        <span class="controller-key-badge key-a">A</span>
+                        <span class="press-start-label">PRESS ANY BUTTON OR CLICK TO START</span>
+                    </button>
+                    <div class="boot-start-hint">KEYBOARD / GAMEPAD / MOUSE SUPPORTED &bull; SYNTHESIZED UI AUDIO READY</div>
                 </div>
             </div>
-            <dl class="frontmatter">
-                <div><dt>based</dt><dd>Berlin, DE</dd></div>
-                <div><dt>personal</dt><dd>(dog) dad</dd></div>
-                <div><dt>work</dt><dd>Data Engineer @ MediaMarktSaturn</dd></div>
-                <div><dt>contact</dt><dd><a href="https://x.com/tgel0" target="_blank" rel="noopener noreferrer me">X</a>, <a href="https://www.threads.com/@tgel0" target="_blank" rel="noopener noreferrer me">Threads</a>, <a href="https://bsky.app/profile/tomigelo.com" target="_blank" rel="noopener noreferrer me">Bluesky</a>, <a href="mailto:hi@tomigelo.com">email</a></dd></div>
-            </dl>
+
+            <!-- Bottom Legal / Version Strip -->
+            <div class="boot-bottom-bar">
+                <span>© 2026 TOMI GELO FC &bull; INSPIRED BY EA SPORTS FC™ UI/UX</span>
+                <span class="boot-server-indicator"><span class="online-dot"></span> EA CONNECT: ONLINE (BERLIN_EU)</span>
+            </div>
+        </section>
+
+        <!-- =================================================================
+             2. POST-LOADING SYSTEM DIALOG (DESKTOP-ONLY WIDESCREEN NOTICE)
+             ================================================================= -->
+        <div id="modal-desktop-notice" class="fc-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="notice-modal-title" hidden>
+            <div class="fc-system-dialog">
+                <div class="fc-dialog-top-strip">
+                    <span class="fc-dialog-tag">▲ EA SPORTS FC™ SYSTEM NOTIFICATION // DISPLAY CHECK</span>
+                    <span class="fc-dialog-code">MSG_ID // WIDESCREEN_16_9</span>
+                </div>
+                <div class="fc-dialog-body">
+                    <div class="fc-dialog-icon-col" aria-hidden="true">
+                        <div class="fc-monitor-graphic">
+                            <span>16:9</span>
+                        </div>
+                    </div>
+                    <div class="fc-dialog-copy-col">
+                        <h2 id="notice-modal-title" class="fc-dialog-title">DESKTOP WIDESCREEN EXPERIENCE</h2>
+                        <p class="fc-dialog-lead">
+                            Welcome to the <strong>Tomi Gelo FC 26</strong> interactive portfolio. To stay true to the console video game UI/UX, this experience is currently engineered exclusively for <strong>widescreen desktop displays</strong> (mobile versions are ignored for now).
+                        </p>
+                        <div class="fc-dialog-specs">
+                            <div class="spec-chip"><span>DISPLAY MODE</span><strong>16:9 FULLSCREEN CONSOLE</strong></div>
+                            <div class="spec-chip"><span>CONTROLS</span><strong>KEYBOARD / MOUSE / GAMEPAD</strong></div>
+                            <div class="spec-chip"><span>BUILD SCOPE</span><strong>ITERATION 1 (MENU + PLACEHOLDERS)</strong></div>
+                        </div>
+                        <p id="narrow-screen-warning" class="narrow-screen-warning" hidden>
+                            ⚠ NARROW VIEWPORT DETECTED: Please open this preview on a desktop or laptop monitor (≥ 960px wide) for the intended widescreen layout.
+                        </p>
+                    </div>
+                </div>
+                <div class="fc-dialog-footer">
+                    <button type="button" id="btn-dismiss-notice" class="fc-btn-primary">
+                        <span class="controller-key-badge key-a">A</span>
+                        <span>CONTINUE TO MAIN MENU</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- =================================================================
+             PERSISTENT TOP CONSOLE HUD (VISIBLE IN HUB, PROJECTS, WORK)
+             ================================================================= -->
+        <header id="console-top-hud" class="console-top-hud" aria-label="Game Status HUD" hidden>
+            <div class="hud-left">
+                <button type="button" id="hud-home-btn" class="hud-brand-badge" title="Return to Main Menu">
+                    <span class="hud-fc-tri">▲</span>
+                    <span class="hud-fc-text">FC 26</span>
+                </button>
+                <div class="hud-breadcrumb">
+                    <span id="hud-mode-category" class="hud-mode-category">MAIN MENU</span>
+                    <span class="hud-mode-sep">//</span>
+                    <span id="hud-mode-title" class="hud-mode-title">HOME HUB</span>
+                </div>
+            </div>
+
+            <div class="hud-right">
+                <button type="button" id="btn-audio-toggle" class="hud-widget hud-audio-btn" aria-pressed="true" title="Toggle UI Sound Effects (Shortcut: M)">
+                    <span class="hud-key-mini">M</span>
+                    <span id="audio-status-label">SFX: ON</span>
+                </button>
+
+                <div class="hud-widget hud-season-xp" title="Season Progress">
+                    <span class="xp-lvl">LVL 93</span>
+                    <div class="xp-bar"><div class="xp-fill" style="width: 84%;"></div></div>
+                    <span class="xp-val">94,500 XP</span>
+                </div>
+
+                <div class="hud-widget hud-player-card">
+                    <img src="avatar.webp?v=3" alt="Tomi Gelo" class="hud-avatar" width="32" height="32">
+                    <div class="hud-player-meta">
+                        <span class="hud-gamertag">TOMI GELO</span>
+                        <span class="hud-status-online"><span class="online-dot"></span> BERLIN, DE</span>
+                    </div>
+                </div>
+            </div>
         </header>
 
-        <main id="main" class="content-grid">
-            <section class="content-section" aria-labelledby="projects-heading">
-                <h2 class="section-title" id="projects-heading">Side projects</h2>
+        <!-- =================================================================
+             3. EA SPORTS FC MAIN MENU HUB (LEFT BLADES + RIGHT SHOWCASE STAGE)
+             ================================================================= -->
+        <main id="screen-hub" class="game-screen screen-hub" aria-label="EA SPORTS FC Main Menu" hidden>
+            <div class="hub-widescreen-grid">
 
-                <ul id="projects-grid" class="entry-list">
-                    <li>
-                        <a href="https://stocktalkerai.com" target="_blank" rel="noopener noreferrer" class="entry-link">
-                            <span class="entry-label">AI • Finance</span>
-                            <h3>StockTalker AI</h3>
-                            <p>Agent-first stock alerts by typing what you want.</p>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="https://songcards.de" target="_blank" rel="noopener noreferrer" class="entry-link">
-                            <span class="entry-label">Music • Games</span>
-                            <h3>SongCards</h3>
-                            <p>Create printable QR cards from your Spotify playlists.</p>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="https://predictiontools.directory" target="_blank" rel="noopener noreferrer" class="entry-link">
-                            <span class="entry-label">Prediction Markets</span>
-                            <h3>PREDICTIONTOOLS.DIRECTORY</h3>
-                            <p>Directory of tools, platforms, and analytics for prediction markets.</p>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="https://finanzmarkt.news/" target="_blank" rel="noopener noreferrer" class="entry-link">
-                            <span class="entry-label">Finance • News</span>
-                            <h3>finanzmarkt.news</h3>
-                            <p>News aggregator for the German financial market.</p>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="https://github.com/tgel0/crssnt" target="_blank" rel="noopener noreferrer" class="entry-link">
-                            <span class="entry-label">Open source</span>
-                            <h3>crssnt</h3>
-                            <p>An LLM-friendly Markdown and JSON generator.</p>
-                        </a>
-                    </li>
-                </ul>
-            </section>
+                <!-- LEFT COLUMN: ICONIC EA FC VERTICAL SKEWED BLADE MENU -->
+                <nav class="hub-blade-nav" aria-label="Main Game Modes">
+                    <div class="blade-nav-eyebrow">SELECT GAME MODE</div>
 
-            <aside class="sidebar">
-                <section class="sidebar-section sidebar-section-support" aria-labelledby="support-heading">
-                    <h2 class="section-title" id="support-heading">Support</h2>
-                    <p>If you like what I build, you can help fund the next experiment here:</p>
-                    <a href="https://buymeacoffee.com/tgel0" target="_blank" rel="noopener noreferrer" class="text-link">buymeacoffee.com/tgel0</a>
-                </section>
-
-                <!--
-                <section class="sidebar-section">
-                    <p class="eyebrow">Featured note</p>
-                    <h2 class="display-title">Google Cloud Blog Interview</h2>
-                    <p>Interview I did back in 2022 for the Google Cloud Data Heroes series.</p>
-                    <a href="https://cloud.google.com/blog/products/data-analytics/google-cloud-data-hero-series-meet-tomi" target="_blank" rel="noopener noreferrer" class="text-link">Read the interview</a>
-                </section>
-                -->
-
-                <section class="sidebar-section" aria-labelledby="experiments-heading">
-                    <h2 class="section-title" id="experiments-heading">Past experiments</h2>
-                    <ul class="archive-list">
-                        <li>
-                            <a href="https://quarantify.com/" target="_blank" rel="noopener noreferrer"><span class="archived-title">Quarantify</span></a>
-                            <span>My pandemic-era take on group ordering.</span>
+                    <ul class="blade-list" role="menubar">
+                        <li role="none">
+                            <button type="button" role="menuitem" class="fc-blade active" data-target-screen="projects" data-preview="projects" id="blade-projects">
+                                <span class="blade-index">01</span>
+                                <span class="blade-text-wrap">
+                                    <span class="blade-title">PROJECTS</span>
+                                    <span class="blade-sub">KICK OFF &bull; MATCHES &amp; TEAMS</span>
+                                </span>
+                                <span class="blade-arrow" aria-hidden="true">➔</span>
+                            </button>
                         </li>
-                        <li>
-                            <a href="https://likedtweetsmail.web.app/" target="_blank" rel="noopener noreferrer"><span class="archived-title">favo.so</span></a>
-                            <span>A simple way to browse your liked Tweets.</span>
+                        <li role="none">
+                            <button type="button" role="menuitem" class="fc-blade" data-target-screen="work" data-preview="work" id="blade-work">
+                                <span class="blade-index">02</span>
+                                <span class="blade-text-wrap">
+                                    <span class="blade-title">WORK</span>
+                                    <span class="blade-sub">MANAGER CAREER MODE</span>
+                                </span>
+                                <span class="blade-arrow" aria-hidden="true">➔</span>
+                            </button>
                         </li>
                     </ul>
-                </section>
-            </aside>
+
+                    <!-- Quick Live Ticker below blades (authentic EA FC Live Message strip) -->
+                    <div class="hub-live-ticker">
+                        <div class="ticker-badge">LIVE EVENT</div>
+                        <p id="hub-ticker-text" class="ticker-text">
+                            MATCHDAY READY: Select <strong>PROJECTS</strong> for Kick-Off Team Sheets or <strong>WORK</strong> for Manager Career Mode.
+                        </p>
+                    </div>
+                </nav>
+
+                <!-- RIGHT COLUMN: DYNAMIC LIVE STADIUM SHOWCASE BILLBOARD -->
+                <div class="hub-showcase-stage">
+
+                    <!-- PREVIEW BILLBOARD A: PROJECTS (MATCHES & TEAMS) -->
+                    <article id="preview-projects" class="showcase-billboard active" data-preview-panel="projects">
+                        <div class="billboard-backdrop-graphic projects-graphic" aria-hidden="true">
+                            <div class="pitch-hologram-circle"></div>
+                        </div>
+
+                        <div class="billboard-top-row">
+                            <span class="billboard-mode-pill">EA FC REFERENCE // MATCHES &amp; TEAMS</span>
+                            <span class="billboard-live-tag">★ 3 PLACEHOLDER CLUBS LOADED</span>
+                        </div>
+
+                        <div class="billboard-main-content">
+                            <div class="billboard-kicker">FEATURED EXHIBITION FIXTURE</div>
+                            <h2 class="billboard-headline">KICK OFF &amp; TEAM SHEETS</h2>
+                            <p class="billboard-description">
+                                Browse independent software builds, AI products, and open-source tools as playable football clubs. Compare Attack, Midfield, and Defense telemetry ratings or inspect the 4-3-3 tactical pitch lineup.
+                            </p>
+
+                            <!-- Mini Matchup vs Card inside Billboard -->
+                            <div class="billboard-matchup-card">
+                                <div class="matchup-team">
+                                    <div class="club-crest-hex crest-volt">P1</div>
+                                    <div class="matchup-team-info">
+                                        <span class="team-tier">HOME CLUB (PLACEHOLDER)</span>
+                                        <strong class="team-name">PROJECT ALPHA FC</strong>
+                                        <span class="team-stars">★★★★★ 92 OVR</span>
+                                    </div>
+                                </div>
+
+                                <div class="matchup-vs-badge">VS</div>
+
+                                <div class="matchup-team matchup-team-right">
+                                    <div class="matchup-team-info">
+                                        <span class="team-tier">AWAY CLUB (PLACEHOLDER)</span>
+                                        <strong class="team-name">PROJECT BETA UTD</strong>
+                                        <span class="team-stars">★★★★☆ 89 OVR</span>
+                                    </div>
+                                    <div class="club-crest-hex crest-cyan">P2</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="billboard-footer-bar">
+                            <div class="billboard-stat-chips">
+                                <span><strong>ATT</strong> 94</span>
+                                <span><strong>MID</strong> 92</span>
+                                <span><strong>DEF</strong> 90</span>
+                                <span><strong>FORMATION</strong> 4-3-3 ATTACK</span>
+                            </div>
+                            <button type="button" class="fc-btn-primary" data-enter-screen="projects">
+                                <span class="controller-key-badge key-a">A</span>
+                                <span>ENTER MATCHES &amp; TEAMS</span>
+                            </button>
+                        </div>
+                    </article>
+
+                    <!-- PREVIEW BILLBOARD B: WORK (MANAGER CAREER MODE) -->
+                    <article id="preview-work" class="showcase-billboard" data-preview-panel="work" hidden>
+                        <div class="billboard-backdrop-graphic work-graphic" aria-hidden="true">
+                            <div class="pitch-hologram-circle"></div>
+                        </div>
+
+                        <div class="billboard-top-row">
+                            <span class="billboard-mode-pill pill-gold">EA FC REFERENCE // MANAGER CAREER MODE</span>
+                            <span class="billboard-live-tag">SEASON 2026/27 &bull; SAVE SLOT 01</span>
+                        </div>
+
+                        <div class="billboard-main-content">
+                            <div class="billboard-kicker">CONTINUE MANAGER CAREER</div>
+                            <h2 class="billboard-headline">THE GAFFER'S OFFICE</h2>
+                            <p class="billboard-description">
+                                Step into Manager Career Central. Review Tomi Gelo's current club contract, board confidence rating, career transfer history, engineering PlayStyles+, and press office communications.
+                            </p>
+
+                            <!-- Mini Manager Dossier Strip -->
+                            <div class="billboard-manager-strip">
+                                <div class="mgr-strip-avatar-wrap">
+                                    <img src="avatar.webp?v=3" alt="Manager Tomi Gelo" class="mgr-strip-avatar" width="68" height="68">
+                                    <span class="mgr-strip-badge">MGR</span>
+                                </div>
+                                <div class="mgr-strip-details">
+                                    <div class="mgr-strip-name">TOMI GELO</div>
+                                    <div class="mgr-strip-role">DATA ENGINEER // PLACEHOLDER CLUB HQ</div>
+                                </div>
+                                <div class="mgr-strip-board">
+                                    <span class="board-label">BOARD CONFIDENCE</span>
+                                    <span class="board-rating">96% // CRITICAL</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="billboard-footer-bar">
+                            <div class="billboard-stat-chips">
+                                <span><strong>TACTICS</strong> TIKI-DATA</span>
+                                <span><strong>BASE</strong> BERLIN, DE</span>
+                                <span><strong>STATUS</strong> MATCH FIT</span>
+                            </div>
+                            <button type="button" class="fc-btn-primary" data-enter-screen="work">
+                                <span class="controller-key-badge key-a">A</span>
+                                <span>CONTINUE CAREER MODE</span>
+                            </button>
+                        </div>
+                    </article>
+
+                </div>
+            </div>
         </main>
 
-        <footer class="doc-foot">
-            <p><em>last updated 2026-08-02</em></p>
+        <!-- =================================================================
+             4. MODE 01: PROJECTS — MATCHES & TEAMS (PLACEHOLDER ITERATION 1)
+             ================================================================= -->
+        <section id="screen-projects" class="game-screen screen-submode" aria-label="Projects: Kick Off and Team Sheets" hidden>
+            <!-- EA FC Bumper Sub-Navigation Bar (LB / RB) -->
+            <div class="fc-bumper-bar">
+                <button type="button" class="bumper-btn" id="projects-lb-btn" title="Previous Tab (Q or LB)">LB / Q</button>
+                <div class="bumper-tabs" role="tablist" aria-label="Projects Views">
+                    <button type="button" role="tab" class="bumper-tab active" data-projects-tab="kickoff" aria-selected="true">
+                        01 // KICK OFF: SELECT CLUB (PLACEHOLDERS)
+                    </button>
+                    <button type="button" role="tab" class="bumper-tab" data-projects-tab="pitch" aria-selected="false">
+                        02 // TEAM SHEET: 4-3-3 TACTICAL PITCH
+                    </button>
+                </div>
+                <button type="button" class="bumper-btn" id="projects-rb-btn" title="Next Tab (E or RB)">RB / E</button>
+            </div>
+
+            <!-- SUB-VIEW 1: KICK OFF / CLUB & MATCH SELECTOR -->
+            <div id="projects-view-kickoff" class="submode-view active">
+                <div class="kickoff-widescreen-layout">
+
+                    <!-- Left Column: Playable Project Club Roster (Placeholders) -->
+                    <div class="kickoff-roster-panel">
+                        <div class="panel-header-strip">
+                            <span>SELECT PROJECT CLUB</span>
+                            <span class="panel-counter" id="club-counter-label">CLUB 01 / 03</span>
+                        </div>
+
+                        <div class="club-selector-list" role="listbox" aria-label="Project Clubs">
+                            <button type="button" class="club-select-card active" data-club-index="0" role="option" aria-selected="true">
+                                <div class="club-crest-hex crest-volt">P1</div>
+                                <div class="club-select-meta">
+                                    <span class="club-league-tag">LEAGUE 01 // AI &amp; ANALYTICS (PLACEHOLDER)</span>
+                                    <strong class="club-select-name">PROJECT ALPHA FC</strong>
+                                    <span class="club-select-stars">★★★★★ &bull; 92 OVR</span>
+                                </div>
+                                <span class="club-select-chevron">▶</span>
+                            </button>
+
+                            <button type="button" class="club-select-card" data-club-index="1" role="option" aria-selected="false">
+                                <div class="club-crest-hex crest-cyan">P2</div>
+                                <div class="club-select-meta">
+                                    <span class="club-league-tag">LEAGUE 02 // CONSUMER &amp; AUDIO (PLACEHOLDER)</span>
+                                    <strong class="club-select-name">PROJECT BETA UNITED</strong>
+                                    <span class="club-select-stars">★★★★☆ &bull; 89 OVR</span>
+                                </div>
+                                <span class="club-select-chevron">▶</span>
+                            </button>
+
+                            <button type="button" class="club-select-card" data-club-index="2" role="option" aria-selected="false">
+                                <div class="club-crest-hex crest-gold">P3</div>
+                                <div class="club-select-meta">
+                                    <span class="club-league-tag">LEAGUE 03 // OPEN SOURCE &amp; DATA (PLACEHOLDER)</span>
+                                    <strong class="club-select-name">PROJECT GAMMA ATHLETIC</strong>
+                                    <span class="club-select-stars">★★★★★ &bull; 94 OVR</span>
+                                </div>
+                                <span class="club-select-chevron">▶</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Center/Right Column: EA FC Club Rating & Match Preview Inspector -->
+                    <div class="kickoff-preview-panel">
+                        <div class="panel-header-strip">
+                            <span id="preview-club-league">LEAGUE 01 // AI &amp; ANALYTICS (PLACEHOLDER)</span>
+                            <span>STADIUM // CLOUD PRODUCTION ARENA</span>
+                        </div>
+
+                        <div class="club-inspector-body">
+                            <div class="club-inspector-hero">
+                                <div id="preview-club-crest" class="club-crest-giant crest-volt">P1</div>
+                                <div class="club-inspector-title-block">
+                                    <div class="inspector-badges">
+                                        <span id="preview-club-ovr" class="inspector-ovr-badge">92 OVR</span>
+                                        <span id="preview-club-stars" class="inspector-stars">★★★★★</span>
+                                        <span class="inspector-status-pill">FIRST TEAM PLACEHOLDER</span>
+                                    </div>
+                                    <h2 id="preview-club-name" class="inspector-club-name">PROJECT ALPHA FC</h2>
+                                    <p id="preview-club-desc" class="inspector-club-desc">
+                                        Placeholder description for Project 01. In Iteration 2, this slot will connect to your real project data, live deployment URLs, and architecture telemetry.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Authentic EA FC ATT / MID / DEF Three-Column Rating Bar -->
+                            <div class="fc-triad-ratings">
+                                <div class="triad-stat-box">
+                                    <span class="triad-label">ATT // FRONTEND &amp; UX</span>
+                                    <strong id="preview-club-att" class="triad-value">94</strong>
+                                    <div class="triad-bar"><div id="preview-bar-att" class="triad-fill" style="width: 94%;"></div></div>
+                                </div>
+                                <div class="triad-stat-box">
+                                    <span class="triad-label">MID // ENGINE &amp; API</span>
+                                    <strong id="preview-club-mid" class="triad-value">92</strong>
+                                    <div class="triad-bar"><div id="preview-bar-mid" class="triad-fill" style="width: 92%;"></div></div>
+                                </div>
+                                <div class="triad-stat-box">
+                                    <span class="triad-label">DEF // INFRA &amp; SCALE</span>
+                                    <strong id="preview-club-def" class="triad-value">90</strong>
+                                    <div class="triad-bar"><div id="preview-bar-def" class="triad-fill" style="width: 90%;"></div></div>
+                                </div>
+                            </div>
+
+                            <!-- Match Specs / Kit Tags -->
+                            <div class="club-match-facts">
+                                <div class="fact-tile">
+                                    <span class="fact-label">TACTICAL FORMATION</span>
+                                    <strong id="preview-club-formation" class="fact-val">4-3-3 ATTACKING</strong>
+                                </div>
+                                <div class="fact-tile">
+                                    <span class="fact-label">KEY TECH PLAYSTYLE</span>
+                                    <strong id="preview-club-stack" class="fact-val">AUTONOMOUS AGENTS // PLACEHOLDER</strong>
+                                </div>
+                                <div class="fact-tile">
+                                    <span class="fact-label">RELEASE SEASON</span>
+                                    <strong id="preview-club-season" class="fact-val">2026 SEASON</strong>
+                                </div>
+                            </div>
+
+                            <div class="club-inspector-actions">
+                                <a id="preview-club-link" href="#projects" class="fc-btn-primary">
+                                    <span class="controller-key-badge key-a">A</span>
+                                    <span>KICK OFF // LAUNCH PROJECT (PLACEHOLDER)</span>
+                                </a>
+                                <button type="button" class="fc-btn-secondary" data-back-to-hub>
+                                    <span class="controller-key-badge key-b">B</span>
+                                    <span>BACK TO MAIN MENU</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- SUB-VIEW 2: TEAM SHEET (4-3-3 TACTICAL PITCH PLACEHOLDER) -->
+            <div id="projects-view-pitch" class="submode-view" hidden>
+                <div class="pitch-widescreen-layout">
+                    <div class="pitch-board-container">
+                        <div class="panel-header-strip">
+                            <span>TACTICAL TEAM SHEET // 4-3-3 FORMATION (PLACEHOLDER NODES)</span>
+                            <span>TEAM CHEMISTRY: 33 / 33 ★</span>
+                        </div>
+                        <div class="tactical-pitch-svg-wrap">
+                            <svg class="tactical-pitch-svg" viewBox="0 0 900 420" aria-label="4-3-3 Football Pitch Formation">
+                                <!-- Outer pitch boundary -->
+                                <rect x="20" y="20" width="860" height="380" fill="rgba(0, 255, 104, 0.03)" stroke="rgba(0, 255, 104, 0.35)" stroke-width="2" />
+                                <!-- Halfway line & center circle -->
+                                <line x1="450" y1="20" x2="450" y2="400" stroke="rgba(0, 255, 104, 0.28)" stroke-width="2" />
+                                <circle cx="450" cy="210" r="58" fill="none" stroke="rgba(0, 255, 104, 0.28)" stroke-width="2" />
+                                <!-- Penalty boxes -->
+                                <rect x="20" y="105" width="130" height="210" fill="none" stroke="rgba(0, 255, 104, 0.28)" stroke-width="2" />
+                                <rect x="750" y="105" width="130" height="210" fill="none" stroke="rgba(0, 255, 104, 0.28)" stroke-width="2" />
+                                <!-- Chemistry connection lines -->
+                                <line x1="220" y1="210" x2="450" y2="120" stroke="#00ff68" stroke-width="2" stroke-dasharray="6 4" opacity="0.6" />
+                                <line x1="220" y1="210" x2="450" y2="300" stroke="#00ff68" stroke-width="2" stroke-dasharray="6 4" opacity="0.6" />
+                                <line x1="450" y1="120" x2="700" y2="210" stroke="#00ff68" stroke-width="2" stroke-dasharray="6 4" opacity="0.6" />
+                                <line x1="450" y1="300" x2="700" y2="210" stroke="#00ff68" stroke-width="2" stroke-dasharray="6 4" opacity="0.6" />
+                            </svg>
+
+                            <!-- Interactive Pitch Nodes -->
+                            <div class="pitch-node" style="left: 24%; top: 50%;">
+                                <span class="node-ovr">90</span>
+                                <strong class="node-title">CORE INFRA</strong>
+                                <span class="node-pos">CB // PLACEHOLDER</span>
+                            </div>
+                            <div class="pitch-node" style="left: 50%; top: 28%;">
+                                <span class="node-ovr">92</span>
+                                <strong class="node-title">PROJECT ALPHA</strong>
+                                <span class="node-pos">CAM // PLACEHOLDER</span>
+                            </div>
+                            <div class="pitch-node" style="left: 50%; top: 72%;">
+                                <span class="node-ovr">89</span>
+                                <strong class="node-title">PROJECT BETA</strong>
+                                <span class="node-pos">CM // PLACEHOLDER</span>
+                            </div>
+                            <div class="pitch-node node-highlight" style="left: 77%; top: 50%;">
+                                <span class="node-ovr">94</span>
+                                <strong class="node-title">PROJECT GAMMA</strong>
+                                <span class="node-pos">ST // PLACEHOLDER</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =================================================================
+             5. MODE 02: WORK — MANAGER CAREER MODE (PLACEHOLDER ITERATION 1)
+             ================================================================= -->
+        <section id="screen-work" class="game-screen screen-submode" aria-label="Work: Manager Career Mode" hidden>
+            <!-- EA FC Career Mode Bumper Navigation Bar -->
+            <div class="fc-bumper-bar">
+                <button type="button" class="bumper-btn" id="work-lb-btn" title="Previous Tab (Q or LB)">LB / Q</button>
+                <div class="bumper-tabs" role="tablist" aria-label="Manager Career Views">
+                    <button type="button" role="tab" class="bumper-tab active" data-work-tab="central" aria-selected="true">
+                        01 // CENTRAL HUB (PLACEHOLDERS)
+                    </button>
+                    <button type="button" role="tab" class="bumper-tab" data-work-tab="transfers" aria-selected="false">
+                        02 // CAREER HISTORY &amp; CONTRACTS
+                    </button>
+                </div>
+                <button type="button" class="bumper-btn" id="work-rb-btn" title="Next Tab (E or RB)">RB / E</button>
+            </div>
+
+            <!-- SUB-VIEW 1: CAREER CENTRAL BENTO DASHBOARD -->
+            <div id="work-view-central" class="submode-view active">
+                <div class="career-bento-grid">
+
+                    <!-- Column 1: Manager Standing & Avatar Card -->
+                    <div class="career-panel career-panel-manager">
+                        <div class="panel-header-strip">
+                            <span>MANAGER STANDING</span>
+                            <span class="status-volt">96% APPROVAL</span>
+                        </div>
+                        <div class="career-mgr-card">
+                            <div class="career-mgr-top">
+                                <img src="avatar.webp?v=3" alt="Manager Tomi Gelo" class="career-mgr-img" width="84" height="84">
+                                <div>
+                                    <span class="career-mgr-badge">TECHNICAL GAFFER</span>
+                                    <h2 class="career-mgr-name">TOMI GELO</h2>
+                                    <p class="career-mgr-sub">Data Engineer &bull; Berlin, DE</p>
+                                </div>
+                            </div>
+
+                            <div class="board-confidence-meter">
+                                <div class="confidence-header">
+                                    <span>BOARD CONFIDENCE RATING</span>
+                                    <strong>96 / 100 (CRITICAL)</strong>
+                                </div>
+                                <div class="triad-bar"><div class="triad-fill" style="width: 96%;"></div></div>
+                            </div>
+
+                            <dl class="career-quick-facts">
+                                <div><dt>CURRENT CLUB</dt><dd>PLACEHOLDER FC (MEDIAMARKTSATURN)</dd></div>
+                                <div><dt>TACTICAL VISION</dt><dd>TIKI-DATA &amp; CLOUD PIPELINES</dd></div>
+                                <div><dt>PERSONAL TRAIT</dt><dd>(DOG) DAD &amp; MAKER</dd></div>
+                            </dl>
+                        </div>
+                    </div>
+
+                    <!-- Column 2: Active Season Objectives (Placeholders) -->
+                    <div class="career-panel">
+                        <div class="panel-header-strip">
+                            <span>BOARD OBJECTIVES // SEASON 26/27</span>
+                            <span>3 ACTIVE</span>
+                        </div>
+                        <ul class="career-objectives-list">
+                            <li class="objective-item">
+                                <div class="obj-top">
+                                    <span class="obj-priority">PRIORITY // CRITICAL</span>
+                                    <span class="obj-progress">IN PROGRESS</span>
+                                </div>
+                                <strong>Placeholder Objective 01: Cloud Data Architecture</strong>
+                                <p>Design and scale high-throughput data engineering pipelines for club operations.</p>
+                            </li>
+                            <li class="objective-item">
+                                <div class="obj-top">
+                                    <span class="obj-priority">PRIORITY // HIGH</span>
+                                    <span class="obj-progress">IN PROGRESS</span>
+                                </div>
+                                <strong>Placeholder Objective 02: Autonomous AI Scouting</strong>
+                                <p>Deploy LLM-powered agents and real-time analytics tools across first-team products.</p>
+                            </li>
+                            <li class="objective-item">
+                                <div class="obj-top">
+                                    <span class="obj-priority">PRIORITY // BRAND EXPOSURE</span>
+                                    <span class="obj-progress status-volt">COMPLETED ✓</span>
+                                </div>
+                                <strong>Placeholder Objective 03: Google Cloud Data Hero</strong>
+                                <p>Recognized in the Google Cloud Data Heroes interview series.</p>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Column 3: Manager's Office & Press Inbox (Placeholders) -->
+                    <div class="career-panel">
+                        <div class="panel-header-strip">
+                            <span>MANAGER OFFICE // COMMS &amp; PRESS</span>
+                            <span>INBOX (3)</span>
+                        </div>
+                        <div class="career-inbox-box">
+                            <div class="inbox-message">
+                                <span class="inbox-sender">FROM: BOARD OF DIRECTORS</span>
+                                <strong>Iteration 1 Career Mode Shell Ready</strong>
+                                <p>This Career Mode layout is ready to be populated with your detailed work timeline, skills, and links in Iteration 2.</p>
+                            </div>
+                            <div class="inbox-channels-placeholder">
+                                <span class="panel-sub-label">DIRECT TOUCHLINE CHANNELS</span>
+                                <div class="mini-channel-grid">
+                                    <a href="mailto:hi@tomigelo.com" class="mini-channel-pill">✉ hi@tomigelo.com</a>
+                                    <a href="https://x.com/tgel0" target="_blank" rel="noopener noreferrer" class="mini-channel-pill">𝕏 @tgel0</a>
+                                    <a href="https://github.com/tgel0" target="_blank" rel="noopener noreferrer" class="mini-channel-pill">GH github.com/tgel0</a>
+                                </div>
+                            </div>
+                            <button type="button" class="fc-btn-secondary full-width-btn" data-back-to-hub>
+                                <span class="controller-key-badge key-b">B</span>
+                                <span>RETURN TO MAIN MENU HUB</span>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- SUB-VIEW 2: CAREER HISTORY & CONTRACTS (PLACEHOLDER TABLE) -->
+            <div id="work-view-transfers" class="submode-view" hidden>
+                <div class="career-transfers-panel">
+                    <div class="panel-header-strip">
+                        <span>MANAGER CAREER CONTRACT HISTORY (PLACEHOLDER LEDGER)</span>
+                        <span>3 SEASONS RECORDED</span>
+                    </div>
+                    <div class="transfer-table-wrap">
+                        <table class="fc-transfer-table">
+                            <thead>
+                                <tr>
+                                    <th>SEASON</th>
+                                    <th>CLUB / ORGANIZATION</th>
+                                    <th>ROLE / POSITION</th>
+                                    <th>TACTICAL IMPACT (PLACEHOLDER)</th>
+                                    <th>STATUS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="mono-cell">PRESENT</td>
+                                    <td><strong>CLUB 01 // MEDIAMARKTSATURN (PLACEHOLDER)</strong></td>
+                                    <td>DATA ENGINEER</td>
+                                    <td>Cloud data engineering, ETL pipelines &amp; analytics architecture</td>
+                                    <td><span class="status-pill-volt">FIRST TEAM CONTRACT</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="mono-cell">SEASON 02</td>
+                                    <td><strong>CLUB 02 // PREVIOUS WORK PLACEHOLDER</strong></td>
+                                    <td>SENIOR ENGINEER (PLACEHOLDER)</td>
+                                    <td>Placeholder entry for prior career role &amp; key technical milestones</td>
+                                    <td><span class="status-pill-muted">COMPLETED</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="mono-cell">SEASON 01</td>
+                                    <td><strong>CLUB 03 // EARLY CAREER PLACEHOLDER</strong></td>
+                                    <td>SOFTWARE ENGINEER (PLACEHOLDER)</td>
+                                    <td>Placeholder entry for foundational engineering role</td>
+                                    <td><span class="status-pill-muted">COMPLETED</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =================================================================
+             PERSISTENT BOTTOM CONTROLLER LEGEND BAR
+             ================================================================= -->
+        <footer id="console-bottom-bar" class="console-bottom-bar" aria-label="Controller Prompts" hidden>
+            <div class="controller-prompts-left">
+                <button type="button" class="prompt-item" id="prompt-select-btn">
+                    <span class="controller-key-badge key-a">A</span>
+                    <span class="prompt-label">SELECT / ENTER</span>
+                </button>
+                <button type="button" class="prompt-item" id="prompt-back-btn" hidden>
+                    <span class="controller-key-badge key-b">B</span>
+                    <span class="prompt-label">BACK TO MAIN MENU (ESC)</span>
+                </button>
+                <div class="prompt-item prompt-static">
+                    <span class="controller-key-badge key-dpad">↕ ↔</span>
+                    <span class="prompt-label">NAVIGATE (ARROWS)</span>
+                </div>
+                <div class="prompt-item prompt-static" id="prompt-bumpers" hidden>
+                    <span class="controller-key-badge key-dpad">Q / E</span>
+                    <span class="prompt-label">SWITCH TAB (LB / RB)</span>
+                </div>
+            </div>
+
+            <div class="controller-prompts-right">
+                <span class="console-build-watermark">EA SPORTS FC™ UI CONCEPT // ITERATION 1 PREVIEW</span>
+            </div>
         </footer>
+
     </div>
 </body>
 </html>
