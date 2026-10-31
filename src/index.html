@@ -34,9 +34,9 @@
     <meta name="twitter:image:alt" content="Portrait of Tomi Gelo">
 
     <link rel="preconnect" href="https://plausible.io" crossorigin>
-    <link rel="stylesheet" href="styles.css?v=tgfc4">
+    <link rel="stylesheet" href="styles.css?v=tgfc5">
     <script defer data-domain="tomigelo.com" src="https://plausible.io/js/plausible.js"></script>
-    <script defer src="script.js?v=tgfc4"></script>
+    <script defer src="script.js?v=tgfc5"></script>
 
     <script type="application/ld+json">
     {
@@ -147,39 +147,44 @@
         </section>
 
         <!-- =================================================================
-             2. MOBILE / NARROW VIEWPORT TERMINAL SCREEN (NO MENU ACCESS)
+             2. PORTRAIT ORIENTATION GATE (ROTATE PHONE TO LANDSCAPE)
              ================================================================= -->
         <section id="screen-mobile-gate" class="game-screen screen-mobile-gate" role="region" aria-labelledby="mobile-gate-title" hidden>
             <div class="fc-system-dialog">
                 <div class="fc-dialog-top-strip">
-                    <span class="fc-dialog-tag">▲ SYSTEM DISPLAY CHECK</span>
-                    <span class="fc-dialog-code">16:9 WIDESCREEN REQUIRED</span>
+                    <span class="fc-dialog-tag">▲ ORIENTATION CHECK // WIDESCREEN MODE</span>
+                    <span class="fc-dialog-code">16:9 LANDSCAPE REQUIRED</span>
                 </div>
                 <div class="fc-dialog-body">
                     <div class="fc-dialog-icon-col" aria-hidden="true">
-                        <div class="fc-monitor-graphic">
-                            <span>16:9</span>
+                        <div class="rotate-phone-stage">
+                            <span class="rotate-arrow rotate-arrow-top">↻</span>
+                            <div class="phone-device-outline">
+                                <span class="phone-notch"></span>
+                                <span class="phone-screen-label">FC 26</span>
+                                <span class="phone-home-bar"></span>
+                            </div>
                         </div>
                     </div>
                     <div class="fc-dialog-copy-col">
-                        <h2 id="mobile-gate-title" class="fc-dialog-title">DESKTOP GAME ONLY — FOR NOW</h2>
+                        <h2 id="mobile-gate-title" class="fc-dialog-title">ROTATE YOUR PHONE TO LANDSCAPE</h2>
                         <p class="fc-dialog-lead">
-                            Thanks for kicking off <strong>TGFC 26</strong>! Because this portfolio is built as a full widescreen console football experience, mobile and narrow screens aren't supported yet.
+                            <strong>TGFC 26</strong> is designed for horizontal widescreen play. Please turn your device sideways into <strong>landscape mode</strong> to unlock the game menu.
                         </p>
                         <p class="fc-dialog-sub">
-                            Please open <strong>tomigelo.com</strong> on a desktop or laptop monitor to access the Main Menu, Soundtrack Radio, Kick-Off Projects, and Manager Career Mode.
+                            Portrait mode is disabled — as soon as you rotate your phone horizontally, the stadium hub and soundtrack will launch automatically.
                         </p>
                         <div class="fc-dialog-specs">
-                            <div class="spec-chip"><span>DISPLAY</span><strong>DESKTOP 16:9</strong></div>
-                            <div class="spec-chip"><span>AUDIO</span><strong>CLUB TRAX RADIO</strong></div>
-                            <div class="spec-chip"><span>STATUS</span><strong>LOCKED ON MOBILE</strong></div>
+                            <div class="spec-chip"><span>PORTRAIT MODE</span><strong class="text-coral">PAUSED</strong></div>
+                            <div class="spec-chip"><span>LANDSCAPE MODE</span><strong>AUTO-UNLOCKS</strong></div>
+                            <div class="spec-chip"><span>ASPECT RATIO</span><strong>16:9 WIDESCREEN</strong></div>
                         </div>
                     </div>
                 </div>
                 <div class="fc-dialog-footer">
                     <div class="mobile-gate-lock-pill">
                         <span class="lock-dot" aria-hidden="true"></span>
-                        <span>MAIN MENU LOCKED ON MOBILE VIEWPORTS</span>
+                        <span>WAITING FOR HORIZONTAL ORIENTATION...</span>
                     </div>
                 </div>
             </div>

@@ -438,13 +438,14 @@ document.addEventListener('DOMContentLoaded', () => {
        5. APPLICATION STATE & DOM REFERENCES
        ====================================================================== */
     const state = {
-        screen: 'boot',         // 'boot' | 'mobile-gate' | 'hub' | 'projects' | 'work'
+        screen: 'boot',             // 'boot' | 'mobile-gate' | 'hub' | 'projects' | 'work'
+        lastUnlockedScreen: 'hub',  // Remembers screen when rotating back from portrait
         bootReady: false,
         hasPassedBoot: false,
-        activeBladeIndex: 0,    // 0 = projects, 1 = work
-        activeClubIndex: 0,     // 0..2
-        projectsTab: 'kickoff', // 'kickoff' | 'pitch'
-        workTab: 'central'      // 'central' | 'transfers'
+        activeBladeIndex: 0,        // 0 = projects, 1 = work
+        activeClubIndex: 0,         // 0..2
+        projectsTab: 'kickoff',     // 'kickoff' | 'pitch'
+        workTab: 'central'          // 'central' | 'transfers'
     };
 
     const viewportEl = document.getElementById('console-viewport');
@@ -481,13 +482,38 @@ document.addEventListener('DOMContentLoaded', () => {
         work: document.getElementById('preview-work')
     };
 
+    function isPortraitLocked() {
+        return window.innerHeight > window.innerWidth && window.innerWidth < DESKTOP_MIN_WIDTH;
+    }
+
+    function updateViewportScale() {
+        if (!viewportEl) return;
+        // In portrait mode, keep 1:1 native mobile scale for both boot and the rotate-device gate
+        if (isPortraitLocked()) {
+            viewportEl.classList.remove('scaled-landscape');
+            viewportEl.style.removeProperty('--ui-scale');
+            return;
+        }
+        // In landscape mode on compact screens (like horizontal phones), scale the 1366x760 console UI proportionally
+        if (window.innerWidth < 1366 || window.innerHeight < 760) {
+            const scaleX = window.innerWidth / 1366;
+            const scaleY = window.innerHeight / 760;
+            const scale = Math.max(0.35, Math.min(scaleX, scaleY));
+            viewportEl.style.setProperty('--ui-scale', scale.toFixed(4));
+            viewportEl.classList.add('scaled-landscape');
+        } else {
+            viewportEl.classList.remove('scaled-landscape');
+            viewportEl.style.removeProperty('--ui-scale');
+        }
+    }
+
     let chyronTimer = null;
     function showNowPlayingChyron(track) {
         if (hudTrackName) hudTrackName.textContent = track.title;
         if (chyronTrackTitle) chyronTrackTitle.textContent = track.title;
         if (chyronTrackArtist) chyronTrackArtist.textContent = track.artist;
 
-        if (!traxChyron || window.innerWidth < DESKTOP_MIN_WIDTH) return;
+        if (!traxChyron || isPortraitLocked()) return;
 
         // Force animation replay even if chyron was already visible
         traxChyron.hidden = false;
@@ -540,23 +566,31 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     runBootSequence();
+    updateViewportScale();
 
-    function isMobileViewport() {
-        return window.innerWidth < DESKTOP_MIN_WIDTH;
+    function tryLockLandscapeOrientation() {
+        try {
+            if (screen.orientation && typeof screen.orientation.lock === 'function') {
+                screen.orientation.lock('landscape').catch(() => {});
+            }
+        } catch (_) {
+            // Orientation lock requires fullscreen on most mobile browsers; safe to ignore when unsupported
+        }
     }
 
     function triggerStartFromBoot() {
         if (!state.bootReady || state.screen !== 'boot') return;
         state.hasPassedBoot = true;
         audio.playSelect();
+        tryLockLandscapeOrientation();
 
-        // On mobile/narrow viewports (< 960px), NEVER open the menu: show the locked Mobile Gate screen
-        if (isMobileViewport()) {
+        // If device is in portrait mode (< 960px wide and height > width), show the Rotate Phone screen
+        if (isPortraitLocked()) {
             navigateToScreen('mobile-gate');
             return;
         }
 
-        // On desktop (>= 960px), start the YouTube soundtrack and open the Main Menu Hub
+        // Otherwise (desktop or horizontal phone landscape), start soundtrack and open the Main Menu Hub
         audio.startSoundtrack();
         navigateToScreen('hub');
         showNowPlayingChyron(audio.getCurrentTrack());
@@ -564,18 +598,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     btnPressStart.addEventListener('click', triggerStartFromBoot);
 
-    // Enforce Mobile Gate if viewport is resized across the 960px threshold after boot
-    window.addEventListener('resize', () => {
+    // Handle device rotation between Portrait (locked with Rotate animation) and Landscape (unlocked widescreen)
+    function handleViewportOrOrientationChange() {
+        updateViewportScale();
         if (!state.hasPassedBoot) return;
-        if (isMobileViewport() && state.screen !== 'mobile-gate') {
+
+        if (isPortraitLocked() && state.screen !== 'mobile-gate') {
+            if (state.screen === 'hub' || state.screen === 'projects' || state.screen === 'work') {
+                state.lastUnlockedScreen = state.screen;
+            }
             audio.stopSoundtrack();
             if (traxChyron) traxChyron.hidden = true;
             navigateToScreen('mobile-gate');
-        } else if (!isMobileViewport() && state.screen === 'mobile-gate') {
+        } else if (!isPortraitLocked() && state.screen === 'mobile-gate') {
+            const resumeScreen = state.lastUnlockedScreen || 'hub';
             audio.startSoundtrack();
-            navigateToScreen('hub');
+            navigateToScreen(resumeScreen);
             showNowPlayingChyron(audio.getCurrentTrack());
         }
+    }
+
+    window.addEventListener('resize', handleViewportOrOrientationChange);
+    window.addEventListener('orientationchange', () => {
+        setTimeout(handleViewportOrOrientationChange, 120);
     });
 
     /* ======================================================================
@@ -640,12 +685,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function navigateToScreen(targetScreen) {
-        if (isMobileViewport() && targetScreen !== 'boot') {
+        if (isPortraitLocked() && targetScreen !== 'boot') {
             targetScreen = 'mobile-gate';
+        }
+        if (targetScreen === 'hub' || targetScreen === 'projects' || targetScreen === 'work') {
+            state.lastUnlockedScreen = targetScreen;
         }
 
         state.screen = targetScreen;
         viewportEl.setAttribute('data-active-screen', targetScreen);
+        updateViewportScale();
 
         screenBoot.hidden = targetScreen !== 'boot';
         screenMobileGate.hidden = targetScreen !== 'mobile-gate';

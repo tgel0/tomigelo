@@ -137,6 +137,15 @@ body {
     justify-content: space-between;
     padding: 22px 44px;
     overflow: hidden;
+    transform-origin: top left;
+}
+
+.console-viewport.scaled-landscape {
+    max-width: none;
+    margin: 0;
+    width: calc(100vw / var(--ui-scale, 1));
+    height: calc(100dvh / var(--ui-scale, 1));
+    transform: scale(var(--ui-scale, 1));
 }
 
 .game-screen {
@@ -525,35 +534,93 @@ body {
 
 .fc-dialog-body {
     display: grid;
-    grid-template-columns: 112px 1fr;
+    grid-template-columns: 128px 1fr;
     gap: 22px;
     padding: 24px 22px;
     align-items: center;
 }
 
-.fc-monitor-graphic {
-    width: 100px;
-    height: 64px;
-    border: 2px solid var(--fc-hyper-green);
-    background: rgba(0, 255, 104, 0.07);
+/* Animated Phone Rotating from Portrait to Landscape */
+.rotate-phone-stage {
+    position: relative;
+    width: 112px;
+    height: 112px;
+    margin: 0 auto;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: var(--font-display);
-    font-size: 1.45rem;
-    letter-spacing: 0.06em;
-    color: var(--fc-hyper-green);
-    position: relative;
-    margin: 0 auto;
+    background: radial-gradient(circle, rgba(0, 255, 104, 0.14) 0%, transparent 70%);
+    border-radius: 50%;
 }
 
-.fc-monitor-graphic::after {
-    content: "";
+.rotate-arrow {
     position: absolute;
-    bottom: -10px;
-    width: 36px;
-    height: 4px;
+    top: 2px;
+    right: 10px;
+    font-size: 1.35rem;
+    color: var(--fc-volt);
+    animation: arrowPulse 2.4s ease-in-out infinite;
+}
+
+@keyframes arrowPulse {
+    0%, 100% { opacity: 0.35; transform: rotate(0deg) scale(0.9); }
+    45%, 75% { opacity: 1; transform: rotate(25deg) scale(1.1); }
+}
+
+.phone-device-outline {
+    width: 48px;
+    height: 86px;
+    border: 2.5px solid var(--fc-hyper-green);
+    border-radius: 9px;
+    background: rgba(8, 12, 20, 0.92);
+    box-shadow: 0 0 22px rgba(0, 255, 104, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 4px;
+    animation: phoneTiltToLandscape 2.4s var(--ease-out-expo) infinite;
+}
+
+.phone-notch {
+    width: 14px;
+    height: 3px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.35);
+}
+
+.phone-screen-label {
+    font-family: var(--font-display);
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    color: var(--fc-hyper-green);
+}
+
+.phone-home-bar {
+    width: 18px;
+    height: 2.5px;
+    border-radius: 2px;
     background: var(--fc-hyper-green);
+}
+
+@keyframes phoneTiltToLandscape {
+    0%, 18% {
+        transform: rotate(0deg) scale(1);
+        border-color: var(--fc-gold);
+    }
+    50%, 82% {
+        transform: rotate(-90deg) scale(1.06);
+        border-color: var(--fc-hyper-green);
+        box-shadow: 0 0 28px rgba(0, 255, 104, 0.55);
+    }
+    100% {
+        transform: rotate(0deg) scale(1);
+        border-color: var(--fc-gold);
+    }
+}
+
+.spec-chip strong.text-coral {
+    color: var(--fc-coral);
 }
 
 .fc-dialog-title {
@@ -2172,9 +2239,9 @@ body {
 }
 
 /* ==========================================================================
-   MOBILE & NARROW SCREEN ADAPTATION (< 960px) — ZERO OVERFLOW GUARANTEE
+   PORTRAIT MODE ADAPTATION (< 960px PORTRAIT) — ZERO OVERFLOW GUARANTEE
    ========================================================================== */
-@media (max-width: 959px) {
+@media (max-width: 959px) and (orientation: portrait) {
     .console-viewport {
         padding: 14px 16px;
         height: 100dvh;
