@@ -6,6 +6,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
     const panels = Array.from(document.querySelectorAll('[role="tabpanel"]'));
 
+    function resolveHash(rawHash) {
+        const hash = (rawHash || '').replace('#', '').toLowerCase();
+        if (hash === 'tactics') return 'manager';
+        return hash;
+    }
+
     function activateTab(tab, setFocus = true) {
         if (!tab) return;
         const targetPanelId = tab.getAttribute('aria-controls');
@@ -27,11 +33,21 @@ document.addEventListener('DOMContentLoaded', () => {
             tab.focus();
         }
 
-        // Update URL hash without jumping
+        // Update URL hash without scroll jumping
         const hash = tab.getAttribute('data-hash');
         if (hash && window.location.hash !== `#${hash}`) {
             history.replaceState(null, '', `#${hash}`);
         }
+    }
+
+    function activateByHashName(hashName, setFocus = false) {
+        const targetHash = resolveHash(hashName);
+        const matchingTab = tabs.find(t => t.getAttribute('data-hash') === targetHash);
+        if (matchingTab) {
+            activateTab(matchingTab, setFocus);
+            return true;
+        }
+        return false;
     }
 
     tabs.forEach((tab, index) => {
@@ -59,13 +75,40 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Check URL hash on initial load
-    const currentHash = window.location.hash.replace('#', '');
-    if (currentHash) {
-        const matchingTab = tabs.find(t => t.getAttribute('data-hash') === currentHash);
-        if (matchingTab) {
-            activateTab(matchingTab, false);
+    // Check URL hash on initial page load (with fallback to default squad tab)
+    const initialHash = resolveHash(window.location.hash);
+    if (initialHash) {
+        const found = activateByHashName(initialHash, false);
+        if (!found && tabs.length > 0) {
+            activateTab(tabs[0], false);
         }
+    } else if (tabs.length > 0) {
+        activateTab(tabs[0], false);
+    }
+
+    // Support browser Back/Forward navigation and in-page anchor jumps
+    window.addEventListener('hashchange', () => {
+        const newHash = resolveHash(window.location.hash);
+        if (newHash) {
+            activateByHashName(newHash, false);
+        }
+    });
+
+    // Quick routing from HUD Manager pill and Squad strip to Manager's Office
+    const hudMgrBtn = document.getElementById('hud-mgr-pill');
+    if (hudMgrBtn) {
+        hudMgrBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            activateByHashName('manager', true);
+        });
+    }
+
+    const squadMgrLink = document.getElementById('squad-to-mgr-link');
+    if (squadMgrLink) {
+        squadMgrLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            activateByHashName('manager', true);
+        });
     }
 
     // Optional Quick Project Filter pills

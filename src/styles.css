@@ -1159,3 +1159,125 @@ a {
         transition: none !important;
     }
 }
+
+
+/* ========================================================================== */
+/* TOMI GELO FC: ACTIVE SQUAD & MANAGER ADDITIONS                            */
+/* ========================================================================== */
+
+/* Chemistry Status Pill in Top HUD */
+.hud-pill-chem {
+    border-color: rgba(34, 197, 94, 0.45);
+    color: #4ade80;
+    background: rgba(34, 197, 94, 0.14);
+    font-weight: 700;
+}
+
+/* Button & Link Normalization for HUD Pills */
+button.hud-pill,
+a.hud-pill {
+    font: inherit;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+/* Active Squad Tactical Strip */
+.squad-tactical-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    padding: 14px 18px;
+    background: rgba(16, 20, 34, 0.7);
+    border: 1px solid var(--rule-soft);
+    clip-path: var(--cut-corner-sm);
+    margin-bottom: 20px;
+    font-family: var(--font-mono);
+}
+
+.squad-strip-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.strip-label {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.strip-value {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-family: var(--font-display);
+    letter-spacing: 0.05em;
+}
+
+.strip-highlight {
+    color: var(--fc-gold);
+    text-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
+}
+
+.strip-link {
+    color: var(--neon-cyan);
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    transition: color 0.15s ease;
+}
+
+.strip-link:hover {
+    color: var(--text-primary);
+}
+
+/* Authentic FUT Manager Card Styles */
+.fut-card-manager {
+    background: linear-gradient(175deg, #1f1d2e 0%, #121122 55%, #090a12 100%);
+    box-shadow: inset 0 0 24px rgba(251, 191, 36, 0.12);
+}
+
+.fut-card-manager::before {
+    background: linear-gradient(135deg, var(--fc-gold) 0%, var(--neon-magenta) 50%, var(--neon-cyan) 100%);
+}
+
+.fut-pos-mgr {
+    color: var(--fc-gold);
+    background: rgba(251, 191, 36, 0.16);
+    border: 1px solid rgba(251, 191, 36, 0.5);
+    padding: 1px 6px;
+    border-radius: 2px;
+    font-size: 0.85rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-shadow: 0 0 8px rgba(251, 191, 36, 0.4);
+}
+
+.fut-manager-avatar {
+    border: 2px solid var(--fc-gold);
+    box-shadow: 0 0 22px rgba(251, 191, 36, 0.4);
+}
+
+.fut-mgr-badge {
+    position: absolute;
+    bottom: -6px;
+    background: var(--fc-gold);
+    color: var(--bg-pitch);
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    padding: 2px 8px;
+    clip-path: var(--cut-corner-sm);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.fut-mgr-ribbon {
+    background: rgba(251, 191, 36, 0.12);
+    border-color: rgba(251, 191, 36, 0.4);
+    color: var(--fc-gold);
+    text-shadow: 0 0 8px rgba(251, 191, 36, 0.3);
+}
