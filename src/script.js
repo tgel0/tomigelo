@@ -1,6 +1,6 @@
 /**
  * TGFC 26 — Tomi Gelo Football Club Portfolio (Iteration 1)
- * Widescreen Console State Machine, Boot Loader, Procedural Soundtrack Radio & Blade Menu
+ * Widescreen Console State Machine, Boot Loader, YouTube IFrame Radio Engine & Blade Menu
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -58,83 +58,78 @@ document.addEventListener('DOMContentLoaded', () => {
             def: 92,
             formation: '3-4-3 DIAMOND',
             stack: 'LLM CONTEXT CLI // PLACEHOLDER',
+            stackRole: 'CLI',
             season: '2026 SEASON',
             url: '#projects'
         }
     ];
 
     /* ======================================================================
-       2. TGFC TRAX SOUNDTRACK & UI AUDIO ENGINE (100% ORIGINAL WEB AUDIO)
+       2. CURATED YOUTUBE IFRAME SOUNDTRACK ROTATION (LOFI.CAFE APPROACH)
        ====================================================================== */
     const SOUNDTRACKS = [
         {
-            title: 'NEON FLOODLIGHTS',
-            artist: 'BERLIN INDIE CLUB • 122 BPM',
-            bpm: 122,
-            // Upbeat Indie-Electro / Festival Synth-Pop (Fmaj7 -> G6 -> Em7 -> Am7)
-            chords: [
-                [174.61, 220.00, 261.63, 329.63],
-                [196.00, 246.94, 293.66, 329.63],
-                [164.81, 196.00, 246.94, 293.66],
-                [220.00, 261.63, 329.63, 392.00]
-            ],
-            bass: [87.31, 98.00, 82.41, 110.00],
-            arp: [523.25, 659.25, 783.99, 659.25, 587.33, 659.25, 523.25, 440.00],
-            kickPattern: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0],
-            hatPattern:  [0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0]
+            title: 'LOVE ME AGAIN',
+            artist: 'JOHN NEWMAN • SOUNDTRACK CLASSICS',
+            ytIds: ['jLPE5KlWeVI', 'nyw4G2fB_E4', 'CfihYWRWRTQ'],
+            startSeconds: 2
         },
         {
-            title: 'TERRACE ECHOES',
-            artist: 'SPREEWALD COLLECTIVE • 126 BPM',
-            bpm: 126,
-            // UK Garage / Melodic 2-Step (Dm9 -> Bbmaj7 -> Gm7 -> A7sus4)
-            chords: [
-                [146.83, 174.61, 220.00, 261.63, 329.63],
-                [116.54, 174.61, 220.00, 293.66],
-                [196.00, 233.08, 293.66, 349.23],
-                [220.00, 293.66, 329.63, 392.00]
-            ],
-            bass: [73.42, 58.27, 98.00, 110.00],
-            arp: [587.33, 523.25, 440.00, 523.25, 698.46, 587.33, 523.25, 440.00],
-            kickPattern: [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0],
-            hatPattern:  [0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1]
+            title: 'THE NIGHTS',
+            artist: 'AVICII • SOUNDTRACK CLASSICS',
+            ytIds: ['2S0QhGGO1gQ', 'H7HmzwI67ec', 'UtF6Jej8yb4'],
+            startSeconds: 2
         },
         {
-            title: 'SOLAR KICKOFF',
-            artist: 'KREUZBERG ANALOG • 118 BPM',
-            bpm: 118,
-            // Balearic / Stadium Electro-Funk (Cmaj7 -> Am9 -> Dm7 -> G13)
-            chords: [
-                [130.81, 164.81, 196.00, 246.94],
-                [220.00, 246.94, 261.63, 329.63],
-                [146.83, 174.61, 220.00, 261.63],
-                [196.00, 246.94, 293.66, 329.63]
-            ],
-            bass: [65.41, 110.00, 73.42, 98.00],
-            arp: [659.25, 783.99, 523.25, 659.25, 587.33, 493.88, 523.25, 392.00],
-            kickPattern: [1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0],
-            hatPattern:  [1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0]
+            title: 'MY TYPE',
+            artist: 'SAINT MOTEL • SOUNDTRACK CLASSICS',
+            ytIds: ['64123PhOpsA', 'j8cKdDkkIYY', 'IyVPyKrx0Xo'],
+            startSeconds: 3
+        },
+        {
+            title: 'HEAT WAVES',
+            artist: 'GLASS ANIMALS • SOUNDTRACK CLASSICS',
+            ytIds: ['d6F4B5KxRo8', 'rfTgO9rpqck', 'mRD0-GxqHVo'],
+            startSeconds: 4
+        },
+        {
+            title: 'DREAMING',
+            artist: 'SMALLPOOLS • SOUNDTRACK CLASSICS',
+            ytIds: ['zJtKCzfyZP0', 'm3d03-s356U', 'e8xni3EcIbc'],
+            startSeconds: 2
+        },
+        {
+            title: 'KIDS',
+            artist: 'MGMT • SOUNDTRACK CLASSICS',
+            ytIds: ['rdKfuwy6LUM', 'bIEOZCcaXzE', 'fe4EK4HSPkI'],
+            startSeconds: 2
         }
     ];
 
+    /* ======================================================================
+       3. HYBRID YOUTUBE RADIO + WEB AUDIO UI SFX ENGINE
+       ====================================================================== */
     class GameAudioEngine {
-        constructor() {
+        constructor(onTrackChangedCallback) {
             this.ctx = null;
             this.masterGain = null;
             this.enabled = true;
             this.isPlayingMusic = false;
             this.trackIndex = 0;
-            this.stepIndex = 0;
-            this.stepTimer = null;
+            this.candidateIndex = 0;
+            this.ytPlayer = null;
+            this.ytReady = false;
+            this.pendingPlay = false;
+            this.onTrackChanged = onTrackChangedCallback;
         }
 
-        init() {
+        initWebAudio() {
             if (!this.ctx) {
                 const AudioCtx = window.AudioContext || window.webkitAudioContext;
                 if (AudioCtx) {
                     this.ctx = new AudioCtx();
                     this.masterGain = this.ctx.createGain();
-                    this.masterGain.gain.value = 1.0;
+                    this.masterGain.gain.value = this.enabled ? 1.0 : 0.0;
                     this.masterGain.connect(this.ctx.destination);
                 }
             }
@@ -143,184 +138,179 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        preloadYouTubeAPI() {
+            if (window.YT && window.YT.Player) {
+                this.createYouTubePlayer();
+                return;
+            }
+
+            const prevCallback = window.onYouTubeIframeAPIReady;
+            window.onYouTubeIframeAPIReady = () => {
+                if (typeof prevCallback === 'function') prevCallback();
+                this.createYouTubePlayer();
+            };
+
+            if (!document.querySelector('script[src*="youtube.com/iframe_api"]')) {
+                const tag = document.createElement('script');
+                tag.src = 'https://www.youtube.com/iframe_api';
+                tag.async = true;
+                document.head.appendChild(tag);
+            }
+        }
+
+        createYouTubePlayer() {
+            const firstTrack = SOUNDTRACKS[this.trackIndex];
+            const initialVid = firstTrack.ytIds[0];
+
+            this.ytPlayer = new window.YT.Player('yt-radio-player', {
+                height: '1',
+                width: '1',
+                videoId: initialVid,
+                playerVars: {
+                    autoplay: 0,
+                    controls: 0,
+                    disablekb: 1,
+                    fs: 0,
+                    iv_load_policy: 3,
+                    modestbranding: 1,
+                    playsinline: 1,
+                    rel: 0,
+                    start: firstTrack.startSeconds || 0,
+                    origin: window.location.origin
+                },
+                events: {
+                    onReady: () => {
+                        this.ytReady = true;
+                        this.ytPlayer.setVolume(65);
+                        if (!this.enabled) {
+                            this.ytPlayer.mute();
+                        }
+                        if (this.pendingPlay) {
+                            this.pendingPlay = false;
+                            this.startSoundtrack();
+                        }
+                    },
+                    onStateChange: (event) => {
+                        // Auto-advance to next song when current song finishes (YT.PlayerState.ENDED === 0)
+                        if (event.data === 0) {
+                            this.nextTrack(true);
+                        }
+                    },
+                    onError: () => {
+                        // If a video ID is embed-restricted (Error 101/150) or unavailable, try next backup ID or next song
+                        this.handleYouTubeError();
+                    }
+                }
+            });
+        }
+
+        handleYouTubeError() {
+            const currentTrack = SOUNDTRACKS[this.trackIndex];
+            if (this.candidateIndex + 1 < currentTrack.ytIds.length) {
+                this.candidateIndex++;
+                const fallbackVid = currentTrack.ytIds[this.candidateIndex];
+                if (this.ytReady && this.ytPlayer && typeof this.ytPlayer.loadVideoById === 'function') {
+                    this.ytPlayer.loadVideoById({
+                        videoId: fallbackVid,
+                        startSeconds: currentTrack.startSeconds || 0
+                    });
+                }
+            } else {
+                // Move to the next song in rotation if all candidate IDs for this track failed
+                this.nextTrack(true);
+            }
+        }
+
+        startSoundtrack() {
+            this.initWebAudio();
+            this.isPlayingMusic = true;
+
+            if (this.ytReady && this.ytPlayer && typeof this.ytPlayer.playVideo === 'function') {
+                if (this.enabled) {
+                    this.ytPlayer.unMute();
+                    this.ytPlayer.setVolume(65);
+                } else {
+                    this.ytPlayer.mute();
+                }
+                this.ytPlayer.playVideo();
+            } else {
+                this.pendingPlay = true;
+            }
+        }
+
+        stopSoundtrack() {
+            this.isPlayingMusic = false;
+            this.pendingPlay = false;
+            if (this.ytReady && this.ytPlayer && typeof this.ytPlayer.pauseVideo === 'function') {
+                this.ytPlayer.pauseVideo();
+            }
+        }
+
+        nextTrack(autoAdvance = false) {
+            this.trackIndex = (this.trackIndex + 1) % SOUNDTRACKS.length;
+            this.candidateIndex = 0;
+            const track = SOUNDTRACKS[this.trackIndex];
+
+            if (this.ytReady && this.ytPlayer && typeof this.ytPlayer.loadVideoById === 'function') {
+                if (this.isPlayingMusic) {
+                    this.ytPlayer.loadVideoById({
+                        videoId: track.ytIds[0],
+                        startSeconds: track.startSeconds || 0
+                    });
+                    if (!this.enabled) {
+                        this.ytPlayer.mute();
+                    } else {
+                        this.ytPlayer.unMute();
+                        this.ytPlayer.setVolume(65);
+                    }
+                } else {
+                    this.ytPlayer.cueVideoById({
+                        videoId: track.ytIds[0],
+                        startSeconds: track.startSeconds || 0
+                    });
+                }
+            }
+
+            if (autoAdvance && typeof this.onTrackChanged === 'function') {
+                this.onTrackChanged(track);
+            }
+            return track;
+        }
+
         toggleMute() {
             this.enabled = !this.enabled;
-            this.init();
+            this.initWebAudio();
+
             if (this.masterGain && this.ctx) {
                 this.masterGain.gain.setValueAtTime(this.enabled ? 1.0 : 0.0, this.ctx.currentTime);
             }
+
+            if (this.ytReady && this.ytPlayer) {
+                if (this.enabled) {
+                    this.ytPlayer.unMute();
+                    this.ytPlayer.setVolume(65);
+                    if (this.isPlayingMusic) {
+                        this.ytPlayer.playVideo();
+                    }
+                } else {
+                    this.ytPlayer.mute();
+                }
+            }
+
             if (this.enabled) {
                 this.playTick();
             }
             return this.enabled;
         }
 
-        startSoundtrack() {
-            this.init();
-            if (!this.ctx || this.isPlayingMusic) return;
-            this.isPlayingMusic = true;
-            this.stepIndex = 0;
-            this.scheduleLoop();
-        }
-
-        stopSoundtrack() {
-            this.isPlayingMusic = false;
-            if (this.stepTimer) {
-                clearTimeout(this.stepTimer);
-                this.stepTimer = null;
-            }
-        }
-
-        nextTrack() {
-            this.trackIndex = (this.trackIndex + 1) % SOUNDTRACKS.length;
-            this.stepIndex = 0;
-            if (this.isPlayingMusic) {
-                clearTimeout(this.stepTimer);
-                this.scheduleLoop();
-            }
-            return SOUNDTRACKS[this.trackIndex];
-        }
-
         getCurrentTrack() {
             return SOUNDTRACKS[this.trackIndex];
         }
 
-        scheduleLoop() {
-            if (!this.isPlayingMusic || !this.ctx) return;
-            const track = SOUNDTRACKS[this.trackIndex];
-            const sixteenthMs = (60 / track.bpm / 4) * 1000;
-
-            if (this.enabled) {
-                this.triggerMusicStep(track, this.stepIndex, sixteenthMs / 1000);
-            }
-
-            this.stepIndex = (this.stepIndex + 1) % 64;
-            this.stepTimer = setTimeout(() => this.scheduleLoop(), sixteenthMs);
-        }
-
-        triggerMusicStep(track, step, stepDurSec) {
-            const now = this.ctx.currentTime;
-            const barIdx = Math.floor(step / 16) % 4;
-            const stepInBar = step % 16;
-
-            // 1. Warm Filtered Poly Synth Pad on beat 0 and syncopated beat 6 of each bar
-            if (stepInBar === 0 || stepInBar === 6 || stepInBar === 12) {
-                const chord = track.chords[barIdx];
-                const padDur = stepInBar === 0 ? stepDurSec * 5.5 : stepDurSec * 3.5;
-                chord.forEach(freq => {
-                    const osc = this.ctx.createOscillator();
-                    const filter = this.ctx.createBiquadFilter();
-                    const gain = this.ctx.createGain();
-
-                    osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(freq, now);
-
-                    filter.type = 'lowpass';
-                    filter.frequency.setValueAtTime(1150, now);
-                    filter.frequency.exponentialRampToValueAtTime(420, now + padDur);
-
-                    gain.gain.setValueAtTime(0.014, now);
-                    gain.gain.exponentialRampToValueAtTime(0.0008, now + padDur);
-
-                    osc.connect(filter);
-                    filter.connect(gain);
-                    gain.connect(this.masterGain);
-
-                    osc.start(now);
-                    osc.stop(now + padDur + 0.02);
-                });
-            }
-
-            // 2. Bouncy Synth Bassline on offbeats & downbeats
-            if (stepInBar % 2 === 0) {
-                const bassFreq = track.bass[barIdx] * (stepInBar === 6 || stepInBar === 14 ? 2 : 1);
-                const osc = this.ctx.createOscillator();
-                const filter = this.ctx.createBiquadFilter();
-                const gain = this.ctx.createGain();
-
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(bassFreq, now);
-
-                filter.type = 'lowpass';
-                filter.frequency.setValueAtTime(480, now);
-
-                gain.gain.setValueAtTime(0.045, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + stepDurSec * 1.8);
-
-                osc.connect(filter);
-                filter.connect(gain);
-                gain.connect(this.masterGain);
-
-                osc.start(now);
-                osc.stop(now + stepDurSec * 1.9);
-            }
-
-            // 3. Melodic Indie Synth Pluck / Arpeggio
-            if (stepInBar % 2 === 1) {
-                const arpNote = track.arp[Math.floor(stepInBar / 2) % track.arp.length];
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(arpNote, now);
-
-                gain.gain.setValueAtTime(0.018, now);
-                gain.gain.exponentialRampToValueAtTime(0.0008, now + stepDurSec * 1.5);
-
-                osc.connect(gain);
-                gain.connect(this.masterGain);
-
-                osc.start(now);
-                osc.stop(now + stepDurSec * 1.6);
-            }
-
-            // 4. Punchy Electronic Kick Drum
-            if (track.kickPattern[stepInBar]) {
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(125, now);
-                osc.frequency.exponentialRampToValueAtTime(38, now + 0.09);
-
-                gain.gain.setValueAtTime(0.09, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.11);
-
-                osc.connect(gain);
-                gain.connect(this.masterGain);
-
-                osc.start(now);
-                osc.stop(now + 0.12);
-            }
-
-            // 5. Crisp Hi-Hat Tick
-            if (track.hatPattern[stepInBar]) {
-                const osc = this.ctx.createOscillator();
-                const filter = this.ctx.createBiquadFilter();
-                const gain = this.ctx.createGain();
-
-                osc.type = 'square';
-                osc.frequency.setValueAtTime(6400, now);
-
-                filter.type = 'highpass';
-                filter.frequency.setValueAtTime(5000, now);
-
-                gain.gain.setValueAtTime(0.009, now);
-                gain.gain.exponentialRampToValueAtTime(0.0005, now + 0.03);
-
-                osc.connect(filter);
-                filter.connect(gain);
-                gain.connect(this.masterGain);
-
-                osc.start(now);
-                osc.stop(now + 0.035);
-            }
-        }
-
-        /* UI Sound Effects */
+        /* Synthesized Console UI Sound Effects */
         playTick() {
             if (!this.enabled) return;
-            this.init();
+            this.initWebAudio();
             if (!this.ctx) return;
 
             const now = this.ctx.currentTime;
@@ -342,7 +332,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         playSelect() {
             if (!this.enabled) return;
-            this.init();
+            this.initWebAudio();
             if (!this.ctx) return;
 
             const now = this.ctx.currentTime;
@@ -365,7 +355,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         playBack() {
             if (!this.enabled) return;
-            this.init();
+            this.initWebAudio();
             if (!this.ctx) return;
 
             const now = this.ctx.currentTime;
@@ -386,10 +376,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    const audio = new GameAudioEngine();
+    const audio = new GameAudioEngine((newTrack) => {
+        showNowPlayingChyron(newTrack);
+    });
+
+    // Preload YouTube IFrame API immediately while the boot screen is running
+    audio.preloadYouTubeAPI();
 
     /* ======================================================================
-       3. STADIUM AMBIENT PARTICLE CANVAS
+       4. STADIUM AMBIENT PARTICLE CANVAS
        ====================================================================== */
     const canvas = document.getElementById('stadium-canvas');
     if (canvas) {
@@ -434,7 +429,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /* ======================================================================
-       4. APPLICATION STATE & DOM REFERENCES
+       5. APPLICATION STATE & DOM REFERENCES
        ====================================================================== */
     const state = {
         screen: 'boot',         // 'boot' | 'mobile-gate' | 'hub' | 'projects' | 'work'
@@ -476,20 +471,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let chyronTimer = null;
     function showNowPlayingChyron(track) {
-        if (!traxChyron || window.innerWidth < DESKTOP_MIN_WIDTH) return;
         if (hudTrackName) hudTrackName.textContent = track.title;
         if (chyronTrackTitle) chyronTrackTitle.textContent = track.title;
         if (chyronTrackArtist) chyronTrackArtist.textContent = track.artist;
 
+        if (!traxChyron || window.innerWidth < DESKTOP_MIN_WIDTH) return;
+
+        // Force animation replay even if chyron was already visible
         traxChyron.hidden = false;
+        traxChyron.classList.remove('chyron-animate');
+        void traxChyron.offsetWidth;
+        traxChyron.classList.add('chyron-animate');
+
         if (chyronTimer) clearTimeout(chyronTimer);
         chyronTimer = setTimeout(() => {
             traxChyron.hidden = true;
-        }, 4400);
+        }, 4500);
     }
 
     /* ======================================================================
-       5. BOOT SEQUENCE (0% -> 100% -> START -> MOBILE GATE OR DESKTOP HUB)
+       6. BOOT SEQUENCE (0% -> 100% -> START -> MOBILE GATE OR DESKTOP HUB)
        ====================================================================== */
     const bootStatusText = document.getElementById('boot-status-text');
     const bootPercentText = document.getElementById('boot-percent-text');
@@ -501,7 +502,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const bootSteps = [
         { pct: 22, status: 'INITIALIZING PITCH ENGINE...', detail: 'SHADER CACHE: STADIUM FLOODLIGHTS' },
-        { pct: 54, status: 'LOADING SQUAD FILE: TOMI_GELO_26.PRF...', detail: 'CUEING TGFC TRAX SOUNDTRACK RADIO' },
+        { pct: 54, status: 'LOADING SQUAD FILE: TOMI_GELO_26.PRF...', detail: 'BUFFERING TGFC TRAX SOUNDTRACK STREAM' },
         { pct: 84, status: 'SYNCING MATCHES & CAREER DATA...', detail: 'CONNECTING TO BERLIN_EU SERVER' },
         { pct: 100, status: 'MATCHDAY ENGINE READY', detail: 'ALL SYSTEMS ONLINE // 60 FPS LOCKED' }
     ];
@@ -543,7 +544,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // On desktop (>= 960px), start the stadium soundtrack and open the Main Menu Hub
+        // On desktop (>= 960px), start the YouTube soundtrack and open the Main Menu Hub
         audio.startSoundtrack();
         navigateToScreen('hub');
         showNowPlayingChyron(audio.getCurrentTrack());
@@ -566,7 +567,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     /* ======================================================================
-       6. SCREEN NAVIGATION & MAIN MENU BLADES
+       7. SCREEN NAVIGATION & MAIN MENU BLADES
        ====================================================================== */
     function setActiveBlade(index, playSound = true) {
         const clamped = (index + blades.length) % blades.length;
@@ -627,7 +628,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function navigateToScreen(targetScreen) {
-        // Hard guard: never allow hub/projects/work on mobile viewports
         if (isMobileViewport() && targetScreen !== 'boot') {
             targetScreen = 'mobile-gate';
         }
@@ -665,7 +665,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /* ======================================================================
-       7. PROJECTS MODE: KICK-OFF CLUB SELECTOR & BUMPER TABS
+       8. PROJECTS MODE: KICK-OFF CLUB SELECTOR & BUMPER TABS
        ====================================================================== */
     const clubCards = Array.from(document.querySelectorAll('.club-select-card'));
     const clubCounterLabel = document.getElementById('club-counter-label');
@@ -753,7 +753,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     /* ======================================================================
-       8. WORK MODE: CAREER BUMPER TABS
+       9. WORK MODE: CAREER BUMPER TABS
        ====================================================================== */
     const workTabBtns = Array.from(document.querySelectorAll('[data-work-tab]'));
     const workViewCentral = document.getElementById('work-view-central');
@@ -784,7 +784,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     /* ======================================================================
-       9. SOUNDTRACK CONTROLS & BOTTOM CONTROLLER LEGEND
+       10. SOUNDTRACK CONTROLS & BOTTOM CONTROLLER LEGEND
        ====================================================================== */
     const btnAudioToggle = document.getElementById('btn-audio-toggle');
     const audioStatusLabel = document.getElementById('audio-status-label');
@@ -802,7 +802,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function handleNextTrack() {
         audio.playTick();
-        const next = audio.nextTrack();
+        const next = audio.nextTrack(false);
         showNowPlayingChyron(next);
     }
 
@@ -826,7 +826,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     /* ======================================================================
-       10. GLOBAL KEYBOARD / CONTROLLER SHORTCUTS
+       11. GLOBAL KEYBOARD / CONTROLLER SHORTCUTS
        ====================================================================== */
     window.addEventListener('keydown', (e) => {
         // 1. Boot Screen: Any key starts once loaded

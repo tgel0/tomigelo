@@ -868,8 +868,20 @@ body {
 }
 
 /* ==========================================================================
-   NOW PLAYING CHYRON TOAST (#trax-chyron)
+   HIDDEN YOUTUBE HOST & NOW PLAYING CHYRON TOAST (#trax-chyron)
    ========================================================================== */
+.yt-player-host {
+    position: fixed;
+    left: -9999px;
+    bottom: 0;
+    width: 1px;
+    height: 1px;
+    opacity: 0.01;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: -1;
+}
+
 .trax-chyron {
     position: fixed;
     right: 44px;
@@ -884,8 +896,11 @@ body {
     border-left: 4px solid var(--fc-hyper-green);
     box-shadow: 0 18px 44px rgba(0, 0, 0, 0.75);
     transform: skewX(var(--skew-angle));
-    animation: chyronSlideIn 0.35s var(--ease-out-expo);
     pointer-events: none;
+}
+
+.trax-chyron.chyron-animate {
+    animation: chyronSlideIn 0.35s var(--ease-out-expo);
 }
 
 @keyframes chyronSlideIn {

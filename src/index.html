@@ -34,9 +34,9 @@
     <meta name="twitter:image:alt" content="Portrait of Tomi Gelo">
 
     <link rel="preconnect" href="https://plausible.io" crossorigin>
-    <link rel="stylesheet" href="styles.css?v=tgfc2">
+    <link rel="stylesheet" href="styles.css?v=tgfc3">
     <script defer data-domain="tomigelo.com" src="https://plausible.io/js/plausible.js"></script>
-    <script defer src="script.js?v=tgfc2"></script>
+    <script defer src="script.js?v=tgfc3"></script>
 
     <script type="application/ld+json">
     {
@@ -209,7 +209,7 @@
                     </div>
                     <div class="trax-meta">
                         <span class="trax-label">TGFC TRAX</span>
-                        <strong id="hud-track-name" class="trax-song">NEON FLOODLIGHTS</strong>
+                        <strong id="hud-track-name" class="trax-song">LOVE ME AGAIN</strong>
                     </div>
                     <button type="button" id="btn-next-track" class="hud-mini-action" title="Next Soundtrack Song (Shortcut: N)">
                         <span class="hud-key-mini">N</span>
@@ -739,14 +739,18 @@
         </section>
 
         <!-- =================================================================
-             NOW PLAYING CHYRON TOAST (BOTTOM-RIGHT TRAX POPUP)
+             HIDDEN YOUTUBE IFRAME RADIO ENGINE + NOW PLAYING CHYRON TOAST
              ================================================================= -->
+        <div class="yt-player-host" aria-hidden="true">
+            <div id="yt-radio-player"></div>
+        </div>
+
         <aside id="trax-chyron" class="trax-chyron" aria-live="polite" hidden>
             <div class="trax-disc-icon" aria-hidden="true">◎</div>
             <div class="trax-chyron-info">
                 <span class="trax-chyron-kicker">TGFC TRAX // NOW PLAYING</span>
-                <strong id="chyron-track-title" class="trax-chyron-title">NEON FLOODLIGHTS</strong>
-                <span id="chyron-track-artist" class="trax-chyron-artist">BERLIN INDIE CLUB &bull; 122 BPM</span>
+                <strong id="chyron-track-title" class="trax-chyron-title">LOVE ME AGAIN</strong>
+                <span id="chyron-track-artist" class="trax-chyron-artist">JOHN NEWMAN &bull; SOUNDTRACK CLASSICS</span>
             </div>
         </aside>
 
