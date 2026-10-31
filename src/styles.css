@@ -1,9 +1,9 @@
 /* ==========================================================================
-   EA SPORTS FC™ 26 — PORTFOLIO EDITION (ITERATION 1 WIDESCREEN CONSOLE UI)
+   TGFC 26 — PORTFOLIO EDITION (ITERATION 1 WIDESCREEN CONSOLE UI)
    ========================================================================== */
 
 :root {
-    /* Core EA FC Dark Stadium Palette */
+    /* Core Dark Stadium Palette */
     --fc-bg-deep: #05070b;
     --fc-bg-obsidian: #0a0e16;
     --fc-panel-glass: rgba(13, 18, 28, 0.84);
@@ -11,7 +11,7 @@
     --fc-border-subtle: rgba(255, 255, 255, 0.11);
     --fc-border-bright: rgba(255, 255, 255, 0.24);
 
-    /* Signature EA SPORTS FC Accents */
+    /* Signature Football Game Accents */
     --fc-hyper-green: #00ff68;
     --fc-volt: #c8ff00;
     --fc-cyan: #00e5ff;
@@ -45,8 +45,8 @@ html,
 body {
     margin: 0;
     padding: 0;
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100dvh;
     overflow: hidden;
     background-color: var(--fc-bg-deep);
     color: var(--fc-text-white);
@@ -128,14 +128,15 @@ body {
 .console-viewport {
     position: relative;
     z-index: 1;
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100dvh;
     max-width: 1920px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     padding: 22px 44px;
+    overflow: hidden;
 }
 
 .game-screen {
@@ -171,6 +172,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
     font-family: var(--font-mono);
     font-size: 0.76rem;
     letter-spacing: 0.14em;
@@ -178,7 +181,7 @@ body {
     text-transform: uppercase;
 }
 
-.hypermotion-badge {
+.hyperdrive-badge {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -199,17 +202,17 @@ body {
     align-items: center;
     justify-content: center;
     text-align: center;
-    gap: 24px;
+    gap: 20px;
     max-width: 680px;
     margin: 0 auto;
     width: 100%;
 }
 
-/* Kinetic EA SPORTS FC Triangle Logo */
+/* Kinetic Triangle Logo */
 .fc-kinetic-emblem {
     position: relative;
-    width: 190px;
-    height: 168px;
+    width: 176px;
+    height: 156px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -242,7 +245,7 @@ body {
 .fc-emblem-typography {
     position: relative;
     z-index: 2;
-    margin-top: 26px;
+    margin-top: 24px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -259,7 +262,7 @@ body {
 
 .fc-giant-letters {
     font-family: var(--font-display);
-    font-size: 3.6rem;
+    font-size: 3.4rem;
     font-weight: 900;
     line-height: 0.92;
     letter-spacing: 0.03em;
@@ -267,7 +270,7 @@ body {
 }
 
 .fc-26-sup {
-    font-size: 1.5rem;
+    font-size: 1.45rem;
     color: var(--fc-volt);
     margin-left: 3px;
 }
@@ -277,13 +280,14 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    max-width: 100%;
 }
 
 .cover-avatar-frame {
     position: relative;
-    width: 86px;
-    height: 86px;
+    width: 82px;
+    height: 82px;
     border-radius: 50%;
     padding: 3px;
     background: linear-gradient(135deg, var(--fc-hyper-green), var(--fc-cyan));
@@ -315,7 +319,7 @@ body {
 .boot-main-title {
     margin: 6px 0 0;
     font-family: var(--font-display);
-    font-size: 4rem;
+    font-size: clamp(2.4rem, 7vw, 4rem);
     font-weight: 900;
     letter-spacing: 0.06em;
     line-height: 0.95;
@@ -327,9 +331,10 @@ body {
 .boot-subtitle {
     margin: 0;
     font-family: var(--font-mono);
-    font-size: 0.8rem;
-    letter-spacing: 0.2em;
+    font-size: clamp(0.64rem, 2vw, 0.8rem);
+    letter-spacing: 0.16em;
     color: var(--fc-text-secondary);
+    padding: 0 8px;
 }
 
 /* Boot Progress Box */
@@ -338,7 +343,7 @@ body {
     max-width: 500px;
     background: var(--fc-panel-glass);
     border: 1px solid var(--fc-border-subtle);
-    padding: 16px 20px;
+    padding: 14px 18px;
     backdrop-filter: blur(12px);
     clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
 }
@@ -346,19 +351,22 @@ body {
 .boot-loader-header {
     display: flex;
     justify-content: space-between;
+    gap: 8px;
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     font-weight: 700;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
     margin-bottom: 8px;
 }
 
 .boot-status-text {
     color: var(--fc-text-white);
+    text-align: left;
 }
 
 .boot-percent-text {
     color: var(--fc-hyper-green);
+    flex-shrink: 0;
 }
 
 .boot-progress-track {
@@ -381,15 +389,18 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 8px;
     font-family: var(--font-mono);
-    font-size: 0.68rem;
+    font-size: 0.65rem;
     color: var(--fc-text-muted);
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
+    text-align: left;
 }
 
 .boot-spinner-inline {
     width: 12px;
     height: 12px;
+    flex-shrink: 0;
     border: 2px solid rgba(0, 255, 104, 0.25);
     border-top-color: var(--fc-hyper-green);
     border-radius: 50%;
@@ -406,6 +417,8 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 10px;
+    width: 100%;
+    padding: 0 10px;
     animation: fadeInScale 0.35s var(--ease-out-expo);
 }
 
@@ -420,14 +433,16 @@ body {
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 14px;
-    padding: 15px 36px;
+    justify-content: center;
+    gap: 12px;
+    max-width: 100%;
+    padding: 14px 28px;
     background: var(--fc-hyper-green);
     color: var(--fc-text-dark);
     font-family: var(--font-display);
-    font-size: 1.45rem;
+    font-size: clamp(1.05rem, 3.8vw, 1.45rem);
     font-weight: 900;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     transform: skewX(var(--skew-angle));
     box-shadow: 0 0 32px rgba(0, 255, 104, 0.45);
@@ -438,7 +453,7 @@ body {
 .btn-press-start:hover,
 .btn-press-start:focus-visible {
     background: var(--fc-volt);
-    transform: skewX(var(--skew-angle)) scale(1.04);
+    transform: skewX(var(--skew-angle)) scale(1.03);
     box-shadow: 0 0 42px rgba(200, 255, 0, 0.75);
     outline: none;
 }
@@ -450,8 +465,8 @@ body {
 
 .boot-start-hint {
     font-family: var(--font-mono);
-    font-size: 0.7rem;
-    letter-spacing: 0.14em;
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
     color: var(--fc-text-secondary);
 }
 
@@ -466,41 +481,41 @@ body {
 }
 
 /* ==========================================================================
-   2. POST-LOADING SYSTEM DIALOG (#modal-desktop-notice)
+   2. MOBILE / NARROW VIEWPORT TERMINAL SCREEN (#screen-mobile-gate)
    ========================================================================== */
-.fc-modal-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 50;
-    background: rgba(4, 6, 10, 0.84);
-    backdrop-filter: blur(16px);
+.screen-mobile-gate {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 24px;
+    width: 100%;
+    height: 100%;
+    padding: 8px 0;
 }
 
 .fc-system-dialog {
     width: 100%;
-    max-width: 720px;
+    max-width: 680px;
     background: var(--fc-panel-elevated);
     border: 1px solid var(--fc-border-bright);
     border-top: 4px solid var(--fc-hyper-green);
-    box-shadow: 0 28px 80px rgba(0, 0, 0, 0.85);
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.85);
     animation: fadeInScale 0.28s var(--ease-out-expo);
+    overflow: hidden;
 }
 
 .fc-dialog-top-strip {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 24px;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 12px 18px;
     background: rgba(0, 255, 104, 0.08);
     border-bottom: 1px solid var(--fc-border-subtle);
     font-family: var(--font-mono);
-    font-size: 0.74rem;
+    font-size: 0.7rem;
     font-weight: 800;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.1em;
     color: var(--fc-hyper-green);
 }
 
@@ -510,104 +525,129 @@ body {
 
 .fc-dialog-body {
     display: grid;
-    grid-template-columns: 120px 1fr;
-    gap: 24px;
-    padding: 28px 24px;
+    grid-template-columns: 112px 1fr;
+    gap: 22px;
+    padding: 24px 22px;
     align-items: center;
 }
 
 .fc-monitor-graphic {
-    width: 108px;
-    height: 68px;
+    width: 100px;
+    height: 64px;
     border: 2px solid var(--fc-hyper-green);
     background: rgba(0, 255, 104, 0.07);
     display: flex;
     align-items: center;
     justify-content: center;
     font-family: var(--font-display);
-    font-size: 1.5rem;
+    font-size: 1.45rem;
     letter-spacing: 0.06em;
     color: var(--fc-hyper-green);
     position: relative;
+    margin: 0 auto;
 }
 
 .fc-monitor-graphic::after {
     content: "";
     position: absolute;
     bottom: -10px;
-    width: 40px;
+    width: 36px;
     height: 4px;
     background: var(--fc-hyper-green);
 }
 
 .fc-dialog-title {
-    margin: 0 0 8px;
+    margin: 0 0 10px;
     font-family: var(--font-display);
-    font-size: 2rem;
-    letter-spacing: 0.05em;
+    font-size: clamp(1.55rem, 5.5vw, 2.1rem);
+    letter-spacing: 0.04em;
+    line-height: 1.05;
     text-transform: uppercase;
-    transform: skewX(var(--skew-angle));
+    color: var(--fc-text-white);
 }
 
 .fc-dialog-lead {
-    margin: 0 0 18px;
-    font-size: 0.94rem;
-    line-height: 1.55;
+    margin: 0 0 10px;
+    font-size: 0.92rem;
+    line-height: 1.5;
     color: var(--fc-text-secondary);
 }
 
-.fc-dialog-lead strong {
+.fc-dialog-sub {
+    margin: 0 0 16px;
+    font-size: 0.86rem;
+    line-height: 1.5;
+    color: var(--fc-text-secondary);
+}
+
+.fc-dialog-lead strong,
+.fc-dialog-sub strong {
     color: var(--fc-text-white);
 }
 
 .fc-dialog-specs {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+    gap: 8px;
 }
 
 .spec-chip {
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid var(--fc-border-subtle);
-    padding: 8px 12px;
+    padding: 8px 10px;
     display: flex;
     flex-direction: column;
     gap: 3px;
+    min-width: 0;
 }
 
 .spec-chip span {
     font-family: var(--font-mono);
-    font-size: 0.64rem;
+    font-size: 0.62rem;
     color: var(--fc-text-muted);
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
 }
 
 .spec-chip strong {
     font-family: var(--font-mono);
-    font-size: 0.74rem;
+    font-size: 0.72rem;
     color: var(--fc-hyper-green);
-}
-
-.narrow-screen-warning {
-    margin: 14px 0 0;
-    padding: 10px 14px;
-    background: rgba(255, 71, 87, 0.14);
-    border-left: 3px solid var(--fc-coral);
-    color: #ffb8b8;
-    font-family: var(--font-mono);
-    font-size: 0.76rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .fc-dialog-footer {
-    padding: 16px 24px;
-    background: rgba(0, 0, 0, 0.35);
+    padding: 14px 18px;
+    background: rgba(0, 0, 0, 0.4);
     border-top: 1px solid var(--fc-border-subtle);
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
+}
+
+.mobile-gate-lock-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    color: var(--fc-gold);
+    text-align: center;
+}
+
+.lock-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--fc-gold);
+    box-shadow: 0 0 8px var(--fc-gold);
+    flex-shrink: 0;
 }
 
 /* ==========================================================================
-   PERSISTENT TOP CONSOLE HUD (#console-top-hud)
+   PERSISTENT TOP CONSOLE HUD & TGFC TRAX WIDGET (#console-top-hud)
    ========================================================================== */
 .console-top-hud {
     display: flex;
@@ -623,7 +663,7 @@ body {
 .hud-right {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
 }
 
 .hud-brand-badge {
@@ -677,12 +717,87 @@ body {
     align-items: center;
     gap: 10px;
     height: 40px;
-    padding: 0 14px;
+    padding: 0 12px;
     background: var(--fc-panel-glass);
     border: 1px solid var(--fc-border-subtle);
     font-family: var(--font-mono);
-    font-size: 0.74rem;
+    font-size: 0.72rem;
     color: var(--fc-text-white);
+}
+
+/* TGFC Trax Top HUD Radio Widget */
+.hud-trax-pill {
+    border-left: 3px solid var(--fc-volt);
+    gap: 10px;
+}
+
+.eq-bars {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 14px;
+}
+
+.eq-bars span {
+    width: 3px;
+    background: var(--fc-hyper-green);
+    animation: eqBounce 0.7s ease-in-out infinite alternate;
+}
+
+.eq-bars span:nth-child(1) { height: 6px; animation-delay: 0s; }
+.eq-bars span:nth-child(2) { height: 13px; animation-delay: 0.18s; }
+.eq-bars span:nth-child(3) { height: 8px; animation-delay: 0.32s; }
+.eq-bars span:nth-child(4) { height: 11px; animation-delay: 0.12s; }
+
+.eq-bars.paused span {
+    animation: none;
+    height: 3px !important;
+    background: var(--fc-text-muted);
+}
+
+@keyframes eqBounce {
+    0% { height: 3px; }
+    100% { height: 14px; }
+}
+
+.trax-meta {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+}
+
+.trax-label {
+    font-size: 0.56rem;
+    color: var(--fc-volt);
+    letter-spacing: 0.14em;
+}
+
+.trax-song {
+    font-size: 0.7rem;
+    color: var(--fc-text-white);
+    letter-spacing: 0.05em;
+}
+
+.hud-mini-action {
+    appearance: none;
+    border: 1px solid var(--fc-border-subtle);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--fc-text-secondary);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 7px;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.hud-mini-action:hover {
+    color: var(--fc-text-white);
+    border-color: var(--fc-hyper-green);
+    background: rgba(0, 255, 104, 0.12);
 }
 
 .hud-audio-btn {
@@ -699,10 +814,10 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     background: rgba(255, 255, 255, 0.14);
-    font-size: 0.68rem;
+    font-size: 0.64rem;
     font-weight: 800;
     color: var(--fc-hyper-green);
 }
@@ -713,7 +828,7 @@ body {
 }
 
 .xp-bar {
-    width: 68px;
+    width: 60px;
     height: 5px;
     background: rgba(255, 255, 255, 0.14);
 }
@@ -743,17 +858,83 @@ body {
 
 .hud-gamertag {
     font-weight: 800;
-    font-size: 0.75rem;
+    font-size: 0.74rem;
     letter-spacing: 0.08em;
 }
 
 .hud-status-online {
-    font-size: 0.64rem;
+    font-size: 0.62rem;
     color: var(--fc-text-secondary);
 }
 
 /* ==========================================================================
-   3. EA SPORTS FC MAIN MENU HUB (#screen-hub)
+   NOW PLAYING CHYRON TOAST (#trax-chyron)
+   ========================================================================== */
+.trax-chyron {
+    position: fixed;
+    right: 44px;
+    bottom: 72px;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 20px;
+    background: rgba(10, 14, 22, 0.94);
+    border: 1px solid var(--fc-border-bright);
+    border-left: 4px solid var(--fc-hyper-green);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.75);
+    transform: skewX(var(--skew-angle));
+    animation: chyronSlideIn 0.35s var(--ease-out-expo);
+    pointer-events: none;
+}
+
+@keyframes chyronSlideIn {
+    from {
+        opacity: 0;
+        transform: skewX(var(--skew-angle)) translateX(40px);
+    }
+    to {
+        opacity: 1;
+        transform: skewX(var(--skew-angle)) translateX(0);
+    }
+}
+
+.trax-disc-icon {
+    font-size: 1.65rem;
+    color: var(--fc-hyper-green);
+    animation: spin 3s linear infinite;
+}
+
+.trax-chyron-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    transform: skewX(var(--skew-inverse));
+}
+
+.trax-chyron-kicker {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    color: var(--fc-volt);
+}
+
+.trax-chyron-title {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    letter-spacing: 0.05em;
+    color: var(--fc-text-white);
+}
+
+.trax-chyron-artist {
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    color: var(--fc-text-secondary);
+}
+
+/* ==========================================================================
+   3. MAIN MENU HUB (#screen-hub)
    ========================================================================== */
 .hub-widescreen-grid {
     display: grid;
@@ -764,7 +945,6 @@ body {
     max-height: 680px;
 }
 
-/* Left Vertical Blade Navigation (EA FC 24/25 Iconic Style) */
 .hub-blade-nav {
     display: flex;
     flex-direction: column;
@@ -853,7 +1033,7 @@ body {
     transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
-/* Active / Focused EA FC Blade (Electric Hyper-Green Fill + Dark Text) */
+/* Active / Focused Blade (Electric Hyper-Green Fill + Dark Text) */
 .fc-blade:hover,
 .fc-blade:focus-visible,
 .fc-blade.active {
@@ -1278,6 +1458,7 @@ body {
     font-size: 0.72rem;
     font-weight: 900;
     line-height: 1;
+    flex-shrink: 0;
 }
 
 .key-a {
@@ -1543,7 +1724,7 @@ body {
     max-width: 660px;
 }
 
-/* EA FC ATT / MID / DEF Triad Rating Bars */
+/* Three-Column ATT / MID / DEF Rating Bars */
 .fc-triad-ratings {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -1973,6 +2154,121 @@ body {
     font-size: 0.68rem;
     letter-spacing: 0.14em;
     color: var(--fc-text-muted);
+}
+
+/* ==========================================================================
+   MOBILE & NARROW SCREEN ADAPTATION (< 960px) — ZERO OVERFLOW GUARANTEE
+   ========================================================================== */
+@media (max-width: 959px) {
+    .console-viewport {
+        padding: 14px 16px;
+        height: 100dvh;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .boot-top-bar,
+    .boot-bottom-bar {
+        font-size: 0.62rem;
+        letter-spacing: 0.08em;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .boot-build-tag {
+        display: none;
+    }
+
+    .fc-kinetic-emblem {
+        width: 136px;
+        height: 120px;
+    }
+
+    .fc-giant-letters {
+        font-size: 2.6rem;
+    }
+
+    .cover-avatar-frame {
+        width: 68px;
+        height: 68px;
+    }
+
+    .boot-center-stage {
+        gap: 14px;
+    }
+
+    .btn-press-start {
+        transform: none;
+        width: 100%;
+        padding: 12px 16px;
+        font-size: 0.95rem;
+        white-space: normal;
+        line-height: 1.25;
+    }
+
+    .btn-press-start:hover,
+    .btn-press-start:focus-visible {
+        transform: scale(1.01);
+    }
+
+    /* Mobile Gate Dialog — Zero Overflow */
+    .screen-mobile-gate {
+        align-items: center;
+        justify-content: center;
+    }
+
+    .fc-system-dialog {
+        max-width: 100%;
+    }
+
+    .fc-dialog-top-strip {
+        padding: 10px 14px;
+        font-size: 0.62rem;
+    }
+
+    .fc-dialog-body {
+        grid-template-columns: 1fr;
+        gap: 14px;
+        padding: 18px 16px;
+        text-align: center;
+    }
+
+    .fc-monitor-graphic {
+        width: 84px;
+        height: 52px;
+        font-size: 1.2rem;
+    }
+
+    .fc-dialog-title {
+        font-size: 1.5rem;
+    }
+
+    .fc-dialog-lead,
+    .fc-dialog-sub {
+        font-size: 0.84rem;
+        margin-bottom: 10px;
+    }
+
+    .fc-dialog-specs {
+        grid-template-columns: 1fr;
+        gap: 6px;
+        text-align: left;
+    }
+
+    .spec-chip {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 7px 10px;
+    }
+
+    .fc-dialog-footer {
+        padding: 12px 14px;
+    }
+
+    .mobile-gate-lock-pill {
+        font-size: 0.62rem;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {

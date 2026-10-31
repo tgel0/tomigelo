@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="color-scheme" content="dark">
     <meta name="theme-color" content="#06080c">
-    <meta name="description" content="Tomi Gelo — EA SPORTS FC inspired interactive portfolio. Explore Projects (Kick Off / Matches &amp; Teams) and Work (Manager Career Mode).">
+    <meta name="description" content="Tomi Gelo — Football video-game-inspired interactive portfolio. Explore Projects (Kick Off / Matches &amp; Teams) and Work (Manager Career Mode).">
     <meta name="author" content="Tomi Gelo">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://tomigelo.com/">
-    <title>EA SPORTS FC™ 26 — Tomi Gelo Portfolio Edition</title>
+    <title>TGFC 26 — Tomi Gelo Football Club Portfolio</title>
 
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -17,9 +17,9 @@
 
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://tomigelo.com/">
-    <meta property="og:site_name" content="Tomi Gelo FC 26">
-    <meta property="og:title" content="EA SPORTS FC™ 26 — Tomi Gelo Portfolio Edition">
-    <meta property="og:description" content="Step onto the pitch: An EA SPORTS FC video-game-inspired personal portfolio for Tomi Gelo.">
+    <meta property="og:site_name" content="TGFC 26">
+    <meta property="og:title" content="TGFC 26 — Tomi Gelo Football Club Portfolio">
+    <meta property="og:description" content="Step onto the pitch: A football video-game-inspired personal portfolio for Tomi Gelo.">
     <meta property="og:image" content="https://tomigelo.com/og-image.webp">
     <meta property="og:image:secure_url" content="https://tomigelo.com/og-image.webp">
     <meta property="og:image:width" content="1000">
@@ -28,15 +28,15 @@
     <meta property="og:locale" content="en">
 
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" content="EA SPORTS FC™ 26 — Tomi Gelo Portfolio Edition">
-    <meta name="twitter:description" content="Step onto the pitch: An EA SPORTS FC video-game-inspired personal portfolio for Tomi Gelo.">
+    <meta name="twitter:title" content="TGFC 26 — Tomi Gelo Football Club Portfolio">
+    <meta name="twitter:description" content="Step onto the pitch: A football video-game-inspired personal portfolio for Tomi Gelo.">
     <meta name="twitter:image" content="https://tomigelo.com/og-image.webp">
     <meta name="twitter:image:alt" content="Portrait of Tomi Gelo">
 
     <link rel="preconnect" href="https://plausible.io" crossorigin>
-    <link rel="stylesheet" href="styles.css?v=eafc1">
+    <link rel="stylesheet" href="styles.css?v=tgfc2">
     <script defer data-domain="tomigelo.com" src="https://plausible.io/js/plausible.js"></script>
-    <script defer src="script.js?v=eafc1"></script>
+    <script defer src="script.js?v=tgfc2"></script>
 
     <script type="application/ld+json">
     {
@@ -72,19 +72,19 @@
     <div id="console-viewport" class="console-viewport" data-active-screen="boot">
 
         <!-- =================================================================
-             1. BOOT & LOADING SCREEN (EA SPORTS FC INTRO + TITLE SPLASH)
+             1. BOOT & LOADING SCREEN (INTRO LOADER + TITLE SPLASH)
              ================================================================= -->
-        <section id="screen-boot" class="game-screen screen-boot active" aria-label="EA SPORTS FC Loading and Title Screen">
-            <!-- Top-left HyperMotion / Engine Watermark -->
+        <section id="screen-boot" class="game-screen screen-boot active" aria-label="TGFC 26 Loading and Title Screen">
+            <!-- Top-left Engine Watermark -->
             <div class="boot-top-bar">
-                <div class="hypermotion-badge">
+                <div class="hyperdrive-badge">
                     <span class="hm-icon">▲</span>
-                    <span class="hm-text">HYPERMOTION V // FROSTBITE WEB ENGINE</span>
+                    <span class="hm-text">HYPERDRIVE V // PITCH ENGINE</span>
                 </div>
-                <div class="boot-build-tag">BUILD 26.01.ITER1 // WIDESCREEN 16:9</div>
+                <div class="boot-build-tag">BUILD 26.02 // WIDESCREEN EDITION</div>
             </div>
 
-            <!-- Center Stage: Kinetic FC Triangle & Cover Athlete Card -->
+            <!-- Center Stage: Kinetic Triangle & Cover Athlete Card -->
             <div class="boot-center-stage">
                 <div class="fc-kinetic-emblem" id="boot-emblem">
                     <svg class="fc-triangle-svg" viewBox="0 0 240 210" aria-hidden="true">
@@ -100,7 +100,7 @@
                         <polygon class="tri-inner" points="120,36 204,182 36,182" fill="rgba(0, 255, 104, 0.06)" stroke="rgba(255,255,255,0.22)" stroke-width="1.5" />
                     </svg>
                     <div class="fc-emblem-typography">
-                        <span class="ea-eyebrow">EA SPORTS™</span>
+                        <span class="ea-eyebrow">TG SPORTS</span>
                         <div class="fc-giant-letters">FC<span class="fc-26-sup">26</span></div>
                     </div>
                 </div>
@@ -117,7 +117,7 @@
                 <!-- Phase A: Shader & Squad Sync Progress Bar -->
                 <div id="boot-loader-box" class="boot-loader-box" role="status" aria-live="polite">
                     <div class="boot-loader-header">
-                        <span id="boot-status-text" class="boot-status-text">INITIALIZING PERSONALITY ENGINE...</span>
+                        <span id="boot-status-text" class="boot-status-text">INITIALIZING PITCH ENGINE...</span>
                         <span id="boot-percent-text" class="boot-percent-text">0%</span>
                     </div>
                     <div class="boot-progress-track">
@@ -135,25 +135,25 @@
                         <span class="controller-key-badge key-a">A</span>
                         <span class="press-start-label">PRESS ANY BUTTON OR CLICK TO START</span>
                     </button>
-                    <div class="boot-start-hint">KEYBOARD / GAMEPAD / MOUSE SUPPORTED &bull; SYNTHESIZED UI AUDIO READY</div>
+                    <div class="boot-start-hint">STARTS STADIUM SOUNDTRACK &amp; MAIN MENU</div>
                 </div>
             </div>
 
             <!-- Bottom Legal / Version Strip -->
             <div class="boot-bottom-bar">
-                <span>© 2026 TOMI GELO FC &bull; INSPIRED BY EA SPORTS FC™ UI/UX</span>
-                <span class="boot-server-indicator"><span class="online-dot"></span> EA CONNECT: ONLINE (BERLIN_EU)</span>
+                <span>© 2026 TOMI GELO FC &bull; INTERACTIVE FOOTBALL PORTFOLIO</span>
+                <span class="boot-server-indicator"><span class="online-dot"></span> CLUB NETWORK: ONLINE (BERLIN_EU)</span>
             </div>
         </section>
 
         <!-- =================================================================
-             2. POST-LOADING SYSTEM DIALOG (DESKTOP-ONLY WIDESCREEN NOTICE)
+             2. MOBILE / NARROW VIEWPORT TERMINAL SCREEN (NO MENU ACCESS)
              ================================================================= -->
-        <div id="modal-desktop-notice" class="fc-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="notice-modal-title" hidden>
+        <section id="screen-mobile-gate" class="game-screen screen-mobile-gate" role="region" aria-labelledby="mobile-gate-title" hidden>
             <div class="fc-system-dialog">
                 <div class="fc-dialog-top-strip">
-                    <span class="fc-dialog-tag">▲ EA SPORTS FC™ SYSTEM NOTIFICATION // DISPLAY CHECK</span>
-                    <span class="fc-dialog-code">MSG_ID // WIDESCREEN_16_9</span>
+                    <span class="fc-dialog-tag">▲ SYSTEM DISPLAY CHECK</span>
+                    <span class="fc-dialog-code">16:9 WIDESCREEN REQUIRED</span>
                 </div>
                 <div class="fc-dialog-body">
                     <div class="fc-dialog-icon-col" aria-hidden="true">
@@ -162,28 +162,28 @@
                         </div>
                     </div>
                     <div class="fc-dialog-copy-col">
-                        <h2 id="notice-modal-title" class="fc-dialog-title">DESKTOP WIDESCREEN EXPERIENCE</h2>
+                        <h2 id="mobile-gate-title" class="fc-dialog-title">DESKTOP GAME ONLY — FOR NOW</h2>
                         <p class="fc-dialog-lead">
-                            Welcome to the <strong>Tomi Gelo FC 26</strong> interactive portfolio. To stay true to the console video game UI/UX, this experience is currently engineered exclusively for <strong>widescreen desktop displays</strong> (mobile versions are ignored for now).
+                            Thanks for kicking off <strong>TGFC 26</strong>! Because this portfolio is built as a full widescreen console football experience, mobile and narrow screens aren't supported yet.
+                        </p>
+                        <p class="fc-dialog-sub">
+                            Please open <strong>tomigelo.com</strong> on a desktop or laptop monitor to access the Main Menu, Soundtrack Radio, Kick-Off Projects, and Manager Career Mode.
                         </p>
                         <div class="fc-dialog-specs">
-                            <div class="spec-chip"><span>DISPLAY MODE</span><strong>16:9 FULLSCREEN CONSOLE</strong></div>
-                            <div class="spec-chip"><span>CONTROLS</span><strong>KEYBOARD / MOUSE / GAMEPAD</strong></div>
-                            <div class="spec-chip"><span>BUILD SCOPE</span><strong>ITERATION 1 (MENU + PLACEHOLDERS)</strong></div>
+                            <div class="spec-chip"><span>DISPLAY</span><strong>DESKTOP 16:9</strong></div>
+                            <div class="spec-chip"><span>AUDIO</span><strong>CLUB TRAX RADIO</strong></div>
+                            <div class="spec-chip"><span>STATUS</span><strong>LOCKED ON MOBILE</strong></div>
                         </div>
-                        <p id="narrow-screen-warning" class="narrow-screen-warning" hidden>
-                            ⚠ NARROW VIEWPORT DETECTED: Please open this preview on a desktop or laptop monitor (≥ 960px wide) for the intended widescreen layout.
-                        </p>
                     </div>
                 </div>
                 <div class="fc-dialog-footer">
-                    <button type="button" id="btn-dismiss-notice" class="fc-btn-primary">
-                        <span class="controller-key-badge key-a">A</span>
-                        <span>CONTINUE TO MAIN MENU</span>
-                    </button>
+                    <div class="mobile-gate-lock-pill">
+                        <span class="lock-dot" aria-hidden="true"></span>
+                        <span>MAIN MENU LOCKED ON MOBILE VIEWPORTS</span>
+                    </div>
                 </div>
             </div>
-        </div>
+        </section>
 
         <!-- =================================================================
              PERSISTENT TOP CONSOLE HUD (VISIBLE IN HUB, PROJECTS, WORK)
@@ -192,7 +192,7 @@
             <div class="hud-left">
                 <button type="button" id="hud-home-btn" class="hud-brand-badge" title="Return to Main Menu">
                     <span class="hud-fc-tri">▲</span>
-                    <span class="hud-fc-text">FC 26</span>
+                    <span class="hud-fc-text">TGFC 26</span>
                 </button>
                 <div class="hud-breadcrumb">
                     <span id="hud-mode-category" class="hud-mode-category">MAIN MENU</span>
@@ -202,9 +202,24 @@
             </div>
 
             <div class="hud-right">
-                <button type="button" id="btn-audio-toggle" class="hud-widget hud-audio-btn" aria-pressed="true" title="Toggle UI Sound Effects (Shortcut: M)">
+                <!-- TGFC TRAX SOUNDTRACK MINI CONTROLLER -->
+                <div class="hud-widget hud-trax-pill" id="hud-trax-widget">
+                    <div class="eq-bars" id="hud-eq-bars" aria-hidden="true">
+                        <span></span><span></span><span></span><span></span>
+                    </div>
+                    <div class="trax-meta">
+                        <span class="trax-label">TGFC TRAX</span>
+                        <strong id="hud-track-name" class="trax-song">NEON FLOODLIGHTS</strong>
+                    </div>
+                    <button type="button" id="btn-next-track" class="hud-mini-action" title="Next Soundtrack Song (Shortcut: N)">
+                        <span class="hud-key-mini">N</span>
+                        <span>NEXT ⏭</span>
+                    </button>
+                </div>
+
+                <button type="button" id="btn-audio-toggle" class="hud-widget hud-audio-btn" aria-pressed="true" title="Mute / Unmute All Audio (Shortcut: M)">
                     <span class="hud-key-mini">M</span>
-                    <span id="audio-status-label">SFX: ON</span>
+                    <span id="audio-status-label">AUDIO: ON</span>
                 </button>
 
                 <div class="hud-widget hud-season-xp" title="Season Progress">
@@ -224,12 +239,12 @@
         </header>
 
         <!-- =================================================================
-             3. EA SPORTS FC MAIN MENU HUB (LEFT BLADES + RIGHT SHOWCASE STAGE)
+             3. MAIN MENU HUB (LEFT BLADES + RIGHT SHOWCASE STAGE)
              ================================================================= -->
-        <main id="screen-hub" class="game-screen screen-hub" aria-label="EA SPORTS FC Main Menu" hidden>
+        <main id="screen-hub" class="game-screen screen-hub" aria-label="TGFC 26 Main Menu" hidden>
             <div class="hub-widescreen-grid">
 
-                <!-- LEFT COLUMN: ICONIC EA FC VERTICAL SKEWED BLADE MENU -->
+                <!-- LEFT COLUMN: ICONIC VERTICAL SKEWED BLADE MENU -->
                 <nav class="hub-blade-nav" aria-label="Main Game Modes">
                     <div class="blade-nav-eyebrow">SELECT GAME MODE</div>
 
@@ -256,11 +271,11 @@
                         </li>
                     </ul>
 
-                    <!-- Quick Live Ticker below blades (authentic EA FC Live Message strip) -->
+                    <!-- Quick Live Ticker below blades -->
                     <div class="hub-live-ticker">
-                        <div class="ticker-badge">LIVE EVENT</div>
+                        <div class="ticker-badge">DESKTOP WIDESCREEN BUILD</div>
                         <p id="hub-ticker-text" class="ticker-text">
-                            MATCHDAY READY: Select <strong>PROJECTS</strong> for Kick-Off Team Sheets or <strong>WORK</strong> for Manager Career Mode.
+                            MATCHDAY READY: Select <strong>PROJECTS</strong> for Kick-Off Team Sheets or <strong>WORK</strong> for Manager Career Mode. Press <strong>N</strong> to skip soundtrack tracks.
                         </p>
                     </div>
                 </nav>
@@ -275,7 +290,7 @@
                         </div>
 
                         <div class="billboard-top-row">
-                            <span class="billboard-mode-pill">EA FC REFERENCE // MATCHES &amp; TEAMS</span>
+                            <span class="billboard-mode-pill">MODE 01 // MATCHES &amp; TEAMS</span>
                             <span class="billboard-live-tag">★ 3 PLACEHOLDER CLUBS LOADED</span>
                         </div>
 
@@ -331,7 +346,7 @@
                         </div>
 
                         <div class="billboard-top-row">
-                            <span class="billboard-mode-pill pill-gold">EA FC REFERENCE // MANAGER CAREER MODE</span>
+                            <span class="billboard-mode-pill pill-gold">MODE 02 // MANAGER CAREER MODE</span>
                             <span class="billboard-live-tag">SEASON 2026/27 &bull; SAVE SLOT 01</span>
                         </div>
 
@@ -380,7 +395,7 @@
              4. MODE 01: PROJECTS — MATCHES & TEAMS (PLACEHOLDER ITERATION 1)
              ================================================================= -->
         <section id="screen-projects" class="game-screen screen-submode" aria-label="Projects: Kick Off and Team Sheets" hidden>
-            <!-- EA FC Bumper Sub-Navigation Bar (LB / RB) -->
+            <!-- Bumper Sub-Navigation Bar (LB / RB) -->
             <div class="fc-bumper-bar">
                 <button type="button" class="bumper-btn" id="projects-lb-btn" title="Previous Tab (Q or LB)">LB / Q</button>
                 <div class="bumper-tabs" role="tablist" aria-label="Projects Views">
@@ -438,7 +453,7 @@
                         </div>
                     </div>
 
-                    <!-- Center/Right Column: EA FC Club Rating & Match Preview Inspector -->
+                    <!-- Center/Right Column: Club Rating & Match Preview Inspector -->
                     <div class="kickoff-preview-panel">
                         <div class="panel-header-strip">
                             <span id="preview-club-league">LEAGUE 01 // AI &amp; ANALYTICS (PLACEHOLDER)</span>
@@ -461,7 +476,7 @@
                                 </div>
                             </div>
 
-                            <!-- Authentic EA FC ATT / MID / DEF Three-Column Rating Bar -->
+                            <!-- Three-Column ATT / MID / DEF Rating Bar -->
                             <div class="fc-triad-ratings">
                                 <div class="triad-stat-box">
                                     <span class="triad-label">ATT // FRONTEND &amp; UX</span>
@@ -522,22 +537,17 @@
                         </div>
                         <div class="tactical-pitch-svg-wrap">
                             <svg class="tactical-pitch-svg" viewBox="0 0 900 420" aria-label="4-3-3 Football Pitch Formation">
-                                <!-- Outer pitch boundary -->
                                 <rect x="20" y="20" width="860" height="380" fill="rgba(0, 255, 104, 0.03)" stroke="rgba(0, 255, 104, 0.35)" stroke-width="2" />
-                                <!-- Halfway line & center circle -->
                                 <line x1="450" y1="20" x2="450" y2="400" stroke="rgba(0, 255, 104, 0.28)" stroke-width="2" />
                                 <circle cx="450" cy="210" r="58" fill="none" stroke="rgba(0, 255, 104, 0.28)" stroke-width="2" />
-                                <!-- Penalty boxes -->
                                 <rect x="20" y="105" width="130" height="210" fill="none" stroke="rgba(0, 255, 104, 0.28)" stroke-width="2" />
                                 <rect x="750" y="105" width="130" height="210" fill="none" stroke="rgba(0, 255, 104, 0.28)" stroke-width="2" />
-                                <!-- Chemistry connection lines -->
                                 <line x1="220" y1="210" x2="450" y2="120" stroke="#00ff68" stroke-width="2" stroke-dasharray="6 4" opacity="0.6" />
                                 <line x1="220" y1="210" x2="450" y2="300" stroke="#00ff68" stroke-width="2" stroke-dasharray="6 4" opacity="0.6" />
                                 <line x1="450" y1="120" x2="700" y2="210" stroke="#00ff68" stroke-width="2" stroke-dasharray="6 4" opacity="0.6" />
                                 <line x1="450" y1="300" x2="700" y2="210" stroke="#00ff68" stroke-width="2" stroke-dasharray="6 4" opacity="0.6" />
                             </svg>
 
-                            <!-- Interactive Pitch Nodes -->
                             <div class="pitch-node" style="left: 24%; top: 50%;">
                                 <span class="node-ovr">90</span>
                                 <strong class="node-title">CORE INFRA</strong>
@@ -568,7 +578,6 @@
              5. MODE 02: WORK — MANAGER CAREER MODE (PLACEHOLDER ITERATION 1)
              ================================================================= -->
         <section id="screen-work" class="game-screen screen-submode" aria-label="Work: Manager Career Mode" hidden>
-            <!-- EA FC Career Mode Bumper Navigation Bar -->
             <div class="fc-bumper-bar">
                 <button type="button" class="bumper-btn" id="work-lb-btn" title="Previous Tab (Q or LB)">LB / Q</button>
                 <div class="bumper-tabs" role="tablist" aria-label="Manager Career Views">
@@ -646,7 +655,7 @@
                                     <span class="obj-priority">PRIORITY // BRAND EXPOSURE</span>
                                     <span class="obj-progress status-volt">COMPLETED ✓</span>
                                 </div>
-                                <strong>Placeholder Objective 03: Google Cloud Data Hero</strong>
+                                <strong>Placeholder Objective 03: Cloud Data Hero</strong>
                                 <p>Recognized in the Google Cloud Data Heroes interview series.</p>
                             </li>
                         </ul>
@@ -730,6 +739,18 @@
         </section>
 
         <!-- =================================================================
+             NOW PLAYING CHYRON TOAST (BOTTOM-RIGHT TRAX POPUP)
+             ================================================================= -->
+        <aside id="trax-chyron" class="trax-chyron" aria-live="polite" hidden>
+            <div class="trax-disc-icon" aria-hidden="true">◎</div>
+            <div class="trax-chyron-info">
+                <span class="trax-chyron-kicker">TGFC TRAX // NOW PLAYING</span>
+                <strong id="chyron-track-title" class="trax-chyron-title">NEON FLOODLIGHTS</strong>
+                <span id="chyron-track-artist" class="trax-chyron-artist">BERLIN INDIE CLUB &bull; 122 BPM</span>
+            </div>
+        </aside>
+
+        <!-- =================================================================
              PERSISTENT BOTTOM CONTROLLER LEGEND BAR
              ================================================================= -->
         <footer id="console-bottom-bar" class="console-bottom-bar" aria-label="Controller Prompts" hidden>
@@ -750,10 +771,14 @@
                     <span class="controller-key-badge key-dpad">Q / E</span>
                     <span class="prompt-label">SWITCH TAB (LB / RB)</span>
                 </div>
+                <button type="button" class="prompt-item" id="prompt-next-track-btn">
+                    <span class="controller-key-badge key-dpad">N</span>
+                    <span class="prompt-label">SKIP SONG</span>
+                </button>
             </div>
 
             <div class="controller-prompts-right">
-                <span class="console-build-watermark">EA SPORTS FC™ UI CONCEPT // ITERATION 1 PREVIEW</span>
+                <span class="console-build-watermark">TGFC 26 // WIDESCREEN DESKTOP EDITION</span>
             </div>
         </footer>
 
