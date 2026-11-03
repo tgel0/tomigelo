@@ -2167,170 +2167,6 @@ body {
     background: var(--fc-hyper-green);
 }
 
-/* Freelance Independent Entity Card (Dual Registration / Independent Circuit) */
-.freelance-entity-card {
-    background: linear-gradient(135deg, rgba(0, 229, 255, 0.08) 0%, rgba(10, 14, 22, 0.92) 100%);
-    border: 1px solid rgba(0, 229, 255, 0.35);
-    border-left: 4px solid var(--fc-cyan);
-    padding: 16px 20px;
-    margin-bottom: 18px;
-    position: relative;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
-}
-
-.freelance-entity-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 12px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid rgba(0, 229, 255, 0.15);
-    flex-wrap: wrap;
-}
-
-.freelance-analogy-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-family: var(--font-mono);
-    font-size: 0.68rem;
-    font-weight: 900;
-    letter-spacing: 0.12em;
-    color: #050b14;
-    background: var(--fc-cyan);
-    padding: 3px 10px;
-    transform: skewX(var(--skew-angle));
-}
-
-.freelance-analogy-badge .fa-icon {
-    font-size: 0.75rem;
-}
-
-.freelance-dates {
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    color: var(--fc-text-secondary);
-    letter-spacing: 0.08em;
-}
-
-.freelance-entity-content {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 24px;
-    align-items: center;
-}
-
-@media (max-width: 1100px) {
-    .freelance-entity-content {
-        grid-template-columns: 1fr;
-        gap: 14px;
-    }
-}
-
-.freelance-entity-title {
-    margin-bottom: 6px;
-}
-
-.f-entity-tag {
-    display: block;
-    font-family: var(--font-mono);
-    font-size: 0.62rem;
-    color: var(--fc-cyan);
-    letter-spacing: 0.14em;
-    font-weight: 800;
-    margin-bottom: 3px;
-}
-
-.f-entity-name {
-    margin: 0;
-    font-family: var(--font-display);
-    font-size: 1.35rem;
-    letter-spacing: 0.03em;
-    color: var(--fc-text-white);
-}
-
-.f-entity-desc {
-    margin: 6px 0 0;
-    font-size: 0.82rem;
-    line-height: 1.48;
-    color: var(--fc-text-secondary);
-    max-width: 720px;
-}
-
-.f-entity-desc strong {
-    color: var(--fc-text-white);
-}
-
-.freelance-chips-grid {
-    display: flex;
-    gap: 10px;
-    flex-shrink: 0;
-    flex-wrap: wrap;
-}
-
-.f-metric {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 8px 14px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid var(--fc-border-subtle);
-    min-width: 120px;
-}
-
-.f-metric-label {
-    font-family: var(--font-mono);
-    font-size: 0.58rem;
-    color: var(--fc-text-muted);
-    letter-spacing: 0.1em;
-    margin-bottom: 4px;
-}
-
-.f-metric-val {
-    font-family: var(--font-mono);
-    font-size: 0.76rem;
-    font-weight: 800;
-    color: var(--fc-text-white);
-    letter-spacing: 0.04em;
-}
-
-.f-metric-val.status-cyan {
-    color: var(--fc-cyan);
-}
-
-.f-metric-val.status-volt {
-    color: var(--fc-hyper-green);
-}
-
-/* Official Ledger Header Bar */
-.ledger-table-header-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 14px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid var(--fc-border-subtle);
-    border-bottom: none;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.ledger-table-title {
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    font-weight: 800;
-    color: var(--fc-text-white);
-    letter-spacing: 0.12em;
-}
-
-.ledger-table-sub {
-    font-family: var(--font-mono);
-    font-size: 0.64rem;
-    color: var(--fc-text-muted);
-    letter-spacing: 0.08em;
-}
-
 .fc-transfer-table {
     width: 100%;
     min-width: 820px;
@@ -2397,16 +2233,16 @@ body {
     background: rgba(255, 159, 67, 0.07) !important;
 }
 
-.row-career-reset {
-    background: rgba(245, 196, 81, 0.035);
-    border-left: 3px solid rgba(245, 196, 81, 0.55);
+.row-freelance-spell {
+    background: rgba(0, 229, 255, 0.035);
+    border-left: 3px solid rgba(0, 229, 255, 0.55);
 }
 
-.row-career-reset:hover {
-    background: rgba(245, 196, 81, 0.07) !important;
+.row-freelance-spell:hover {
+    background: rgba(0, 229, 255, 0.07) !important;
 }
 
-/* Timeline Hierarchy Indicator for Loan Spells */
+/* Timeline Hierarchy Indicator for Loan & Dual Spells */
 .loan-tree-indicator {
     display: inline-flex;
     align-items: center;
@@ -2421,6 +2257,12 @@ body {
     margin-right: 8px;
     letter-spacing: 0.08em;
     vertical-align: middle;
+}
+
+.freelance-tree-indicator {
+    color: var(--fc-cyan);
+    background: rgba(0, 229, 255, 0.14);
+    border-color: rgba(0, 229, 255, 0.4);
 }
 
 /* Identical font size for both FROM and TO club cells */
