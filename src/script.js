@@ -719,7 +719,13 @@ document.addEventListener('DOMContentLoaded', () => {
             promptBumpers.hidden = false;
         } else if (targetScreen === 'work') {
             hudCategory.textContent = 'WORK // CAREER MODE';
-            hudTitle.textContent = state.workTab === 'central' ? 'MANAGER CAREER CENTRAL' : 'CAREER CONTRACT HISTORY';
+            if (state.workTab === 'central') {
+                hudTitle.textContent = 'MANAGER CAREER CENTRAL';
+            } else if (state.workTab === 'transfers') {
+                hudTitle.textContent = 'CAREER TRANSFER LEDGER (7)';
+            } else {
+                hudTitle.textContent = 'TACTICS & PLAYSTYLES+';
+            }
             promptBackBtn.hidden = false;
             promptBumpers.hidden = false;
         }
@@ -816,9 +822,11 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ======================================================================
        9. WORK MODE: CAREER BUMPER TABS
        ====================================================================== */
+    const WORK_TABS = ['central', 'transfers', 'tactics'];
     const workTabBtns = Array.from(document.querySelectorAll('[data-work-tab]'));
     const workViewCentral = document.getElementById('work-view-central');
     const workViewTransfers = document.getElementById('work-view-transfers');
+    const workViewTactics = document.getElementById('work-view-tactics');
 
     function switchWorkTab(tabName) {
         audio.playTick();
@@ -828,9 +836,17 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.classList.toggle('active', isTarget);
             btn.setAttribute('aria-selected', isTarget ? 'true' : 'false');
         });
-        workViewCentral.hidden = tabName !== 'central';
-        workViewTransfers.hidden = tabName !== 'transfers';
-        hudTitle.textContent = tabName === 'central' ? 'MANAGER CAREER CENTRAL' : 'CAREER CONTRACT HISTORY';
+        if (workViewCentral) workViewCentral.hidden = tabName !== 'central';
+        if (workViewTransfers) workViewTransfers.hidden = tabName !== 'transfers';
+        if (workViewTactics) workViewTactics.hidden = tabName !== 'tactics';
+
+        if (tabName === 'central') {
+            hudTitle.textContent = 'MANAGER CAREER CENTRAL';
+        } else if (tabName === 'transfers') {
+            hudTitle.textContent = 'CAREER TRANSFER LEDGER (7)';
+        } else if (tabName === 'tactics') {
+            hudTitle.textContent = 'TACTICS & PLAYSTYLES+';
+        }
     }
 
     workTabBtns.forEach(btn => {
@@ -838,10 +854,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('work-lb-btn')?.addEventListener('click', () => {
-        switchWorkTab(state.workTab === 'central' ? 'transfers' : 'central');
+        const currIdx = WORK_TABS.indexOf(state.workTab);
+        const prevIdx = (currIdx - 1 + WORK_TABS.length) % WORK_TABS.length;
+        switchWorkTab(WORK_TABS[prevIdx]);
     });
     document.getElementById('work-rb-btn')?.addEventListener('click', () => {
-        switchWorkTab(state.workTab === 'central' ? 'transfers' : 'central');
+        const currIdx = WORK_TABS.indexOf(state.workTab);
+        const nextIdx = (currIdx + 1) % WORK_TABS.length;
+        switchWorkTab(WORK_TABS[nextIdx]);
     });
 
     /* ======================================================================
@@ -962,9 +982,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.preventDefault();
                 audio.playBack();
                 navigateToScreen('hub');
-            } else if (e.key === 'q' || e.key === 'Q' || e.key === 'e' || e.key === 'E') {
+            } else if (e.key === 'q' || e.key === 'Q') {
                 e.preventDefault();
-                switchWorkTab(state.workTab === 'central' ? 'transfers' : 'central');
+                const currIdx = WORK_TABS.indexOf(state.workTab);
+                const prevIdx = (currIdx - 1 + WORK_TABS.length) % WORK_TABS.length;
+                switchWorkTab(WORK_TABS[prevIdx]);
+            } else if (e.key === 'e' || e.key === 'E') {
+                e.preventDefault();
+                const currIdx = WORK_TABS.indexOf(state.workTab);
+                const nextIdx = (currIdx + 1) % WORK_TABS.length;
+                switchWorkTab(WORK_TABS[nextIdx]);
             }
         }
     });

@@ -2142,20 +2142,52 @@ body {
 
 /* Career Transfers Table */
 .transfer-table-wrap {
-    padding: 20px;
+    padding: 16px 20px;
+    overflow-y: auto;
+    overflow-x: auto;
+    flex: 1;
+    max-height: calc(100vh - 210px);
+}
+
+.transfer-table-wrap::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.transfer-table-wrap::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.transfer-table-wrap::-webkit-scrollbar-thumb {
+    background: rgba(0, 255, 104, 0.35);
+    border-radius: 3px;
+}
+
+.transfer-table-wrap::-webkit-scrollbar-thumb:hover {
+    background: var(--fc-hyper-green);
 }
 
 .fc-transfer-table {
     width: 100%;
+    min-width: 820px;
     border-collapse: collapse;
     font-size: 0.88rem;
+}
+
+.fc-transfer-table tr {
+    transition: background-color 0.15s ease;
+}
+
+.fc-transfer-table tr:hover {
+    background: rgba(255, 255, 255, 0.035);
 }
 
 .fc-transfer-table th,
 .fc-transfer-table td {
     text-align: left;
-    padding: 14px 16px;
+    padding: 12px 14px;
     border-bottom: 1px solid var(--fc-border-subtle);
+    vertical-align: middle;
 }
 
 .fc-transfer-table th {
@@ -2163,29 +2195,314 @@ body {
     font-size: 0.7rem;
     color: var(--fc-text-muted);
     letter-spacing: 0.12em;
+    background: rgba(10, 14, 22, 0.95);
+    position: sticky;
+    top: 0;
+    z-index: 2;
 }
 
 .mono-cell {
     font-family: var(--font-mono);
     color: var(--fc-cyan);
+    font-size: 0.76rem;
+    white-space: nowrap;
+}
+
+.mono-cell strong {
+    display: block;
+    color: var(--fc-text-white);
+    font-size: 0.8rem;
+    margin-bottom: 2px;
+}
+
+.row-current-contract {
+    background: rgba(0, 255, 104, 0.05);
+    border-left: 3px solid var(--fc-hyper-green);
+}
+
+.row-current-contract:hover {
+    background: rgba(0, 255, 104, 0.08) !important;
+}
+
+.club-cell-tag {
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    color: var(--fc-text-secondary);
+}
+
+.club-to-strong {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    letter-spacing: 0.03em;
+    color: var(--fc-text-white);
+}
+
+.club-highlight {
+    color: var(--fc-hyper-green);
+    text-shadow: 0 0 12px rgba(0, 255, 104, 0.35);
+}
+
+.role-pill {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--fc-text-white);
+    background: rgba(255, 255, 255, 0.06);
+    padding: 3px 8px;
+    border: 1px solid var(--fc-border-subtle);
+    white-space: nowrap;
+}
+
+.deal-pill {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    font-weight: 800;
+    padding: 3px 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+}
+
+.deal-pill-volt {
+    background: rgba(0, 255, 104, 0.16);
+    color: var(--fc-hyper-green);
+    border: 1px solid rgba(0, 255, 104, 0.35);
+}
+
+.deal-pill-cyan {
+    background: rgba(0, 229, 255, 0.14);
+    color: var(--fc-cyan);
+    border: 1px solid rgba(0, 229, 255, 0.35);
+}
+
+.deal-pill-gold {
+    background: rgba(245, 196, 81, 0.16);
+    color: var(--fc-gold);
+    border: 1px solid rgba(245, 196, 81, 0.35);
+}
+
+.deal-pill-loan {
+    background: rgba(255, 159, 67, 0.16);
+    color: #ff9f43;
+    border: 1px solid rgba(255, 159, 67, 0.35);
+}
+
+.note-cell {
     font-size: 0.78rem;
+    line-height: 1.45;
+    color: var(--fc-text-secondary);
+    max-width: 380px;
 }
 
 .status-pill-volt {
+    display: inline-block;
     font-family: var(--font-mono);
-    font-size: 0.68rem;
+    font-size: 0.62rem;
     font-weight: 800;
-    padding: 3px 8px;
+    padding: 2px 6px;
     background: rgba(0, 255, 104, 0.15);
     color: var(--fc-hyper-green);
+    border: 1px solid rgba(0, 255, 104, 0.3);
 }
 
 .status-pill-muted {
+    display: inline-block;
     font-family: var(--font-mono);
-    font-size: 0.68rem;
-    padding: 3px 8px;
+    font-size: 0.62rem;
+    padding: 2px 6px;
     background: rgba(255, 255, 255, 0.06);
     color: var(--fc-text-secondary);
+}
+
+/* Objectives Featured & Press Links */
+.objective-featured {
+    border-left-color: var(--fc-gold);
+    background: rgba(245, 196, 81, 0.04);
+}
+
+.status-gold {
+    color: var(--fc-gold);
+}
+
+.obj-press-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--fc-gold);
+    text-decoration: none;
+    margin-top: 6px;
+    padding: 4px 10px;
+    background: rgba(245, 196, 81, 0.1);
+    border: 1px solid rgba(245, 196, 81, 0.3);
+    transition: all 0.15s ease;
+}
+
+.obj-press-link:hover {
+    background: rgba(245, 196, 81, 0.22);
+    color: #fff;
+    border-color: var(--fc-gold);
+}
+
+/* Sponsorship Card & Sister System */
+.mini-channel-sister {
+    border-color: rgba(0, 229, 255, 0.35);
+    color: var(--fc-cyan);
+}
+
+.mini-channel-sister:hover {
+    border-color: var(--fc-cyan);
+    background: rgba(0, 229, 255, 0.12);
+}
+
+.career-support-card {
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: rgba(0, 255, 104, 0.05);
+    border: 1px solid rgba(0, 255, 104, 0.2);
+}
+
+.support-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.support-badge {
+    font-family: var(--font-mono);
+    font-size: 0.64rem;
+    font-weight: 800;
+    color: var(--fc-hyper-green);
+    letter-spacing: 0.1em;
+}
+
+.support-status {
+    font-family: var(--font-mono);
+    font-size: 0.64rem;
+    color: var(--fc-volt);
+}
+
+.support-text {
+    font-size: 0.76rem;
+    line-height: 1.35;
+    color: var(--fc-text-secondary);
+    margin: 0 0 8px;
+}
+
+.support-btn {
+    padding: 6px 12px;
+    font-size: 0.88rem;
+}
+
+/* PlayStyles+ & Tactics View */
+.playstyle-cards-stack {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.playstyle-card {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--fc-border-subtle);
+    border-left: 3px solid var(--fc-gold);
+}
+
+.playstyle-badge-gold {
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--fc-gold), #ff9f43);
+    color: var(--fc-text-dark);
+    padding: 4px 8px;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    flex-shrink: 0;
+    min-width: 38px;
+    text-align: center;
+}
+
+.playstyle-title {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    letter-spacing: 0.04em;
+    margin-bottom: 3px;
+    color: var(--fc-text-white);
+}
+
+.playstyle-info p {
+    margin: 0;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    color: var(--fc-text-secondary);
+}
+
+.attr-bars-list {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    flex: 1;
+    justify-content: space-around;
+}
+
+.attr-bar-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.attr-bar-header {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+}
+
+.attr-bar-name {
+    color: var(--fc-text-secondary);
+}
+
+.attr-bar-val {
+    font-weight: 800;
+    color: var(--fc-hyper-green);
+}
+
+.attr-bar-track {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.attr-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--fc-hyper-green), var(--fc-volt));
+}
+
+.tactics-philosophy-quote {
+    padding: 14px;
+    background: rgba(0, 255, 104, 0.06);
+    border-left: 3px solid var(--fc-hyper-green);
+    margin-bottom: 14px;
+    font-style: italic;
+    font-size: 0.86rem;
+    line-height: 1.5;
+    color: var(--fc-text-white);
+}
+
+.tactics-philosophy-quote blockquote {
+    margin: 0;
 }
 
 /* ==========================================================================
