@@ -722,7 +722,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (state.workTab === 'central') {
                 hudTitle.textContent = 'MANAGER CAREER CENTRAL';
             } else if (state.workTab === 'transfers') {
-                hudTitle.textContent = 'CAREER TRANSFER LEDGER (8)';
+                hudTitle.textContent = 'CAREER TRANSFER LEDGER (10)';
             } else {
                 hudTitle.textContent = 'TACTICS & PLAYSTYLES+';
             }
@@ -843,7 +843,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (tabName === 'central') {
             hudTitle.textContent = 'MANAGER CAREER CENTRAL';
         } else if (tabName === 'transfers') {
-            hudTitle.textContent = 'CAREER TRANSFER LEDGER (8)';
+            hudTitle.textContent = 'CAREER TRANSFER LEDGER (10)';
         } else if (tabName === 'tactics') {
             hudTitle.textContent = 'TACTICS & PLAYSTYLES+';
         }
