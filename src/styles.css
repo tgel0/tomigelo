@@ -2169,7 +2169,7 @@ body {
 
 .fc-transfer-table {
     width: 100%;
-    min-width: 820px;
+    min-width: 680px;
     border-collapse: collapse;
     font-size: 0.88rem;
 }
@@ -2398,7 +2398,10 @@ a.club-name-cell:hover .club-link-arrow,
     border: 1px solid rgba(255, 159, 67, 0.35);
 }
 
+/* Note column hidden for now (markup preserved for future reinstatement) */
+.col-note,
 .note-cell {
+    display: none;
     font-size: 0.78rem;
     line-height: 1.45;
     color: var(--fc-text-secondary);
