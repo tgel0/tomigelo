@@ -2292,6 +2292,46 @@ body {
     flex-shrink: 0;
 }
 
+/* External Club Links */
+a.club-name-cell,
+.club-name-cell.club-link {
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.15s ease, text-shadow 0.15s ease;
+}
+
+a.club-name-cell:hover,
+.club-name-cell.club-link:hover {
+    color: var(--fc-hyper-green);
+    text-shadow: 0 0 10px rgba(0, 255, 104, 0.45);
+}
+
+.club-link-arrow {
+    font-size: 0.68rem;
+    color: var(--fc-hyper-green);
+    opacity: 0.55;
+    margin-left: 3px;
+    display: inline-block;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+a.club-name-cell:hover .club-link-arrow,
+.club-name-cell.club-link:hover .club-link-arrow {
+    opacity: 1;
+    transform: translate(1px, -1px);
+}
+
+.career-fact-link {
+    color: var(--fc-hyper-green);
+    text-decoration: none;
+    transition: color 0.15s ease, text-shadow 0.15s ease;
+}
+
+.career-fact-link:hover {
+    color: #fff;
+    text-shadow: 0 0 8px var(--fc-hyper-green);
+}
+
 .club-cell-tag {
     font-family: var(--font-display);
     font-size: 1.05rem;
