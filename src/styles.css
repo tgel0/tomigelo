@@ -1650,6 +1650,12 @@ body {
     overflow: hidden;
 }
 
+.career-transfers-panel {
+    flex: 1;
+    min-height: 0;
+    height: 100%;
+}
+
 .panel-header-strip {
     display: flex;
     justify-content: space-between;
@@ -2142,11 +2148,12 @@ body {
 
 /* Career Transfers Table & Freelance Entity */
 .transfer-table-wrap {
-    padding: 16px 20px;
+    padding: 12px 18px;
     overflow-y: auto;
     overflow-x: auto;
     flex: 1;
-    max-height: calc(100vh - 210px);
+    min-height: 0;
+    height: 100%;
 }
 
 .transfer-table-wrap::-webkit-scrollbar {
@@ -2185,7 +2192,7 @@ body {
 .fc-transfer-table th,
 .fc-transfer-table td {
     text-align: left;
-    padding: 12px 14px;
+    padding: 9px 12px;
     border-bottom: 1px solid var(--fc-border-subtle);
     vertical-align: middle;
 }
@@ -2401,11 +2408,7 @@ a.club-name-cell:hover .club-link-arrow,
 /* Note column hidden for now (markup preserved for future reinstatement) */
 .col-note,
 .note-cell {
-    display: none;
-    font-size: 0.78rem;
-    line-height: 1.45;
-    color: var(--fc-text-secondary);
-    max-width: 380px;
+    display: none !important;
 }
 
 .status-pill-volt {
@@ -2803,6 +2806,48 @@ a.club-name-cell:hover .club-link-arrow,
 
     .mobile-gate-lock-pill {
         font-size: 0.62rem;
+    }
+}
+
+/* Compact viewport heights (small laptops, horizontal phones, compact windows) */
+@media (max-height: 800px) {
+    .console-viewport {
+        padding: 10px 24px;
+    }
+
+    .screen-submode {
+        gap: 10px;
+    }
+
+    .fc-bumper-bar {
+        padding: 5px 12px;
+    }
+
+    .bumper-tab {
+        font-size: 0.95rem;
+        padding: 5px 14px;
+    }
+
+    .panel-header-strip {
+        padding: 8px 14px;
+    }
+
+    .transfer-table-wrap {
+        padding: 8px 14px;
+    }
+
+    .fc-transfer-table th,
+    .fc-transfer-table td {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+    }
+
+    .club-name-cell {
+        font-size: 0.92rem;
+    }
+
+    .mono-cell {
+        font-size: 0.72rem;
     }
 }
 
