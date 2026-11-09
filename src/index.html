@@ -33,8 +33,8 @@
     <meta name="twitter:image" content="https://tomigelo.com/og-image.webp">
     <meta name="twitter:image:alt" content="Portrait of Tomi Gelo">
 
-    <link rel="stylesheet" href="styles.css?v=tgfc9">
-    <script defer src="script.js?v=tgfc9"></script>
+    <link rel="stylesheet" href="styles.css?v=tgfc10">
+    <script defer src="script.js?v=tgfc10"></script>
 
     <script type="application/ld+json">
     {
@@ -635,41 +635,85 @@
                         </div>
                     </div>
 
-                    <!-- Column 2: Board Objectives & Press Wire -->
-                    <div class="career-panel">
+                    <!-- Column 2: Press Wire & Breaking Headlines -->
+                    <div class="career-panel career-panel-news">
                         <div class="panel-header-strip">
-                            <span>BOARD OBJECTIVES &amp; PRESS // SEASON 26/27</span>
-                            <span>3 ACTIVE</span>
+                            <span>PRESS WIRE // BREAKING HEADLINES</span>
+                            <span class="status-live-wire"><span class="pulse-dot"></span> 3 STORIES</span>
                         </div>
-                        <ul class="career-objectives-list">
-                            <li class="objective-item">
-                                <div class="obj-top">
-                                    <span class="obj-priority">CLUB CONTRACT // CRITICAL</span>
-                                    <span class="obj-progress status-volt">IN PROGRESS</span>
+                        <div class="career-news-feed" tabindex="0" role="region" aria-label="Press Wire Stories">
+                            <!-- Story 1: Google Cloud Blog Interview (Featured Lead Story) -->
+                            <a href="https://cloud.google.com/blog/products/data-analytics/google-cloud-data-hero-series-meet-tomi" target="_blank" rel="noopener noreferrer" class="fc-news-card fc-news-card-featured">
+                                <div class="news-media-wrap">
+                                    <img src="press-google-cloud.jpg" alt="Google Cloud Blog Feature: Data Heroes Series interview with Tomi Gelo" class="news-img" width="1376" height="768" loading="lazy">
+                                    <div class="news-media-overlay"></div>
+                                    <div class="news-tag-cluster">
+                                        <span class="news-badge news-badge-feat">★ FEATURED STORY</span>
+                                        <span class="news-date-tag">JULY 2022</span>
+                                    </div>
                                 </div>
-                                <strong>Cloud Data Architecture @ MediaMarktSaturn</strong>
-                                <p>Architecting and scaling enterprise BigQuery data pipelines, cloud ETL, and data analytics ecosystems.</p>
-                            </li>
-                            <li class="objective-item">
-                                <div class="obj-top">
-                                    <span class="obj-priority">LABS OBJECTIVE // HIGH</span>
-                                    <span class="obj-progress status-volt">IN PROGRESS</span>
+                                <div class="news-content">
+                                    <div class="news-meta-strip">
+                                        <span class="news-source">GOOGLE CLOUD BLOG // DATA HEROES</span>
+                                        <span class="news-badge-pill status-gold">OFFICIAL PRESS</span>
+                                    </div>
+                                    <h3 class="news-headline">Got interviewed for the Google Cloud Blog</h3>
+                                    <p class="news-excerpt">Featured interview in the official Google Cloud Data Heroes Series, spotlighting modern BigQuery pipeline patterns, the Not So BigQuery newsletter, and community engineering craft.</p>
+                                    <div class="news-footer">
+                                        <span>READ FULL INTERVIEW</span>
+                                        <span class="news-cta-arrow">↗</span>
+                                    </div>
                                 </div>
-                                <strong>Autonomous AI Systems &amp; Product Craft</strong>
-                                <p>Engineering LLM agents, real-time financial market aggregators, and zero-build web products.</p>
-                            </li>
-                            <li class="objective-item objective-featured">
-                                <div class="obj-top">
-                                    <span class="obj-priority">FEATURED PRESS // GOOGLE CLOUD</span>
-                                    <span class="obj-progress status-gold">OFFICIAL STORY ★</span>
+                            </a>
+
+                            <!-- Story 2: MediaMarktSaturn Enterprise Transfer -->
+                            <a href="https://careers.mediamarktsaturn.com/" target="_blank" rel="noopener noreferrer" class="fc-news-card">
+                                <div class="news-media-wrap">
+                                    <img src="press-mms-transfer.jpg" alt="MediaMarktSaturn confirms Lead Data Engineer contract signing" class="news-img" width="1376" height="768" loading="lazy">
+                                    <div class="news-media-overlay"></div>
+                                    <div class="news-tag-cluster">
+                                        <span class="news-badge news-badge-transfer">TRANSFER DESK</span>
+                                        <span class="news-date-tag">OCT 2022 – PRESENT</span>
+                                    </div>
                                 </div>
-                                <strong>Google Cloud Data Hero Series Interview</strong>
-                                <p>Featured interview on the Google Cloud Blog highlighting data analytics, engineering impact, and community craft.</p>
-                                <a href="https://cloud.google.com/blog/products/data-analytics/google-cloud-data-hero-series-meet-tomi" target="_blank" rel="noopener noreferrer" class="obj-press-link">
-                                    <span>Read Interview on Google Cloud Blog</span> ↗
-                                </a>
-                            </li>
-                        </ul>
+                                <div class="news-content">
+                                    <div class="news-meta-strip">
+                                        <span class="news-source">MEDIAMARKTSATURN // CLUB DESK</span>
+                                        <span class="news-badge-pill status-volt">CONFIRMED MOVE</span>
+                                    </div>
+                                    <h3 class="news-headline">MediaMarktSaturn seals deal for Lead Data Engineer</h3>
+                                    <p class="news-excerpt">Enterprise contract locked in. Orchestrating central cloud data platforms, high-throughput BigQuery warehouses, and retail analytics engines across Berlin &amp; Ingolstadt.</p>
+                                    <div class="news-footer">
+                                        <span>VISIT CLUB CAREERS PORTAL</span>
+                                        <span class="news-cta-arrow">↗</span>
+                                    </div>
+                                </div>
+                            </a>
+
+                            <!-- Story 3: Autonomous AI Systems & Labs Dispatch -->
+                            <a href="https://os.tomigelo.com" target="_blank" rel="noopener noreferrer" class="fc-news-card">
+                                <div class="news-media-wrap">
+                                    <img src="press-ai-labs.jpg" alt="Independent Labs unveil autonomous AI systems and tactical circuits" class="news-img" width="1376" height="768" loading="lazy">
+                                    <div class="news-media-overlay"></div>
+                                    <div class="news-tag-cluster">
+                                        <span class="news-badge news-badge-labs">TACTICAL LABS</span>
+                                        <span class="news-date-tag">SEASON 26/27</span>
+                                    </div>
+                                </div>
+                                <div class="news-content">
+                                    <div class="news-meta-strip">
+                                        <span class="news-source">LABS DISPATCH // R&amp;D WIRE</span>
+                                        <span class="news-badge-pill status-cyan">ACTIVE OPS</span>
+                                    </div>
+                                    <h3 class="news-headline">Independent Labs deploy autonomous AI agents &amp; zero-build circuits</h3>
+                                    <p class="news-excerpt">Season 26 tactical expansion: Deploying multi-agent LLM systems, real-time financial market aggregators, and zero-latency web applications.</p>
+                                    <div class="news-footer">
+                                        <span>LAUNCH SISTER TERMINAL (OS.TOMIGELO.COM)</span>
+                                        <span class="news-cta-arrow">↗</span>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
                     </div>
 
                     <!-- Column 3: Manager Office, Touchline Comms & Sponsorship -->

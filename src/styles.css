@@ -2048,7 +2048,264 @@ body {
     font-weight: 700;
 }
 
-/* Objectives List */
+/* ==========================================================================
+   WORK: PRESS WIRE & BREAKING NEWSFEED
+   ========================================================================== */
+.career-panel-news {
+    min-height: 0;
+}
+
+.career-news-feed {
+    list-style: none;
+    margin: 0;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 255, 104, 0.3) rgba(255, 255, 255, 0.02);
+}
+
+.career-news-feed::-webkit-scrollbar {
+    width: 6px;
+}
+
+.career-news-feed::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.career-news-feed::-webkit-scrollbar-thumb {
+    background: rgba(0, 255, 104, 0.35);
+    border-radius: 3px;
+}
+
+.career-news-feed::-webkit-scrollbar-thumb:hover {
+    background: var(--fc-hyper-green);
+}
+
+.status-live-wire {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--fc-hyper-green);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 800;
+}
+
+.pulse-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #ff3344;
+    box-shadow: 0 0 8px #ff3344;
+    animation: fcPulseGlow 1.8s infinite ease-in-out;
+}
+
+@keyframes fcPulseGlow {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.35; transform: scale(0.8); }
+}
+
+.fc-news-card {
+    text-decoration: none;
+    color: var(--fc-text-white);
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid var(--fc-border-subtle);
+    border-left: 3px solid var(--fc-border-subtle);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+}
+
+.fc-news-card:hover,
+.fc-news-card:focus-visible {
+    outline: none;
+    background: rgba(0, 255, 104, 0.04);
+    border-color: rgba(0, 255, 104, 0.45);
+    border-left-color: var(--fc-hyper-green);
+    box-shadow: 0 4px 22px rgba(0, 255, 104, 0.12);
+    transform: translateY(-2px);
+}
+
+.fc-news-card-featured {
+    border-left-color: var(--fc-gold);
+    background: linear-gradient(180deg, rgba(255, 184, 0, 0.035) 0%, rgba(255, 255, 255, 0.02) 100%);
+}
+
+.fc-news-card-featured:hover,
+.fc-news-card-featured:focus-visible {
+    border-color: rgba(255, 184, 0, 0.55);
+    border-left-color: var(--fc-gold);
+    box-shadow: 0 4px 24px rgba(255, 184, 0, 0.16);
+    background: rgba(255, 184, 0, 0.06);
+}
+
+.news-media-wrap {
+    position: relative;
+    width: 100%;
+    height: 135px;
+    overflow: hidden;
+    background: #03060a;
+}
+
+.news-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    transition: transform 0.28s ease, filter 0.28s ease;
+}
+
+.fc-news-card:hover .news-img,
+.fc-news-card:focus-visible .news-img {
+    transform: scale(1.04);
+    filter: brightness(1.06);
+}
+
+.news-media-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.08) 0%, rgba(5, 8, 14, 0.45) 55%, rgba(5, 8, 14, 0.94) 100%);
+}
+
+.news-tag-cluster {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.news-badge {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    font-weight: 900;
+    padding: 3px 8px;
+    letter-spacing: 0.08em;
+    clip-path: polygon(0 0, 100% 0, 93% 100%, 0 100%);
+    color: #03060a;
+}
+
+.news-badge-feat {
+    background: var(--fc-gold);
+}
+
+.news-badge-transfer {
+    background: var(--fc-hyper-green);
+}
+
+.news-badge-labs {
+    background: var(--fc-cyan);
+}
+
+.news-date-tag {
+    background: rgba(0, 0, 0, 0.82);
+    color: var(--fc-text-secondary);
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    font-weight: 700;
+    padding: 3px 7px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    backdrop-filter: blur(4px);
+    letter-spacing: 0.08em;
+}
+
+.news-content {
+    padding: 12px 14px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.news-meta-strip {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+}
+
+.news-source {
+    color: var(--fc-text-muted);
+}
+
+.news-badge-pill {
+    padding: 1px 6px;
+    font-size: 0.56rem;
+    font-weight: 800;
+    border: 1px solid currentColor;
+    border-radius: 2px;
+}
+
+.news-headline {
+    margin: 2px 0 0;
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    letter-spacing: 0.03em;
+    line-height: 1.18;
+    color: var(--fc-text-white);
+    transition: color 0.15s ease;
+}
+
+.fc-news-card:hover .news-headline,
+.fc-news-card:focus-visible .news-headline {
+    color: var(--fc-hyper-green);
+}
+
+.fc-news-card-featured:hover .news-headline,
+.fc-news-card-featured:focus-visible .news-headline {
+    color: var(--fc-gold);
+}
+
+.news-excerpt {
+    margin: 0;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    color: var(--fc-text-secondary);
+}
+
+.news-footer {
+    margin-top: 6px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--fc-hyper-green);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+}
+
+.fc-news-card-featured .news-footer {
+    color: var(--fc-gold);
+}
+
+.news-cta-arrow {
+    transition: transform 0.16s ease;
+}
+
+.fc-news-card:hover .news-cta-arrow,
+.fc-news-card:focus-visible .news-cta-arrow {
+    transform: translateX(4px);
+}
+
+/* Objectives List (Legacy fallback) */
 .career-objectives-list {
     list-style: none;
     margin: 0;
@@ -2848,6 +3105,30 @@ a.club-name-cell:hover .club-link-arrow,
 
     .mono-cell {
         font-size: 0.72rem;
+    }
+
+    /* Compact Newsfeed overrides */
+    .career-news-feed {
+        padding: 10px;
+        gap: 10px;
+    }
+
+    .news-media-wrap {
+        height: 105px;
+    }
+
+    .news-content {
+        padding: 10px 12px;
+        gap: 4px;
+    }
+
+    .news-headline {
+        font-size: 1.02rem;
+    }
+
+    .news-excerpt {
+        font-size: 0.72rem;
+        line-height: 1.35;
     }
 }
 
