@@ -2207,7 +2207,8 @@ body {
     background: var(--fc-hyper-green);
 }
 
-.news-badge-labs {
+.news-badge-labs,
+.news-badge-milestone {
     background: var(--fc-cyan);
 }
 
@@ -2744,17 +2745,7 @@ a.club-name-cell:hover .club-link-arrow,
     border-color: var(--fc-gold);
 }
 
-/* Sponsorship Card & Sister System */
-.mini-channel-sister {
-    border-color: rgba(0, 229, 255, 0.35);
-    color: var(--fc-cyan);
-}
-
-.mini-channel-sister:hover {
-    border-color: var(--fc-cyan);
-    background: rgba(0, 229, 255, 0.12);
-}
-
+/* Sponsorship Card */
 .career-support-card {
     margin-top: 10px;
     padding: 10px 12px;
