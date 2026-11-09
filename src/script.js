@@ -4,6 +4,15 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Load Plausible Analytics only in production (exclude preview channels and staging)
+    if (window.location.hostname === 'tomigelo.com' || window.location.hostname === 'www.tomigelo.com') {
+        const plausibleScript = document.createElement('script');
+        plausibleScript.defer = true;
+        plausibleScript.setAttribute('data-domain', 'tomigelo.com');
+        plausibleScript.src = 'https://plausible.io/js/plausible.js';
+        document.head.appendChild(plausibleScript);
+    }
+
     const DESKTOP_MIN_WIDTH = 960;
 
     /* ======================================================================
