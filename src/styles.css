@@ -1982,6 +1982,73 @@ body {
     border: 2px solid var(--fc-hyper-green);
 }
 
+.career-mgr-meta {
+    flex: 1;
+    min-width: 0;
+}
+
+.mgr-badge-strip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 3px;
+}
+
+.fc-card-nation-cluster {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.fc-card-nation-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 7px;
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.12) 0%, rgba(20, 24, 32, 0.92) 100%);
+    border: 1px solid rgba(255, 215, 0, 0.45);
+    border-radius: 3px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.fc-card-nation-pill:hover {
+    border-color: var(--fc-gold);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.25);
+}
+
+.fc-card-nation-pill.mini {
+    padding: 1px 5px;
+    gap: 4px;
+}
+
+.fc-nation-flag-svg {
+    display: block;
+    border-radius: 1px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    flex-shrink: 0;
+}
+
+.fc-nation-code {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    color: var(--fc-gold);
+}
+
+.fc-card-nation-pill.mini .fc-nation-code {
+    font-size: 0.58rem;
+}
+
+.dossier-nat-dd {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
 .career-mgr-badge {
     font-family: var(--font-mono);
     font-size: 0.65rem;
@@ -2000,8 +2067,108 @@ body {
 
 .career-mgr-sub {
     margin: 0;
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     color: var(--fc-text-secondary);
+}
+
+/* Backroom Staff & Dugout Trio Card */
+.backroom-staff-card {
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid var(--fc-border-subtle);
+    border-left: 3px solid var(--fc-hyper-green);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    margin: 8px 0;
+    transition: border-color 0.18s ease, background 0.18s ease;
+}
+
+.backroom-staff-card:hover {
+    border-color: rgba(0, 255, 104, 0.45);
+    background: rgba(0, 255, 104, 0.03);
+}
+
+.backroom-staff-media {
+    position: relative;
+    width: 100%;
+    height: 112px;
+    overflow: hidden;
+    background: #03060a;
+}
+
+.backroom-staff-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 25%;
+    display: block;
+    transition: transform 0.25s ease;
+}
+
+.backroom-staff-card:hover .backroom-staff-img {
+    transform: scale(1.03);
+}
+
+.backroom-staff-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.05) 0%, rgba(5, 8, 14, 0.45) 55%, rgba(5, 8, 14, 0.94) 100%);
+}
+
+.backroom-staff-badge {
+    position: absolute;
+    bottom: 8px;
+    left: 10px;
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    color: #03060a;
+    background: var(--fc-hyper-green);
+    padding: 2px 7px;
+    clip-path: polygon(0 0, 100% 0, 93% 100%, 0 100%);
+    z-index: 2;
+}
+
+.backroom-staff-details {
+    padding: 9px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.staff-role-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.staff-icon {
+    font-size: 1.1rem;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.staff-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+}
+
+.staff-title {
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    color: var(--fc-text-white);
+}
+
+.staff-desc {
+    font-size: 0.72rem;
+    color: var(--fc-text-muted);
+    line-height: 1.25;
 }
 
 .board-confidence-meter {
@@ -3096,6 +3263,45 @@ a.club-name-cell:hover .club-link-arrow,
 
     .mono-cell {
         font-size: 0.72rem;
+    }
+
+    /* Compact Manager Dossier & Backroom Staff overrides */
+    .career-mgr-img {
+        width: 64px;
+        height: 64px;
+    }
+
+    .career-mgr-name {
+        font-size: 1.85rem;
+    }
+
+    .backroom-staff-card {
+        margin: 6px 0;
+    }
+
+    .backroom-staff-media {
+        height: 80px;
+    }
+
+    .backroom-staff-details {
+        padding: 6px 10px;
+        gap: 4px;
+    }
+
+    .staff-title {
+        font-size: 0.62rem;
+    }
+
+    .staff-desc {
+        font-size: 0.66rem;
+    }
+
+    .career-quick-facts {
+        gap: 6px;
+    }
+
+    .career-quick-facts div {
+        padding-bottom: 5px;
     }
 
     /* Compact Newsfeed overrides */
