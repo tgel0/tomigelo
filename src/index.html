@@ -33,8 +33,10 @@
     <meta name="twitter:image" content="https://tomigelo.com/og-image.webp">
     <meta name="twitter:image:alt" content="Portrait of Tomi Gelo">
 
-    <link rel="stylesheet" href="styles.css?v=tgfc13">
-    <script defer src="script.js?v=tgfc13"></script>
+    <link rel="stylesheet" href="styles.css?v=tgfc18">
+    <script defer src="script.js?v=tgfc18"></script>
+    <script defer src="three.min.js?v=tgfc18"></script>
+    <script defer src="eafc-trio-3d.js?v=tgfc18"></script>
 
     <script type="application/ld+json">
     {
@@ -601,88 +603,52 @@
             <div id="work-view-central" class="submode-view active">
                 <div class="career-bento-grid">
 
-                    <!-- Column 1: Manager Dossier & Backroom Staff -->
+                    <!-- Column 1: Manager & Squad Bio 3D Match Pitch Stage -->
                     <div class="career-panel career-panel-manager">
                         <div class="panel-header-strip">
-                            <span>MANAGER DOSSIER</span>
+                            <span>MANAGER &amp; SQUAD BIO // 3D PITCH</span>
                             <span class="status-volt">SEASON 26/27</span>
                         </div>
-                        <div class="career-mgr-card">
-                            <div class="career-mgr-top">
-                                <img src="avatar.webp?v=3" alt="Manager Tomi Gelo" class="career-mgr-img" width="84" height="84">
-                                <div class="career-mgr-meta">
-                                    <div class="mgr-badge-strip">
+                        <div class="career-mgr-card career-mgr-stage-layout">
+                            <!-- Real-Time 60fps WebGL Skeletal 3D Match Pitch Stage -->
+                            <div class="fc-trio-stage" id="fc-trio-stage" role="region" aria-label="Interactive 3D EAFC Match Pitch Showcase: Click any player (Junior Tactician, Manager Tomi Gelo, or Assistant Gaffer dog) to switch active player cursor and trigger celebration">
+                                <!-- Hidden source texture for WebGL skeletal mesh (also serves as instant progressive fallback) -->
+                                <img src="career-dugout-trio.jpg?v=tgfc18" alt="EAFC 3D match pitch lineup: 1-year-old son (Junior Tactician), Tomi Gelo (Data & AI Engineer), and 7-year-old black schnauzer-poodle (Assistant Gaffer) in full TGFC kits" class="fc-trio-stage-img" id="fc-trio-source-img" width="1376" height="768">
+                                <!-- 60fps WebGL Skeletal Mesh & Lighting Canvas -->
+                                <canvas id="fc-trio-webgl-canvas" class="fc-trio-webgl-canvas" aria-hidden="true"></canvas>
+                                <!-- 60fps 3D Perspective Pitch Rings, Cursors & Particles Overlay Canvas -->
+                                <canvas id="fc-trio-hud-canvas" class="fc-trio-hud-canvas" aria-hidden="true"></canvas>
+
+                                <!-- Stage Top HUD: Engine Status & Interactive Celebration Trigger -->
+                                <div class="fc-stage-hud-top">
+                                    <span class="fc-stage-engine-pill">
+                                        <span class="fc-engine-dot" aria-hidden="true"></span>
+                                        3D ENGINE // DRAG ORBIT &bull; CLICK PLAYER
+                                    </span>
+                                    <button type="button" class="fc-stage-celebrate-btn" id="fc-stage-celebrate-btn" title="Trigger Full Squad 3D Goal Celebration">
+                                        ⚽ CELEBRATE
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Body Below Stage: Manager Identity Bar + Interactive Trio Callouts + Dossier Telemetry -->
+                            <div class="career-mgr-dossier-body">
+                                <div class="fc-mgr-identity-bar">
+                                    <div class="fc-mgr-id-left">
+                                        <h2 class="career-mgr-name">TOMI GELO</h2>
                                         <span class="career-mgr-badge">DATA &amp; AI ENGINEER</span>
-                                        <div class="fc-card-nation-cluster" aria-label="Dual Nationality: Germany and Croatia">
-                                            <span class="fc-card-nation-pill" title="Germany (GER)">
-                                                <svg class="fc-nation-flag-svg" viewBox="0 0 18 12" width="16" height="11" aria-hidden="true">
-                                                    <rect width="18" height="4" y="0" fill="#000000"/>
-                                                    <rect width="18" height="4" y="4" fill="#DD0000"/>
-                                                    <rect width="18" height="4" y="8" fill="#FFCE00"/>
-                                                </svg>
-                                                <span class="fc-nation-code">GER</span>
-                                            </span>
-                                            <span class="fc-card-nation-pill" title="Croatia (CRO)">
-                                                <svg class="fc-nation-flag-svg" viewBox="0 0 18 12" width="16" height="11" aria-hidden="true">
-                                                    <rect width="18" height="4" y="0" fill="#FF0000"/>
-                                                    <rect width="18" height="4" y="4" fill="#FFFFFF"/>
-                                                    <rect width="18" height="4" y="8" fill="#002B7F"/>
-                                                    <rect x="7" y="3" width="4" height="5" rx="0.5" fill="#FFFFFF" stroke="#002B7F" stroke-width="0.5"/>
-                                                    <rect x="7" y="3" width="2" height="2.5" fill="#FF0000"/>
-                                                    <rect x="9" y="5.5" width="2" height="2.5" fill="#FF0000"/>
-                                                </svg>
-                                                <span class="fc-nation-code">CRO</span>
-                                            </span>
-                                        </div>
                                     </div>
-                                    <h2 class="career-mgr-name">TOMI GELO</h2>
-                                    <p class="career-mgr-sub">🇩🇪 Germany &bull; 🇭🇷 Croatia &bull; Berlin, DE</p>
-                                </div>
-                            </div>
-
-                            <!-- Backroom Staff: Dugout 3D Render & Assistants -->
-                            <div class="backroom-staff-card">
-                                <div class="backroom-staff-media">
-                                    <img src="career-dugout-trio.jpg" alt="3D character render: Tomi Gelo with his 7-year-old dog and 1-year-old son in the dugout" class="backroom-staff-img" width="1376" height="768" loading="lazy">
-                                    <div class="backroom-staff-overlay"></div>
-                                    <div class="backroom-staff-badge">BACKROOM STAFF // DUGOUT TRIO</div>
-                                </div>
-                                <div class="backroom-staff-details">
-                                    <div class="staff-role-row">
-                                        <span class="staff-icon">🐾</span>
-                                        <div class="staff-text">
-                                            <span class="staff-title">ASSISTANT GAFFER (7 Y/O DOG)</span>
-                                            <span class="staff-desc">Chief Morale Officer &amp; Touchline Anchor</span>
-                                        </div>
-                                    </div>
-                                    <div class="staff-role-row">
-                                        <span class="staff-icon">👶</span>
-                                        <div class="staff-text">
-                                            <span class="staff-title">JUNIOR TACTICIAN (1 Y/O SON)</span>
-                                            <span class="staff-desc">Head of Chaos, Sleep Rotation &amp; Academy Prospect</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <dl class="career-quick-facts">
-                                <div><dt>CURRENT CLUB</dt><dd><a href="https://careers.mediamarktsaturn.com/" target="_blank" rel="noopener noreferrer" class="career-fact-link">MediaMarktSaturn ↗</a></dd></div>
-                                <div><dt>CONTRACT</dt><dd>Oct 2022 – Present (Full-time)</dd></div>
-                                <div><dt>TACTICAL VISION</dt><dd>Tiki-Data &amp; Cloud Pipelines</dd></div>
-                                <div><dt>TOUCHLINE BASE</dt><dd>Berlin / Remote / Ingolstadt</dd></div>
-                                <div>
-                                    <dt>NATIONALITY</dt>
-                                    <dd class="dossier-nat-dd">
-                                        <span class="fc-card-nation-pill mini" title="Germany">
-                                            <svg class="fc-nation-flag-svg" viewBox="0 0 18 12" width="14" height="9" aria-hidden="true">
+                                    <div class="fc-card-nation-cluster" aria-label="Dual Nationality: Germany and Croatia">
+                                        <span class="fc-card-nation-pill" title="Germany (GER)">
+                                            <svg class="fc-nation-flag-svg" viewBox="0 0 18 12" width="16" height="11" aria-hidden="true">
                                                 <rect width="18" height="4" y="0" fill="#000000"/>
                                                 <rect width="18" height="4" y="4" fill="#DD0000"/>
                                                 <rect width="18" height="4" y="8" fill="#FFCE00"/>
                                             </svg>
                                             <span class="fc-nation-code">GER</span>
                                         </span>
-                                        <span class="fc-card-nation-pill mini" title="Croatia">
-                                            <svg class="fc-nation-flag-svg" viewBox="0 0 18 12" width="14" height="9" aria-hidden="true">
+                                        <span class="fc-card-nation-pill" title="Croatia (CRO)">
+                                            <svg class="fc-nation-flag-svg" viewBox="0 0 18 12" width="16" height="11" aria-hidden="true">
                                                 <rect width="18" height="4" y="0" fill="#FF0000"/>
                                                 <rect width="18" height="4" y="4" fill="#FFFFFF"/>
                                                 <rect width="18" height="4" y="8" fill="#002B7F"/>
@@ -692,9 +658,35 @@
                                             </svg>
                                             <span class="fc-nation-code">CRO</span>
                                         </span>
-                                    </dd>
+                                    </div>
                                 </div>
-                            </dl>
+
+                                <div class="fc-trio-roster-grid" aria-label="Touchline Assistants in 3D Stage">
+                                    <button type="button" class="fc-roster-callout" data-trio-actor="son">
+                                        <div class="fc-callout-header">
+                                            <span class="fc-callout-pos">👶 LEFT // 1 Y/O SON</span>
+                                            <span class="fc-callout-ovr">OVR 99</span>
+                                        </div>
+                                        <strong class="fc-callout-role">JUNIOR TACTICIAN</strong>
+                                        <span class="fc-callout-desc">Head of Chaos &amp; Academy Prospect</span>
+                                    </button>
+                                    <button type="button" class="fc-roster-callout" data-trio-actor="dog">
+                                        <div class="fc-callout-header">
+                                            <span class="fc-callout-pos">🐾 RIGHT // 7 Y/O DOG</span>
+                                            <span class="fc-callout-ovr">OVR 99</span>
+                                        </div>
+                                        <strong class="fc-callout-role">ASSISTANT GAFFER</strong>
+                                        <span class="fc-callout-desc">Chief Morale &amp; Touchline Anchor</span>
+                                    </button>
+                                </div>
+
+                                <dl class="career-quick-facts">
+                                    <div><dt>CURRENT CLUB</dt><dd><a href="https://careers.mediamarktsaturn.com/" target="_blank" rel="noopener noreferrer" class="career-fact-link">MediaMarktSaturn ↗</a></dd></div>
+                                    <div><dt>CONTRACT</dt><dd>Oct 2022 – Present (Full-time)</dd></div>
+                                    <div><dt>TACTICAL VISION</dt><dd>Tiki-Data &amp; Cloud Pipelines</dd></div>
+                                    <div><dt>TOUCHLINE BASE</dt><dd>Berlin / Remote / Ingolstadt</dd></div>
+                                </dl>
+                            </div>
                         </div>
                     </div>
 

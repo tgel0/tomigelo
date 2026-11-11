@@ -1004,4 +1004,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+
+    // Expose SFX hook for Three.js 3D Match Pitch Engine
+    window.tgfcPlaySelectSfx = () => audio.playSelect();
 });
