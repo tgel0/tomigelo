@@ -91,6 +91,35 @@
         fillLight.position.set(0, 1.6, 3.2);
         scene.add(fillLight);
 
+        /**
+         * Injects EA Sports FC Frostbite-style dual-color grazing Fresnel rim lighting:
+         * - Left silhouette edge (-X view normal) glows Neon Volt (#00FF68)
+         * - Right silhouette edge (+X view normal) glows Stadium Cyan (#00E5FF)
+         * Essential for separating the jet-black Schnoodle's curls and player silhouettes.
+         */
+        function applyEafcRimShader(material, opts) {
+            const rimIntensity = (opts && opts.rimIntensity !== undefined) ? opts.rimIntensity : 0.45;
+            const rimPower = (opts && opts.rimPower !== undefined) ? opts.rimPower : 2.6;
+
+            material.onBeforeCompile = function (shader) {
+                shader.fragmentShader = shader.fragmentShader.replace(
+                    '#include <dithering_fragment>',
+                    `
+                    vec3 viewDir = normalize(vViewPosition);
+                    float fresnel = pow(1.0 - clamp( abs(dot(normal, viewDir)), 0.0, 1.0 ), ${rimPower.toFixed(2)});
+                    vec3 voltRim = vec3(0.0, 1.0, 0.408);
+                    vec3 cyanRim = vec3(0.0, 0.898, 1.0);
+                    float sideBlend = smoothstep(-0.35, 0.35, normal.x);
+                    vec3 rimGlow = mix(voltRim, cyanRim, sideBlend) * fresnel * ${rimIntensity.toFixed(3)};
+                    gl_FragColor.rgb += rimGlow;
+                    #include <dithering_fragment>
+                    `
+                );
+            };
+            material.needsUpdate = true;
+            return material;
+        }
+
         // =====================================================================
         // 3. PROCEDURAL CANVAS TEXTURES (Pitch Turf, Jersey Crest, Ball Panels)
         // =====================================================================
@@ -233,6 +262,236 @@
             return tex;
         }
 
+        function createFaceTexture(opts) {
+            const isToddler = Boolean(opts && opts.isToddler);
+            const c = document.createElement('canvas');
+            c.width = 512;
+            c.height = 512;
+            const ctx = c.getContext('2d');
+
+            // 1. Base Subsurface Skin Tone
+            const baseSkin = isToddler ? '#f6ccb0' : '#ecc0a0';
+            ctx.fillStyle = baseSkin;
+            ctx.fillRect(0, 0, 512, 512);
+
+            // Subtle cranial crown & neck ambient occlusion gradient
+            const vertGrad = ctx.createLinearGradient(0, 0, 0, 512);
+            vertGrad.addColorStop(0.0, 'rgba(20, 14, 12, 0.18)');
+            vertGrad.addColorStop(0.22, 'rgba(255, 220, 200, 0.06)');
+            vertGrad.addColorStop(0.75, 'rgba(0, 0, 0, 0.0)');
+            vertGrad.addColorStop(1.0, 'rgba(35, 18, 14, 0.28)');
+            ctx.fillStyle = vertGrad;
+            ctx.fillRect(0, 0, 512, 512);
+
+            // 2. Subsurface Cheek & Nose Warmth / Blush
+            const blushY = isToddler ? 275 : 265;
+            const blushSpanX = isToddler ? 44 : 50;
+            const blushR = isToddler ? 38 : 34;
+
+            [-1, 1].forEach((side) => {
+                const bx = 256 + side * blushSpanX;
+                const blushG = ctx.createRadialGradient(bx, blushY, 2, bx, blushY, blushR);
+                blushG.addColorStop(0.0, isToddler ? 'rgba(240, 115, 115, 0.38)' : 'rgba(215, 110, 95, 0.26)');
+                blushG.addColorStop(0.65, isToddler ? 'rgba(240, 125, 115, 0.18)' : 'rgba(215, 120, 100, 0.12)');
+                blushG.addColorStop(1.0, 'rgba(240, 125, 115, 0.0)');
+                ctx.fillStyle = blushG;
+                ctx.beginPath();
+                ctx.arc(bx, blushY, blushR, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // 3. Dad's Neat Dark Stubble Beard Pattern & Mustache Shadow
+            if (!isToddler) {
+                ctx.save();
+                // Subtle jawline/chin shadow
+                const jawGrad = ctx.createRadialGradient(256, 350, 20, 256, 350, 85);
+                jawGrad.addColorStop(0.0, 'rgba(18, 20, 26, 0.40)');
+                jawGrad.addColorStop(0.7, 'rgba(24, 26, 34, 0.22)');
+                jawGrad.addColorStop(1.0, 'rgba(30, 32, 40, 0.0)');
+                ctx.fillStyle = jawGrad;
+                ctx.beginPath();
+                ctx.ellipse(256, 342, 72, 64, 0, 0, Math.PI);
+                ctx.fill();
+
+                // Mustache shadow arch above upper lip
+                ctx.strokeStyle = 'rgba(22, 24, 30, 0.36)';
+                ctx.lineWidth = 10;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(228, 314);
+                ctx.quadraticCurveTo(256, 302, 284, 314);
+                ctx.stroke();
+
+                // Fine procedural hair follicle stippling across jaw & chin
+                ctx.fillStyle = 'rgba(18, 20, 26, 0.28)';
+                for (let i = 0; i < 420; i++) {
+                    const a = (i * 1.6180339) * Math.PI * 2;
+                    const r = Math.sqrt(i / 420) * 64;
+                    const sx = 256 + Math.cos(a) * r * 1.05;
+                    const sy = 336 + Math.sin(a) * r * 0.72;
+                    if (sy > 296 && sy < 395) {
+                        ctx.fillRect(sx, sy, 1.5, 2.2);
+                    }
+                }
+                ctx.restore();
+            }
+
+            // 4. Multi-Layered Eyes (Socket AO, Sclera, Iris, Pupil, Dual Catchlights, Eyelids)
+            const eyeY = isToddler ? 248 : 232;
+            const eyeSpanX = isToddler ? 33 : 31;
+            const eyeRx = isToddler ? 15 : 13.5;
+            const eyeRy = isToddler ? 13.5 : 10.5;
+
+            [-1, 1].forEach((side) => {
+                const ex = 256 + side * eyeSpanX;
+
+                // Eye socket soft shadow
+                const sockG = ctx.createRadialGradient(ex, eyeY, 4, ex, eyeY, eyeRx * 1.6);
+                sockG.addColorStop(0, 'rgba(95, 55, 42, 0.22)');
+                sockG.addColorStop(1, 'rgba(95, 55, 42, 0)');
+                ctx.fillStyle = sockG;
+                ctx.beginPath();
+                ctx.arc(ex, eyeY, eyeRx * 1.6, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Sclera
+                ctx.fillStyle = '#f8fafc';
+                ctx.beginPath();
+                ctx.ellipse(ex, eyeY, eyeRx, eyeRy, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Iris (warm dark brown/hazel)
+                const irisR = isToddler ? 8.8 : 7.4;
+                const irisG = ctx.createRadialGradient(ex, eyeY, 1, ex, eyeY, irisR);
+                irisG.addColorStop(0.0, isToddler ? '#4a2c16' : '#331d10');
+                irisG.addColorStop(0.7, isToddler ? '#6e4425' : '#4d2e1c');
+                irisG.addColorStop(1.0, isToddler ? '#2a170b' : '#1c1008');
+                ctx.fillStyle = irisG;
+                ctx.beginPath();
+                ctx.arc(ex, eyeY, irisR, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Pupil
+                ctx.fillStyle = '#06080d';
+                ctx.beginPath();
+                ctx.arc(ex, eyeY, irisR * 0.48, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Primary & secondary specular catchlights
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(ex + 2.6, eyeY - 2.6, isToddler ? 2.6 : 2.1, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(ex - 2.2, eyeY + 2.2, 1.1, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Upper lash line / eyelid crease
+                ctx.strokeStyle = isToddler ? '#3a2518' : '#14171f';
+                ctx.lineWidth = isToddler ? 2.8 : 3.2;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.arc(ex, eyeY + 1, eyeRx, Math.PI * 1.08, Math.PI * 1.92);
+                ctx.stroke();
+
+                // Tapered Eyebrow
+                ctx.strokeStyle = isToddler ? '#6e4726' : '#12151d';
+                ctx.lineWidth = isToddler ? 4.5 : 6.2;
+                ctx.beginPath();
+                ctx.moveTo(ex - side * (eyeRx + 3), eyeY - eyeRy - (isToddler ? 7 : 6));
+                ctx.quadraticCurveTo(
+                    ex,
+                    eyeY - eyeRy - (isToddler ? 13 : 11),
+                    ex + side * (eyeRx + 4),
+                    eyeY - eyeRy - (isToddler ? 5 : 4)
+                );
+                ctx.stroke();
+            });
+
+            // 5. Shaded Nose Contour & Nostrils
+            const noseBottomY = isToddler ? 282 : 278;
+            ctx.strokeStyle = 'rgba(130, 75, 58, 0.35)';
+            ctx.lineWidth = 2.4;
+            ctx.beginPath();
+            ctx.arc(256, noseBottomY, isToddler ? 8 : 9.5, 0.15 * Math.PI, 0.85 * Math.PI);
+            ctx.stroke();
+
+            // 6. Confident Smile with Teeth Highlight
+            const mouthY = isToddler ? 312 : 320;
+            const mouthW = isToddler ? 22 : 25;
+            ctx.fillStyle = '#7a2828';
+            ctx.beginPath();
+            ctx.arc(256, mouthY, mouthW, 0.05 * Math.PI, 0.95 * Math.PI, false);
+            ctx.closePath();
+            ctx.fill();
+
+            // Upper teeth strip
+            ctx.fillStyle = '#f4f6fa';
+            ctx.beginPath();
+            ctx.arc(256, mouthY, mouthW * 0.84, 0.12 * Math.PI, 0.88 * Math.PI, false);
+            ctx.closePath();
+            ctx.fill();
+
+            const tex = new THREE.CanvasTexture(c);
+            tex.encoding = THREE.sRGBEncoding;
+            return tex;
+        }
+
+        function createJerseyBumpTexture() {
+            const c = document.createElement('canvas');
+            c.width = 512;
+            c.height = 512;
+            const ctx = c.getContext('2d');
+
+            ctx.fillStyle = '#808080';
+            ctx.fillRect(0, 0, 512, 512);
+
+            // 1. Micro Dri-FIT honeycomb breathable knit pattern
+            ctx.fillStyle = '#969696';
+            for (let y = 0; y < 512; y += 6) {
+                const offset = (y / 6) % 2 === 0 ? 0 : 3;
+                for (let x = offset; x < 512; x += 6) {
+                    ctx.fillRect(x, y, 2, 2);
+                }
+            }
+
+            // 2. Diagonal cloth tension creases across chest
+            ctx.strokeStyle = '#686868';
+            ctx.lineWidth = 4;
+            for (let cy = 120; cy < 420; cy += 45) {
+                ctx.beginPath();
+                ctx.moveTo(140, cy);
+                ctx.quadraticCurveTo(256, cy + 18, 372, cy);
+                ctx.stroke();
+            }
+
+            const tex = new THREE.CanvasTexture(c);
+            tex.encoding = THREE.sRGBEncoding;
+            return tex;
+        }
+
+        const sharedJerseyBumpTex = createJerseyBumpTexture();
+
+        /**
+         * Creates an organic anatomical limb or torso segment via SplineCurve + LatheGeometry.
+         * Expects radiiFromTopToBottom = [topRadius, upperMid, lowerMid, bottomRadius].
+         * Automatically builds bottom-to-top so normals face outward and top is at y = 0
+         * (extending downward to y = -length, matching existing bone pivots!).
+         */
+        function createAnatomicalSegmentGeo(radiiTopToBot, length, radialSegs = 20) {
+            const n = radiiTopToBot.length;
+            const pts = [];
+            // Build from bottom (y = -length) to top (y = 0) so y is ascending
+            for (let i = 0; i < n; i++) {
+                const t = i / (n - 1); // 0 at bottom, 1 at top
+                const r = radiiTopToBot[n - 1 - i];
+                const y = -length * (1 - t);
+                pts.push(new THREE.Vector2(Math.max(0.001, r), y));
+            }
+            const curve = new THREE.SplineCurve(pts);
+            return new THREE.LatheGeometry(curve.getPoints(20), radialSegs, Math.PI, Math.PI * 2);
+        }
+
         // =====================================================================
         // 4. 3D STADIUM PITCH, GOALPOSTS & FLOODLIGHT TOWERS
         // =====================================================================
@@ -337,11 +596,23 @@
         // 6. BUILD ARTICULATED 3D FOOTBALL PLAYER RIG (DAD & 1-YEAR-OLD SON)
         // =====================================================================
         const skinMatDad = new THREE.MeshStandardMaterial({ color: 0xf0c2a2, roughness: 0.52, metalness: 0.04 });
+        applyEafcRimShader(skinMatDad, { rimIntensity: 0.32, rimPower: 2.6 });
+
         const skinMatSon = new THREE.MeshStandardMaterial({ color: 0xf6ccb0, roughness: 0.48, metalness: 0.02 });
+        applyEafcRimShader(skinMatSon, { rimIntensity: 0.30, rimPower: 2.6 });
+
         const hairMatBlack = new THREE.MeshStandardMaterial({ color: 0x111318, roughness: 0.65 });
+        applyEafcRimShader(hairMatBlack, { rimIntensity: 0.38, rimPower: 2.4 });
+
         const hairMatLightBrown = new THREE.MeshStandardMaterial({ color: 0x8b5e38, roughness: 0.55 });
+        applyEafcRimShader(hairMatLightBrown, { rimIntensity: 0.35, rimPower: 2.4 });
+
         const shortsMat = new THREE.MeshStandardMaterial({ color: 0x12161f, roughness: 0.6 });
+        applyEafcRimShader(shortsMat, { rimIntensity: 0.36, rimPower: 2.5 });
+
         const sockMat = new THREE.MeshStandardMaterial({ color: 0x141923, roughness: 0.6 });
+        applyEafcRimShader(sockMat, { rimIntensity: 0.36, rimPower: 2.5 });
+
         const voltMat = new THREE.MeshStandardMaterial({
             color: 0x00ff68,
             emissive: 0x00ff68,
@@ -349,6 +620,7 @@
             roughness: 0.35
         });
         const bootMat = new THREE.MeshStandardMaterial({ color: 0x0c0f14, roughness: 0.3, metalness: 0.25 });
+        applyEafcRimShader(bootMat, { rimIntensity: 0.40, rimPower: 2.5 });
         const eyeWhiteMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
         const pupilMat = new THREE.MeshBasicMaterial({ color: 0x161920 });
         const smileMat = new THREE.MeshBasicMaterial({ color: 0x9e4747 });
@@ -382,20 +654,37 @@
             torso.position.y = 0.06;
             pelvis.add(torso);
 
-            const jerseyMat = new THREE.MeshStandardMaterial({
-                map: createJerseyTexture(numberStr),
-                roughness: 0.55,
-                metalness: 0.08
-            });
-
             const torsoHeight = isToddler ? 0.34 : 0.48;
             const torsoTopR = isToddler ? 0.165 : 0.195;
-            const torsoBotR = isToddler ? 0.145 : 0.155;
-            const torsoMesh = new THREE.Mesh(
-                new THREE.CylinderGeometry(torsoTopR, torsoBotR, torsoHeight, 20),
-                jerseyMat
-            );
-            torsoMesh.position.y = torsoHeight / 2;
+
+            // Sculpted V-Taper Torso with LatheGeometry
+            const torsoPts = isToddler
+                ? [
+                    new THREE.Vector2(0.145, 0.0),
+                    new THREE.Vector2(0.150, torsoHeight * 0.35),
+                    new THREE.Vector2(0.162, torsoHeight * 0.75),
+                    new THREE.Vector2(0.165, torsoHeight)
+                ]
+                : [
+                    new THREE.Vector2(0.155, 0.0), // hem
+                    new THREE.Vector2(0.160, torsoHeight * 0.28), // waist taper
+                    new THREE.Vector2(0.185, torsoHeight * 0.70), // chest volume
+                    new THREE.Vector2(0.195, torsoHeight) // broad athletic shoulders
+                ];
+            const torsoCurve = new THREE.SplineCurve(torsoPts);
+            const torsoGeo = new THREE.LatheGeometry(torsoCurve.getPoints(24), 24, Math.PI, Math.PI * 2);
+            torsoGeo.scale(1.0, 1.0, 0.88); // subtle front-to-back flatter chest/ribcage
+
+            const jerseyMat = new THREE.MeshStandardMaterial({
+                map: createJerseyTexture(numberStr),
+                bumpMap: sharedJerseyBumpTex,
+                bumpScale: 0.007,
+                roughness: 0.44,
+                metalness: 0.10
+            });
+            applyEafcRimShader(jerseyMat, { rimIntensity: 0.42 });
+
+            const torsoMesh = new THREE.Mesh(torsoGeo, jerseyMat);
             torsoMesh.castShadow = true;
             torso.add(torsoMesh);
 
@@ -424,64 +713,60 @@
             headGroup.position.y = 0.055;
             neckGroup.add(headGroup);
 
-            const headR = isToddler ? 0.155 : 0.138;
-            const headMesh = new THREE.Mesh(
-                new THREE.SphereGeometry(headR, 24, 24),
-                skinMat
-            );
-            headMesh.scale.set(0.92, isToddler ? 1.02 : 1.12, 0.95);
-            headMesh.position.y = headR * 0.9;
+            const headFaceMat = new THREE.MeshStandardMaterial({
+                map: createFaceTexture({ isToddler }),
+                roughness: 0.48,
+                metalness: 0.04
+            });
+            applyEafcRimShader(headFaceMat, { rimIntensity: 0.36 });
+
+            const headR = isToddler ? 0.152 : 0.138;
+
+            const headProfile = isToddler
+                ? [
+                    new THREE.Vector2(0.001, 0.00),
+                    new THREE.Vector2(headR * 0.48, headR * 0.12),
+                    new THREE.Vector2(headR * 0.88, headR * 0.45),
+                    new THREE.Vector2(headR * 0.96, headR * 0.95),
+                    new THREE.Vector2(headR * 0.94, headR * 1.45),
+                    new THREE.Vector2(headR * 0.62, headR * 1.82),
+                    new THREE.Vector2(0.001, headR * 1.96)
+                ]
+                : [
+                    new THREE.Vector2(0.001, 0.00),
+                    new THREE.Vector2(headR * 0.42, headR * 0.10),
+                    new THREE.Vector2(headR * 0.78, headR * 0.42),
+                    new THREE.Vector2(headR * 0.88, headR * 0.88),
+                    new THREE.Vector2(headR * 0.90, headR * 1.32),
+                    new THREE.Vector2(headR * 0.82, headR * 1.72),
+                    new THREE.Vector2(headR * 0.48, headR * 2.00),
+                    new THREE.Vector2(0.001, headR * 2.10)
+                ];
+
+            const headCurve = new THREE.SplineCurve(headProfile);
+            const headLatheGeo = new THREE.LatheGeometry(headCurve.getPoints(28), 32, Math.PI, Math.PI * 2);
+            headLatheGeo.scale(1.0, 1.0, 1.06);
+
+            const headMesh = new THREE.Mesh(headLatheGeo, headFaceMat);
             headMesh.castShadow = true;
             headGroup.add(headMesh);
 
-            // Ears
-            [-1, 1].forEach((side) => {
-                const ear = new THREE.Mesh(new THREE.SphereGeometry(headR * 0.22, 10, 10), skinMat);
-                ear.scale.set(0.5, 1.0, 0.7);
-                ear.position.set(side * headR * 0.88, headR * 0.88, 0);
-                headGroup.add(ear);
-            });
-
-            // Eyes, Pupils, Eyebrows, Nose & Smile
-            const faceZ = headR * 0.88;
-            const eyeY = headR * (isToddler ? 0.86 : 0.94);
-            const eyeX = headR * 0.34;
-            [-1, 1].forEach((side) => {
-                const eye = new THREE.Mesh(new THREE.SphereGeometry(headR * 0.12, 12, 12), eyeWhiteMat);
-                eye.scale.set(1.0, 0.85, 0.5);
-                eye.position.set(side * eyeX, eyeY, faceZ);
-                headGroup.add(eye);
-
-                const pupil = new THREE.Mesh(new THREE.SphereGeometry(headR * 0.068, 10, 10), pupilMat);
-                pupil.position.set(side * eyeX, eyeY, faceZ + headR * 0.05);
-                headGroup.add(pupil);
-
-                const brow = new THREE.Mesh(
-                    new THREE.BoxGeometry(headR * 0.26, headR * 0.045, headR * 0.05),
-                    hairMat
-                );
-                brow.position.set(side * eyeX, eyeY + headR * 0.17, faceZ + 0.005);
-                brow.rotation.z = side * -0.08;
-                headGroup.add(brow);
-            });
-
-            // 3D Nose
-            const nose = new THREE.Mesh(
-                new THREE.ConeGeometry(headR * 0.11, headR * 0.22, 10),
+            // Subtle 3D nose bridge contour so profile views have real 3D relief
+            const noseBridge = new THREE.Mesh(
+                new THREE.CylinderGeometry(headR * 0.045, headR * 0.085, headR * 0.30, 12),
                 skinMat
             );
-            nose.rotation.x = Math.PI / 2 - 0.2;
-            nose.position.set(0, eyeY - headR * 0.14, faceZ + headR * 0.08);
-            headGroup.add(nose);
+            noseBridge.position.set(0, headR * (isToddler ? 0.86 : 0.96), headR * 0.92);
+            noseBridge.rotation.x = -0.22;
+            headGroup.add(noseBridge);
 
-            // Confident Smile
-            const smile = new THREE.Mesh(
-                new THREE.TorusGeometry(headR * 0.20, headR * 0.032, 8, 16, Math.PI),
-                smileMat
-            );
-            smile.rotation.x = Math.PI;
-            smile.position.set(0, eyeY - headR * 0.28, faceZ + headR * 0.01);
-            headGroup.add(smile);
+            // Sculpted Ears
+            [-1, 1].forEach((side) => {
+                const ear = new THREE.Mesh(new THREE.SphereGeometry(headR * 0.19, 12, 12), skinMat);
+                ear.scale.set(0.42, 1.05, 0.68);
+                ear.position.set(side * headR * 0.88, headR * (isToddler ? 0.88 : 0.96), -0.01);
+                headGroup.add(ear);
+            });
 
             // 3D Sculpted Hair
             if (!isToddler) {
@@ -550,22 +835,29 @@
 
                 const upperLen = isToddler ? 0.14 : 0.23;
                 const upperArm = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.046, 0.040, upperLen, 12),
+                    createAnatomicalSegmentGeo(
+                        isToddler ? [0.046, 0.048, 0.042, 0.038] : [0.048, 0.052, 0.044, 0.038],
+                        upperLen
+                    ),
                     skinMat
                 );
-                upperArm.position.y = -upperLen / 2;
                 shoulder.add(upperArm);
 
                 const elbow = new THREE.Group();
                 elbow.position.y = -upperLen;
                 shoulder.add(elbow);
 
+                const elbowCap = new THREE.Mesh(new THREE.SphereGeometry(isToddler ? 0.040 : 0.042, 12, 12), skinMat);
+                elbow.add(elbowCap);
+
                 const foreLen = isToddler ? 0.13 : 0.21;
                 const forearm = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.040, 0.033, foreLen, 12),
+                    createAnatomicalSegmentGeo(
+                        isToddler ? [0.042, 0.044, 0.036, 0.032] : [0.044, 0.048, 0.038, 0.032],
+                        foreLen
+                    ),
                     skinMat
                 );
-                forearm.position.y = -foreLen / 2;
                 elbow.add(forearm);
 
                 const hand = new THREE.Mesh(
@@ -599,10 +891,12 @@
 
                 const thighLen = isToddler ? 0.16 : 0.36;
                 const thigh = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.062, 0.050, thighLen, 14),
+                    createAnatomicalSegmentGeo(
+                        isToddler ? [0.066, 0.068, 0.056, 0.050] : [0.074, 0.078, 0.062, 0.052],
+                        thighLen
+                    ),
                     skinMat
                 );
-                thigh.position.y = -thighLen / 2;
                 thigh.castShadow = true;
                 hip.add(thigh);
 
@@ -610,15 +904,17 @@
                 knee.position.y = -thighLen;
                 hip.add(knee);
 
-                const kneeJoint = new THREE.Mesh(new THREE.SphereGeometry(0.050, 12, 12), skinMat);
+                const kneeJoint = new THREE.Mesh(new THREE.SphereGeometry(isToddler ? 0.044 : 0.050, 12, 12), skinMat);
                 knee.add(kneeJoint);
 
                 const shinLen = isToddler ? 0.18 : 0.38;
                 const sock = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.050, 0.038, shinLen, 14),
+                    createAnatomicalSegmentGeo(
+                        isToddler ? [0.050, 0.056, 0.044, 0.036] : [0.052, 0.062, 0.046, 0.036],
+                        shinLen
+                    ),
                     sockMat
                 );
-                sock.position.y = -shinLen / 2;
                 sock.castShadow = true;
                 knee.add(sock);
 
@@ -637,21 +933,43 @@
                 ankle.position.y = -shinLen;
                 knee.add(ankle);
 
-                const boot = new THREE.Mesh(
-                    new THREE.BoxGeometry(0.082, 0.055, 0.17),
-                    bootMat
-                );
-                boot.position.set(0, -0.02, 0.035);
-                boot.castShadow = true;
-                ankle.add(boot);
+                const bootGroup = new THREE.Group();
+                ankle.add(bootGroup);
 
-                // Neon volt cleat sole plate
-                const sole = new THREE.Mesh(
-                    new THREE.BoxGeometry(0.084, 0.012, 0.174),
-                    voltMat
-                );
-                sole.position.set(0, -0.048, 0.035);
-                ankle.add(sole);
+                // Contoured upper boot body (tapered forefoot + anatomical instep)
+                const bootUpperGeo = new THREE.CylinderGeometry(0.036, 0.044, 0.165, 16);
+                bootUpperGeo.rotateX(Math.PI / 2);
+                bootUpperGeo.scale(0.95, 0.68, 1.0);
+                const bootUpper = new THREE.Mesh(bootUpperGeo, bootMat);
+                bootUpper.position.set(0, -0.022, 0.038);
+                bootUpper.castShadow = true;
+                bootGroup.add(bootUpper);
+
+                // Rounded aerodynamic toe cap
+                const toeCap = new THREE.Mesh(new THREE.SphereGeometry(0.041, 14, 14), bootMat);
+                toeCap.scale.set(0.92, 0.58, 1.15);
+                toeCap.position.set(0, -0.026, 0.115);
+                bootGroup.add(toeCap);
+
+                // Sculpted ankle collar & heel cup
+                const heelCup = new THREE.Mesh(new THREE.CylinderGeometry(0.038, 0.041, 0.055, 14), bootMat);
+                heelCup.position.set(0, -0.005, -0.025);
+                bootGroup.add(heelCup);
+
+                // Neon volt speed-stripe chevron & soleplate
+                const solePlate = new THREE.Mesh(new THREE.BoxGeometry(0.076, 0.010, 0.175), voltMat);
+                solePlate.position.set(0, -0.048, 0.038);
+                bootGroup.add(solePlate);
+
+                // Conical turf studs under soleplate
+                [-0.024, 0.024].forEach((sx) => {
+                    [-0.02, 0.04, 0.09].forEach((sz) => {
+                        const stud = new THREE.Mesh(new THREE.ConeGeometry(0.007, 0.014, 6), voltMat);
+                        stud.rotation.x = Math.PI;
+                        stud.position.set(sx, -0.056, sz);
+                        bootGroup.add(stud);
+                    });
+                });
 
                 return { hip, knee, ankle };
             }
@@ -679,10 +997,11 @@
             const root = new THREE.Group();
 
             const furMat = new THREE.MeshStandardMaterial({
-                color: 0x10131a,
-                roughness: 0.72,
-                metalness: 0.08
+                color: 0x121620,
+                roughness: 0.62,
+                metalness: 0.12
             });
+            applyEafcRimShader(furMat, { rimIntensity: 0.68, rimPower: 2.2 });
             const noseMat = new THREE.MeshStandardMaterial({
                 color: 0x050608,
                 roughness: 0.18,
