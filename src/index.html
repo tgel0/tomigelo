@@ -33,10 +33,8 @@
     <meta name="twitter:image" content="https://tomigelo.com/og-image.webp">
     <meta name="twitter:image:alt" content="Portrait of Tomi Gelo">
 
-    <link rel="stylesheet" href="styles.css?v=tgfc18">
-    <script defer src="script.js?v=tgfc18"></script>
-    <script defer src="three.min.js?v=tgfc18"></script>
-    <script defer src="eafc-trio-3d.js?v=tgfc18"></script>
+    <link rel="stylesheet" href="styles.css?v=tgfc19">
+    <script defer src="script.js?v=tgfc19"></script>
 
     <script type="application/ld+json">
     {
@@ -603,29 +601,44 @@
             <div id="work-view-central" class="submode-view active">
                 <div class="career-bento-grid">
 
-                    <!-- Column 1: Manager & Squad Bio 3D Match Pitch Stage -->
+                    <!-- Column 1: Manager & Squad Bio Frostbite Video Stage -->
                     <div class="career-panel career-panel-manager">
                         <div class="panel-header-strip">
-                            <span>MANAGER &amp; SQUAD BIO // 3D PITCH</span>
+                            <span>MANAGER &amp; SQUAD BIO // BROADCAST STAGE</span>
                             <span class="status-volt">SEASON 26/27</span>
                         </div>
                         <div class="career-mgr-card career-mgr-stage-layout">
-                            <!-- Real-Time 60fps WebGL Skeletal 3D Match Pitch Stage -->
-                            <div class="fc-trio-stage" id="fc-trio-stage" role="region" aria-label="Interactive 3D EAFC Match Pitch Showcase: Click any player (Junior Tactician, Manager Tomi Gelo, or Assistant Gaffer dog) to switch active player cursor and trigger celebration">
-                                <!-- Hidden source texture for WebGL skeletal mesh (also serves as instant progressive fallback) -->
-                                <img src="career-dugout-trio.jpg?v=tgfc18" alt="EAFC 3D match pitch lineup: 1-year-old son (Junior Tactician), Tomi Gelo (Data & AI Engineer), and 7-year-old black schnauzer-poodle (Assistant Gaffer) in full TGFC kits" class="fc-trio-stage-img" id="fc-trio-source-img" width="1376" height="768">
-                                <!-- 60fps WebGL Skeletal Mesh & Lighting Canvas -->
-                                <canvas id="fc-trio-webgl-canvas" class="fc-trio-webgl-canvas" aria-hidden="true"></canvas>
-                                <!-- 60fps 3D Perspective Pitch Rings, Cursors & Particles Overlay Canvas -->
-                                <canvas id="fc-trio-hud-canvas" class="fc-trio-hud-canvas" aria-hidden="true"></canvas>
+                            <!-- Authentic EA Sports FC Frostbite-Engine Animated Video Stage -->
+                            <div class="fc-trio-stage" id="fc-trio-stage" role="region" aria-label="Interactive Frostbite Dugout Showcase: Click any squad member or trigger full celebration">
+                                <!-- Seamless 60fps Frostbite Video Loop with Hardware Acceleration -->
+                                <video id="fc-trio-video" class="fc-trio-video" autoplay loop muted playsinline poster="career-dugout-trio.jpg?v=tgfc19" preload="metadata" aria-hidden="true">
+                                    <source src="career-dugout-trio.webm?v=tgfc19" type="video/webm">
+                                    <source src="career-dugout-trio.mp4?v=tgfc19" type="video/mp4">
+                                </video>
+                                <!-- Fallback 0ms progressive image -->
+                                <img src="career-dugout-trio.jpg?v=tgfc19" alt="EAFC Frostbite Dugout lineup: 1-year-old son (Junior Tactician), Tomi Gelo (Data &amp; AI Engineer), and 7-year-old black schnauzer-poodle (Assistant Gaffer) in full TGFC kits" class="fc-trio-stage-img" id="fc-trio-source-img" width="1376" height="768">
+
+                                <!-- Interactive FX & Celebration Overlay Layer -->
+                                <div class="fc-stage-fx-layer" id="fc-stage-fx-layer" aria-hidden="true">
+                                    <div class="fc-stage-spotlight" id="fc-stage-spotlight"></div>
+                                    <div class="fc-stage-confetti" id="fc-stage-confetti"></div>
+                                    <div class="fc-stage-actor-cursor" id="fc-stage-actor-cursor">
+                                        <span class="fc-actor-cursor-arrow">▼</span>
+                                        <span class="fc-actor-cursor-label" id="fc-actor-cursor-label">GELO #10</span>
+                                    </div>
+                                    <div class="fc-stage-celebration-banner" id="fc-stage-celebration-banner">
+                                        <span class="fc-celebration-kicker">🌟 GOAL CELEBRATION!</span>
+                                        <span class="fc-celebration-title">DATA &amp; AI SQUAD // MATCH FIT</span>
+                                    </div>
+                                </div>
 
                                 <!-- Stage Top HUD: Engine Status & Interactive Celebration Trigger -->
                                 <div class="fc-stage-hud-top">
                                     <span class="fc-stage-engine-pill">
                                         <span class="fc-engine-dot" aria-hidden="true"></span>
-                                        3D ENGINE // DRAG ORBIT &bull; CLICK PLAYER
+                                        FROSTBITE STAGE // BROADCAST CAM
                                     </span>
-                                    <button type="button" class="fc-stage-celebrate-btn" id="fc-stage-celebrate-btn" title="Trigger Full Squad 3D Goal Celebration">
+                                    <button type="button" class="fc-stage-celebrate-btn" id="fc-stage-celebrate-btn" title="Trigger Full Squad Goal Celebration">
                                         ⚽ CELEBRATE
                                     </button>
                                 </div>

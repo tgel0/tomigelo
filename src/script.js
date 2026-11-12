@@ -368,6 +368,34 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        playCelebration() {
+            if (!this.enabled) return;
+            this.initWebAudio();
+            if (!this.ctx) return;
+
+            const now = this.ctx.currentTime;
+            // EA FC Victory Fanfare progression (C5 - E5 - G5 - B5 - C6)
+            const chords = [
+                { f: 523.25, t: 0.00, dur: 0.22, vol: 0.08 },
+                { f: 659.25, t: 0.08, dur: 0.22, vol: 0.08 },
+                { f: 783.99, t: 0.16, dur: 0.28, vol: 0.09 },
+                { f: 987.77, t: 0.24, dur: 0.32, vol: 0.09 },
+                { f: 1046.50, t: 0.32, dur: 0.55, vol: 0.12 }
+            ];
+            chords.forEach(({ f, t, dur, vol }) => {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(f, now + t);
+                gain.gain.setValueAtTime(vol, now + t);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + t + dur);
+                osc.connect(gain);
+                gain.connect(this.masterGain);
+                osc.start(now + t);
+                osc.stop(now + t + dur + 0.02);
+            });
+        }
+
         playBack() {
             if (!this.enabled) return;
             this.initWebAudio();
@@ -738,6 +766,8 @@ document.addEventListener('DOMContentLoaded', () => {
             promptBackBtn.hidden = false;
             promptBumpers.hidden = false;
         }
+
+        updateTrioStageLifecycle();
     }
 
     /* ======================================================================
@@ -856,6 +886,8 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (tabName === 'tactics') {
             hudTitle.textContent = 'TACTICS & PLAYSTYLES+';
         }
+
+        updateTrioStageLifecycle();
     }
 
     workTabBtns.forEach(btn => {
@@ -1005,6 +1037,201 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Expose SFX hook for Three.js 3D Match Pitch Engine
+    /* ======================================================================
+       12. FROSTBITE VIDEO STAGE & INTERACTIVE SQUAD CONTROLLER (COLUMN 1)
+       ====================================================================== */
+    function updateTrioStageLifecycle() {
+        const video = document.getElementById('fc-trio-video');
+        if (!video) return;
+
+        const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const shouldPlay = !document.hidden &&
+                           !isReducedMotion &&
+                           state.screen === 'work' &&
+                           state.workTab === 'central';
+
+        if (shouldPlay) {
+            if (video.paused) {
+                video.play().catch(() => {});
+            }
+        } else {
+            if (!video.paused) {
+                video.pause();
+            }
+        }
+    }
+
+    document.addEventListener('visibilitychange', updateTrioStageLifecycle);
+
+    function initFCDugoutStage() {
+        const stage = document.getElementById('fc-trio-stage');
+        const video = document.getElementById('fc-trio-video');
+        const celebrateBtn = document.getElementById('fc-stage-celebrate-btn');
+        const spotlight = document.getElementById('fc-stage-spotlight');
+        const cursor = document.getElementById('fc-stage-actor-cursor');
+        const cursorLabel = document.getElementById('fc-actor-cursor-label');
+        const banner = document.getElementById('fc-stage-celebration-banner');
+        const confettiContainer = document.getElementById('fc-stage-confetti');
+        const rosterButtons = Array.from(document.querySelectorAll('[data-trio-actor]'));
+
+        if (!stage || !video) return;
+
+        const ACTORS = {
+            son: {
+                name: 'JR. TACTICIAN #7',
+                ovr: 'OVR 99',
+                x: 23,
+                y: 36
+            },
+            tomi: {
+                name: 'GELO #10',
+                ovr: 'OVR 99',
+                x: 50,
+                y: 25
+            },
+            dog: {
+                name: 'ASST. GAFFER #1',
+                ovr: 'OVR 99',
+                x: 77,
+                y: 45
+            }
+        };
+
+        let celebrationTimeout = null;
+        let cursorTimeout = null;
+
+        const markVideoReady = () => {
+            stage.classList.add('video-ready');
+        };
+
+        if (video.readyState >= 2) {
+            markVideoReady();
+        } else {
+            video.addEventListener('canplay', markVideoReady, { once: true });
+            video.addEventListener('playing', markVideoReady, { once: true });
+        }
+
+        video.muted = true;
+        const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (!isReducedMotion) {
+            video.play().catch(() => {});
+        }
+
+        function selectActor(actorKey, playSfx = true) {
+            const actor = ACTORS[actorKey];
+            if (!actor) return;
+
+            if (playSfx) audio.playSelect();
+
+            rosterButtons.forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-trio-actor') === actorKey);
+            });
+
+            if (cursor && cursorLabel) {
+                cursor.style.left = `${actor.x}%`;
+                cursor.style.top = `${actor.y}%`;
+                cursorLabel.textContent = `${actor.name} // ${actor.ovr}`;
+                cursor.classList.add('visible');
+
+                clearTimeout(cursorTimeout);
+                cursorTimeout = setTimeout(() => {
+                    cursor.classList.remove('visible');
+                }, 3200);
+            }
+        }
+
+        function triggerCelebration() {
+            audio.playCelebration();
+
+            stage.classList.remove('stage-celebrating');
+            void stage.offsetWidth;
+            stage.classList.add('stage-celebrating');
+
+            if (spotlight) spotlight.classList.add('active');
+            if (banner) banner.classList.add('active');
+
+            spawnConfetti();
+
+            clearTimeout(celebrationTimeout);
+            celebrationTimeout = setTimeout(() => {
+                if (spotlight) spotlight.classList.remove('active');
+                if (banner) banner.classList.remove('active');
+                stage.classList.remove('stage-celebrating');
+            }, 2600);
+        }
+
+        function spawnConfetti() {
+            if (!confettiContainer) return;
+            confettiContainer.innerHTML = '';
+            const colors = ['#00ff68', '#ffd700', '#ffffff', '#00e5ff'];
+            const numParticles = 28;
+
+            for (let i = 0; i < numParticles; i++) {
+                const p = document.createElement('span');
+                p.className = 'fc-confetti-particle';
+                p.style.left = `${38 + Math.random() * 24}%`;
+                p.style.top = `${32 + Math.random() * 24}%`;
+                p.style.background = colors[Math.floor(Math.random() * colors.length)];
+
+                const dx = (Math.random() - 0.5) * 320;
+                const dy = -30 - Math.random() * 120;
+                const rot = (Math.random() - 0.5) * 720;
+                p.style.setProperty('--dx', `${dx}px`);
+                p.style.setProperty('--dy', `${dy}px`);
+                p.style.setProperty('--rot', `${rot}deg`);
+
+                confettiContainer.appendChild(p);
+            }
+
+            setTimeout(() => {
+                confettiContainer.innerHTML = '';
+            }, 1900);
+        }
+
+        celebrateBtn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            triggerCelebration();
+        });
+
+        rosterButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const actorKey = btn.getAttribute('data-trio-actor');
+                selectActor(actorKey);
+            });
+        });
+
+        stage.addEventListener('click', (e) => {
+            if (e.target.closest('#fc-stage-celebrate-btn')) return;
+            const rect = stage.getBoundingClientRect();
+            const clickXRatio = (e.clientX - rect.left) / rect.width;
+
+            if (clickXRatio < 0.36) {
+                selectActor('son');
+            } else if (clickXRatio > 0.68) {
+                selectActor('dog');
+            } else {
+                selectActor('tomi');
+            }
+        });
+
+        if ('IntersectionObserver' in window) {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (!entry.isIntersecting) {
+                        if (!video.paused) video.pause();
+                    } else {
+                        updateTrioStageLifecycle();
+                    }
+                });
+            }, { threshold: 0.1 });
+            observer.observe(stage);
+        }
+    }
+
+    initFCDugoutStage();
+
+    // Global SFX hooks
     window.tgfcPlaySelectSfx = () => audio.playSelect();
+    window.tgfcPlayCelebrationSfx = () => audio.playCelebration();
 });
