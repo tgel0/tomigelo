@@ -65,12 +65,6 @@
         ]
       },
       {
-        "source": "**/*.jpg",
-        "headers": [
-          { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
-        ]
-      },
-      {
         "source": "**/*.png",
         "headers": [
           { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
@@ -83,25 +77,13 @@
         ]
       },
       {
-        "source": "**/*.mp4",
-        "headers": [
-          { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
-        ]
-      },
-      {
-        "source": "**/*.webm",
-        "headers": [
-          { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
-        ]
-      },
-      {
         "source": "**",
         "headers": [
           { "key": "X-Content-Type-Options", "value": "nosniff" },
           { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
           { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
           { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=(), interest-cohort=()" },
-          { "key": "Content-Security-Policy", "value": "default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; upgrade-insecure-requests; img-src 'self' data: https://i.ytimg.com https://*.ytimg.com; media-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' https://plausible.io https://www.youtube.com https://s.ytimg.com; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; connect-src 'self' https://plausible.io https://www.youtube.com; font-src 'self'; manifest-src 'self'" }
+          { "key": "Content-Security-Policy", "value": "default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; upgrade-insecure-requests; img-src 'self' data: https://i.ytimg.com https://*.ytimg.com; style-src 'self' 'unsafe-inline'; script-src 'self' https://plausible.io https://www.youtube.com https://s.ytimg.com; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; connect-src 'self' https://plausible.io https://www.youtube.com; font-src 'self'; manifest-src 'self'" }
         ]
       }
     ]
