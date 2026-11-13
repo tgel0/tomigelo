@@ -1,5 +1,5 @@
 /**
- * TGFC 26 — Tomi Gelo Football Club Portfolio (Iteration 1)
+ * TGFC 27 — Tomi Gelo Football Club Portfolio (Iteration 1)
  * Widescreen Console State Machine, Boot Loader, YouTube IFrame Radio Engine & Blade Menu
  */
 
@@ -490,7 +490,7 @@ document.addEventListener('DOMContentLoaded', () => {
         hasPassedBoot: false,
         activeBladeIndex: 0,        // 0 = projects, 1 = work
         activeClubIndex: 0,         // 0..2
-        projectsTab: 'kickoff',     // 'kickoff' | 'pitch'
+        projectsTab: 'kickoff',     // 'kickoff'
         workTab: 'central'          // 'central' | 'transfers'
     };
 
@@ -586,8 +586,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const bootSteps = [
         { pct: 22, status: 'INITIALIZING PITCH ENGINE...', detail: 'SHADER CACHE: STADIUM FLOODLIGHTS' },
-        { pct: 54, status: 'LOADING SQUAD FILE: TOMI_GELO_26.PRF...', detail: 'BUFFERING TGFC TRAX SOUNDTRACK STREAM' },
-        { pct: 84, status: 'SYNCING MATCHES & CAREER DATA...', detail: 'CONNECTING TO BERLIN_EU SERVER' },
+        { pct: 54, status: 'LOADING SQUAD FILE: TOMI_GELO_27.PRF...', detail: 'BUFFERING TGFC TRAX SOUNDTRACK STREAM' },
+        { pct: 84, status: 'SYNCING PROJECTS & CAREER DATA...', detail: 'CONNECTING TO BERLIN_EU SERVER' },
         { pct: 100, status: 'MATCHDAY ENGINE READY', detail: 'ALL SYSTEMS ONLINE // 60 FPS LOCKED' }
     ];
 
@@ -759,25 +759,21 @@ document.addEventListener('DOMContentLoaded', () => {
         bottomBar.hidden = !showHud;
 
         if (targetScreen === 'hub') {
-            hudCategory.textContent = 'TGFC 26';
+            hudCategory.textContent = 'TGFC 27';
             hudTitle.textContent = 'MAIN MENU HUB';
             promptBackBtn.hidden = true;
             promptBumpers.hidden = true;
             setActiveBlade(state.activeBladeIndex, false);
         } else if (targetScreen === 'projects') {
-            hudCategory.textContent = 'PROJECTS // MATCHES & TEAMS';
-            hudTitle.textContent = state.projectsTab === 'kickoff' ? 'KICK OFF: SELECT CLUB' : '4-3-3 TEAM SHEET';
+            hudCategory.textContent = 'PROJECTS // KICK OFF';
+            hudTitle.textContent = 'KICK OFF: SELECT CLUB';
             promptBackBtn.hidden = false;
-            promptBumpers.hidden = false;
+            promptBumpers.hidden = true;
         } else if (targetScreen === 'work') {
             hudCategory.textContent = 'WORK // CAREER MODE';
-            if (state.workTab === 'central') {
-                hudTitle.textContent = 'MANAGER CAREER CENTRAL';
-            } else if (state.workTab === 'transfers') {
-                hudTitle.textContent = 'CAREER TRANSFER LEDGER (10)';
-            } else {
-                hudTitle.textContent = 'TACTICS & PLAYSTYLES+';
-            }
+            hudTitle.textContent = state.workTab === 'transfers'
+                ? 'CAREER TRANSFER LEDGER (10)'
+                : 'MANAGER CAREER CENTRAL';
             promptBackBtn.hidden = false;
             promptBumpers.hidden = false;
         }
@@ -873,60 +869,50 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const projectsTabBtns = Array.from(document.querySelectorAll('[data-projects-tab]'));
     const projectsViewKickoff = document.getElementById('projects-view-kickoff');
-    const projectsViewPitch = document.getElementById('projects-view-pitch');
 
-    function switchProjectsTab(tabName) {
-        audio.playTick();
-        state.projectsTab = tabName;
+    function switchProjectsTab() {
+        state.projectsTab = 'kickoff';
         projectsTabBtns.forEach(btn => {
-            const isTarget = btn.getAttribute('data-projects-tab') === tabName;
+            const isTarget = btn.getAttribute('data-projects-tab') === 'kickoff';
             btn.classList.toggle('active', isTarget);
             btn.setAttribute('aria-selected', isTarget ? 'true' : 'false');
         });
-        projectsViewKickoff.hidden = tabName !== 'kickoff';
-        projectsViewPitch.hidden = tabName !== 'pitch';
-        hudTitle.textContent = tabName === 'kickoff' ? 'KICK OFF: SELECT CLUB' : '4-3-3 TEAM SHEET';
+        if (projectsViewKickoff) projectsViewKickoff.hidden = false;
+        hudTitle.textContent = 'KICK OFF: SELECT CLUB';
     }
 
     projectsTabBtns.forEach(btn => {
-        btn.addEventListener('click', () => switchProjectsTab(btn.getAttribute('data-projects-tab')));
-    });
-
-    document.getElementById('projects-lb-btn')?.addEventListener('click', () => {
-        switchProjectsTab(state.projectsTab === 'kickoff' ? 'pitch' : 'kickoff');
-    });
-    document.getElementById('projects-rb-btn')?.addEventListener('click', () => {
-        switchProjectsTab(state.projectsTab === 'kickoff' ? 'pitch' : 'kickoff');
+        btn.addEventListener('click', () => {
+            if (state.projectsTab !== 'kickoff') {
+                audio.playTick();
+                switchProjectsTab();
+            }
+        });
     });
 
     /* ======================================================================
        9. WORK MODE: CAREER BUMPER TABS
        ====================================================================== */
-    const WORK_TABS = ['central', 'transfers', 'tactics'];
+    const WORK_TABS = ['central', 'transfers'];
     const workTabBtns = Array.from(document.querySelectorAll('[data-work-tab]'));
     const workViewCentral = document.getElementById('work-view-central');
     const workViewTransfers = document.getElementById('work-view-transfers');
-    const workViewTactics = document.getElementById('work-view-tactics');
 
     function switchWorkTab(tabName) {
+        const nextTab = WORK_TABS.includes(tabName) ? tabName : 'central';
         audio.playTick();
-        state.workTab = tabName;
+        state.workTab = nextTab;
         workTabBtns.forEach(btn => {
-            const isTarget = btn.getAttribute('data-work-tab') === tabName;
+            const isTarget = btn.getAttribute('data-work-tab') === nextTab;
             btn.classList.toggle('active', isTarget);
             btn.setAttribute('aria-selected', isTarget ? 'true' : 'false');
         });
-        if (workViewCentral) workViewCentral.hidden = tabName !== 'central';
-        if (workViewTransfers) workViewTransfers.hidden = tabName !== 'transfers';
-        if (workViewTactics) workViewTactics.hidden = tabName !== 'tactics';
+        if (workViewCentral) workViewCentral.hidden = nextTab !== 'central';
+        if (workViewTransfers) workViewTransfers.hidden = nextTab !== 'transfers';
 
-        if (tabName === 'central') {
-            hudTitle.textContent = 'MANAGER CAREER CENTRAL';
-        } else if (tabName === 'transfers') {
-            hudTitle.textContent = 'CAREER TRANSFER LEDGER (10)';
-        } else if (tabName === 'tactics') {
-            hudTitle.textContent = 'TACTICS & PLAYSTYLES+';
-        }
+        hudTitle.textContent = nextTab === 'transfers'
+            ? 'CAREER TRANSFER LEDGER (10)'
+            : 'MANAGER CAREER CENTRAL';
     }
 
     workTabBtns.forEach(btn => {
@@ -1217,9 +1203,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.preventDefault();
                 audio.playBack();
                 navigateToScreen('hub');
-            } else if (e.key === 'q' || e.key === 'Q' || e.key === 'e' || e.key === 'E') {
-                e.preventDefault();
-                switchProjectsTab(state.projectsTab === 'kickoff' ? 'pitch' : 'kickoff');
             } else if (state.projectsTab === 'kickoff') {
                 if (e.key === 'ArrowDown' || (!hasModifier && (e.key === 's' || e.key === 'S'))) {
                     e.preventDefault();

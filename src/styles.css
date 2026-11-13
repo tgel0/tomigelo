@@ -1,5 +1,5 @@
 /* ==========================================================================
-   TGFC 26 — PORTFOLIO EDITION (ITERATION 1 WIDESCREEN CONSOLE UI)
+   TGFC 27 — PORTFOLIO EDITION (ITERATION 1 WIDESCREEN CONSOLE UI)
    ========================================================================== */
 
 :root {
@@ -220,8 +220,8 @@ body {
 /* Kinetic Triangle Logo */
 .fc-kinetic-emblem {
     position: relative;
-    width: 176px;
-    height: 156px;
+    width: 225px;
+    height: 180px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -252,36 +252,42 @@ body {
 }
 
 .fc-emblem-typography {
-    position: relative;
+    position: absolute;
+    left: 50%;
+    bottom: 13%;
     z-index: 2;
-    margin-top: 24px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    transform: skewX(var(--skew-angle));
+    gap: 2px;
+    width: max-content;
+    transform: translateX(-50%) skewX(var(--skew-angle));
 }
 
 .ea-eyebrow {
     font-family: var(--font-mono);
-    font-size: 0.65rem;
+    font-size: 9.5px;
     font-weight: 800;
-    letter-spacing: 0.26em;
+    line-height: 1.1;
+    letter-spacing: 0.13em;
+    white-space: nowrap;
     color: var(--fc-hyper-green);
 }
 
 .fc-giant-letters {
     font-family: var(--font-display);
-    font-size: 3.4rem;
+    font-size: 42px;
     font-weight: 900;
-    line-height: 0.92;
-    letter-spacing: 0.03em;
+    line-height: 0.9;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
     color: var(--fc-text-white);
 }
 
-.fc-26-sup {
-    font-size: 1.45rem;
+.fc-27-sup {
+    font-size: 20px;
     color: var(--fc-volt);
-    margin-left: 3px;
+    margin-left: 2px;
 }
 
 /* Cover Athlete Identity */
@@ -1740,11 +1746,6 @@ body {
     outline: none;
 }
 
-.full-width-btn {
-    width: 100%;
-    justify-content: center;
-}
-
 .controller-key-badge {
     display: inline-flex;
     align-items: center;
@@ -1839,6 +1840,10 @@ body {
     font-weight: 900;
 }
 
+#screen-projects .bumper-tab {
+    cursor: default;
+}
+
 .submode-view {
     flex: 1;
     min-height: 0;
@@ -1846,18 +1851,13 @@ body {
     flex-direction: column;
 }
 
-/* Shared Panel Surfaces (Pitch, Career, Transfers) */
-.career-panel,
-.pitch-board-container,
+/* Shared Panel Surface (Transfers) */
 .career-transfers-panel {
     background: var(--fc-panel-glass);
     border: 1px solid var(--fc-border-subtle);
     display: flex;
     flex-direction: column;
     overflow: hidden;
-}
-
-.career-transfers-panel {
     flex: 1;
     min-height: 0;
     height: 100%;
@@ -2815,123 +2815,6 @@ body {
 #projects-view-kickoff .kickoff-btn-back .key-b {
     background: var(--koff-back-key-bg);
     color: var(--koff-back-key-ink);
-}
-
-/* 4-3-3 Tactical Pitch View */
-.pitch-widescreen-layout {
-    flex: 1;
-    display: flex;
-}
-
-.pitch-board-container {
-    width: 100%;
-    flex: 1;
-}
-
-.tactical-pitch-svg-wrap {
-    position: relative;
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 18px;
-}
-
-.tactical-pitch-svg {
-    width: 100%;
-    max-height: 410px;
-}
-
-.pitch-node {
-    position: absolute;
-    transform: translate(-50%, -50%);
-    background: var(--fc-panel-elevated);
-    border: 1.5px solid var(--fc-hyper-green);
-    padding: 8px 14px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.7);
-}
-
-.pitch-node.node-highlight {
-    border-color: var(--fc-volt);
-    background: rgba(0, 255, 104, 0.16);
-}
-
-.node-ovr {
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    font-weight: 900;
-    color: var(--fc-hyper-green);
-}
-
-.node-title {
-    font-family: var(--font-display);
-    font-size: 1.1rem;
-    letter-spacing: 0.04em;
-}
-
-.node-pos {
-    font-family: var(--font-mono);
-    font-size: 0.6rem;
-    color: var(--fc-text-secondary);
-}
-
-/* ==========================================================================
-   5. WORK: MANAGER CAREER MODE BENTO GRID
-   ========================================================================== */
-.career-bento-grid {
-    display: grid;
-    grid-template-columns: 1fr 1.15fr 1fr;
-    gap: 22px;
-    flex: 1;
-    min-height: 0;
-}
-
-.career-mgr-card {
-    padding: 22px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    flex: 1;
-    min-height: 0;
-}
-
-.career-quick-facts {
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-}
-
-.career-quick-facts div {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 12px;
-    padding-bottom: 6px;
-    border-bottom: 1px solid var(--fc-border-subtle);
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-}
-
-.career-quick-facts div:last-child {
-    padding-bottom: 0;
-    border-bottom: none;
-}
-
-.career-quick-facts dt {
-    color: var(--fc-text-muted);
-    flex-shrink: 0;
-}
-
-.career-quick-facts dd {
-    margin: 0;
-    color: var(--fc-text-white);
-    font-weight: 700;
-    text-align: right;
-    min-width: 0;
 }
 
 /* ==========================================================================
@@ -4252,10 +4135,6 @@ a.club-name-cell:hover .club-link-arrow,
     background: rgba(245, 196, 81, 0.04);
 }
 
-.status-gold {
-    color: var(--fc-gold);
-}
-
 .obj-press-link {
     display: inline-flex;
     align-items: center;
@@ -4276,112 +4155,6 @@ a.club-name-cell:hover .club-link-arrow,
     background: rgba(245, 196, 81, 0.22);
     color: #fff;
     border-color: var(--fc-gold);
-}
-
-/* PlayStyles+ & Tactics View */
-.playstyle-cards-stack {
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    flex: 1;
-    overflow-y: auto;
-}
-
-.playstyle-card {
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
-    padding: 10px 12px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid var(--fc-border-subtle);
-    border-left: 3px solid var(--fc-gold);
-}
-
-.playstyle-badge-gold {
-    font-family: var(--font-display);
-    font-size: 0.85rem;
-    font-weight: 900;
-    background: linear-gradient(135deg, var(--fc-gold), #ff9f43);
-    color: var(--fc-text-dark);
-    padding: 4px 8px;
-    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-    flex-shrink: 0;
-    min-width: 38px;
-    text-align: center;
-}
-
-.playstyle-title {
-    display: block;
-    font-family: var(--font-display);
-    font-size: 1.15rem;
-    letter-spacing: 0.04em;
-    margin-bottom: 3px;
-    color: var(--fc-text-white);
-}
-
-.playstyle-info p {
-    margin: 0;
-    font-size: 0.78rem;
-    line-height: 1.45;
-    color: var(--fc-text-secondary);
-}
-
-.attr-bars-list {
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    flex: 1;
-    justify-content: space-around;
-}
-
-.attr-bar-row {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.attr-bar-header {
-    display: flex;
-    justify-content: space-between;
-    font-family: var(--font-mono);
-    font-size: 0.74rem;
-}
-
-.attr-bar-name {
-    color: var(--fc-text-secondary);
-}
-
-.attr-bar-val {
-    font-weight: 800;
-    color: var(--fc-hyper-green);
-}
-
-.attr-bar-track {
-    width: 100%;
-    height: 6px;
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.attr-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--fc-hyper-green), var(--fc-volt));
-}
-
-.tactics-philosophy-quote {
-    padding: 14px;
-    background: rgba(0, 255, 104, 0.06);
-    border-left: 3px solid var(--fc-hyper-green);
-    margin-bottom: 14px;
-    font-style: italic;
-    font-size: 0.86rem;
-    line-height: 1.5;
-    color: var(--fc-text-white);
-}
-
-.tactics-philosophy-quote blockquote {
-    margin: 0;
 }
 
 /* ==========================================================================
@@ -4595,6 +4368,28 @@ a.club-name-cell:hover .club-link-arrow,
         padding: 10px 24px;
     }
 
+    .boot-center-stage {
+        gap: 16px;
+    }
+
+    .fc-kinetic-emblem {
+        width: 200px;
+        height: 160px;
+    }
+
+    .ea-eyebrow {
+        font-size: 8.5px;
+        letter-spacing: 0.12em;
+    }
+
+    .fc-giant-letters {
+        font-size: 37px;
+    }
+
+    .fc-27-sup {
+        font-size: 18px;
+    }
+
     .hud-settings-menu {
         top: 58px;
         right: 24px;
@@ -4633,15 +4428,6 @@ a.club-name-cell:hover .club-link-arrow,
 
     .mono-cell {
         font-size: 0.72rem;
-    }
-
-    .career-quick-facts {
-        gap: 5px;
-    }
-
-    .career-quick-facts div {
-        padding-bottom: 4px;
-        font-size: 0.66rem;
     }
 
     #work-view-central .central-bento-grid {
@@ -4758,12 +4544,21 @@ a.club-name-cell:hover .club-link-arrow,
     }
 
     .fc-kinetic-emblem {
-        width: 136px;
-        height: 120px;
+        width: 180px;
+        height: 144px;
+    }
+
+    .ea-eyebrow {
+        font-size: 8px;
+        letter-spacing: 0.11em;
     }
 
     .fc-giant-letters {
-        font-size: 2.6rem;
+        font-size: 33px;
+    }
+
+    .fc-27-sup {
+        font-size: 16px;
     }
 
     .cover-avatar-frame {
