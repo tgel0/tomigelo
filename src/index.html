@@ -33,8 +33,8 @@
     <meta name="twitter:image" content="https://tomigelo.com/og-image.webp">
     <meta name="twitter:image:alt" content="Portrait of Tomi Gelo">
 
-    <link rel="stylesheet" href="styles.css?v=tgfc22">
-    <script defer src="script.js?v=tgfc21"></script>
+    <link rel="stylesheet" href="styles.css?v=tgfc23">
+    <script defer src="script.js?v=tgfc23"></script>
     <!-- 3D pitch stage scripts disabled while Central Hub displays manager avatar view; uncomment to re-enable:
     <script defer src="three.min.js?v=tgfc21"></script>
     <script defer src="eafc-trio-3d.js?v=tgfc21"></script>
@@ -229,11 +229,14 @@
                     <span id="audio-status-label">AUDIO: ON</span>
                 </button>
 
-                <div class="hud-widget hud-season-xp" title="Season Progress">
-                    <span class="xp-lvl">LVL 93</span>
-                    <div class="xp-bar"><div class="xp-fill" style="width: 84%;"></div></div>
-                    <span class="xp-val">94,500 XP</span>
-                </div>
+                <button type="button" id="btn-settings-toggle" class="hud-widget hud-settings-btn" aria-expanded="false" aria-controls="hud-settings-menu" aria-haspopup="dialog" title="Settings &amp; Theme Picker (Shortcut: O)">
+                    <svg class="hud-settings-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>
+                    <span>SETTINGS</span>
+                    <span class="hud-key-mini">O</span>
+                </button>
 
                 <div class="hud-widget hud-player-card">
                     <img src="avatar.webp?v=3" alt="Tomi Gelo" class="hud-avatar" width="32" height="32">
@@ -244,6 +247,68 @@
                 </div>
             </div>
         </header>
+
+        <!-- SETTINGS & BENTO THEME PICKER POPOVER (ANCHORED UNDER TOP HUD RIGHT) -->
+        <div id="hud-settings-menu" class="hud-settings-menu" role="dialog" aria-modal="false" aria-labelledby="hud-settings-title" hidden>
+            <div class="settings-menu-header">
+                <div class="settings-menu-title-wrap">
+                    <span class="settings-menu-kicker">CONSOLE PREFERENCES</span>
+                    <h2 id="hud-settings-title" class="settings-menu-title">SYSTEM SETTINGS</h2>
+                </div>
+                <button type="button" id="btn-settings-close" class="settings-close-btn" aria-label="Close Settings">
+                    <span aria-hidden="true">✕</span>
+                </button>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-section-label">CENTRAL HUB // BENTO THEME</div>
+                <div class="settings-theme-group" role="radiogroup" aria-label="Central Hub Bento Theme">
+                    <button type="button" role="radio" aria-checked="true" tabindex="0" class="settings-theme-option active" data-bento-theme-option="pop">
+                        <span class="theme-swatches" aria-hidden="true">
+                            <span class="sw-chalk"></span>
+                            <span class="sw-violet"></span>
+                            <span class="sw-volt"></span>
+                            <span class="sw-pink"></span>
+                        </span>
+                        <span class="theme-option-copy">
+                            <strong>POP CONTRAST</strong>
+                            <span>Chalk, Violet, Volt &amp; Pink</span>
+                        </span>
+                    </button>
+                    <button type="button" role="radio" aria-checked="false" tabindex="-1" class="settings-theme-option" data-bento-theme-option="dark">
+                        <span class="theme-swatches" aria-hidden="true">
+                            <span class="sw-obsidian"></span>
+                            <span class="sw-slate"></span>
+                            <span class="sw-neon"></span>
+                            <span class="sw-cyan"></span>
+                        </span>
+                        <span class="theme-option-copy">
+                            <strong>DARK NATIVE</strong>
+                            <span>Obsidian Slate &amp; Neon</span>
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <div class="settings-section-label">SOUNDTRACK &amp; SFX</div>
+                <div class="settings-quick-actions">
+                    <button type="button" id="settings-audio-toggle" class="settings-quick-btn" aria-pressed="true">
+                        <span class="hud-key-mini">M</span>
+                        <span id="settings-audio-label">AUDIO: ON</span>
+                    </button>
+                    <button type="button" id="settings-next-track" class="settings-quick-btn">
+                        <span class="hud-key-mini">N</span>
+                        <span>NEXT TRACK ⏭</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="settings-menu-footer">
+                <span>ESC CLOSE</span>
+                <span>O TOGGLE</span>
+            </div>
+        </div>
 
         <!-- =================================================================
              3. MAIN MENU HUB (LEFT BLADES + RIGHT SHOWCASE STAGE)
@@ -602,194 +667,234 @@
             </div>
 
             <!-- SUB-VIEW 1: CAREER CENTRAL BENTO DASHBOARD -->
-            <div id="work-view-central" class="submode-view active">
-                <div class="career-bento-grid">
+            <div id="work-view-central" class="submode-view active" data-bento-theme="pop">
+                <div class="central-bento-grid">
 
-                    <!-- Column 1: Manager Dossier, Direct Channels & Club Sponsorship -->
-                    <div class="career-panel career-panel-manager">
-                        <div class="panel-header-strip">
-                            <span>MANAGER DOSSIER</span>
-                            <span class="status-volt">SEASON 26/27</span>
+                    <!-- TILE A: MANAGER HERO CARD (LEFT-TOP) -->
+                    <article class="bento-tile bento-tile-hero" aria-label="Manager Profile">
+                        <div class="bento-hero-head">
+                            <span class="bento-pill bento-pill-role">DATA &amp; AI ENGINEER</span>
+                            <span class="bento-pill bento-pill-season">SEASON 26/27</span>
                         </div>
-                        <div class="career-mgr-card">
-                            <div class="career-mgr-top">
-                                <img src="avatar.webp?v=3" alt="Manager Tomi Gelo" class="career-mgr-img" width="84" height="84">
-                                <div class="career-mgr-meta">
-                                    <div class="mgr-badge-strip">
-                                        <span class="career-mgr-badge">DATA &amp; AI ENGINEER</span>
-                                        <div class="fc-card-nation-cluster" aria-label="Dual Nationality: Germany and Croatia">
-                                            <span class="fc-card-nation-pill" title="Germany (GER)">
-                                                <svg class="fc-nation-flag-svg" viewBox="0 0 18 12" width="16" height="11" aria-hidden="true">
-                                                    <rect width="18" height="4" y="0" fill="#000000"/>
-                                                    <rect width="18" height="4" y="4" fill="#DD0000"/>
-                                                    <rect width="18" height="4" y="8" fill="#FFCE00"/>
-                                                </svg>
-                                                <span class="fc-nation-code">GER</span>
-                                            </span>
-                                            <span class="fc-card-nation-pill" title="Croatia (CRO)">
-                                                <svg class="fc-nation-flag-svg" viewBox="0 0 18 12" width="16" height="11" aria-hidden="true">
-                                                    <rect width="18" height="4" y="0" fill="#FF0000"/>
-                                                    <rect width="18" height="4" y="4" fill="#FFFFFF"/>
-                                                    <rect width="18" height="4" y="8" fill="#002B7F"/>
-                                                    <rect x="7" y="3" width="4" height="5" rx="0.5" fill="#FFFFFF" stroke="#002B7F" stroke-width="0.5"/>
-                                                    <rect x="7" y="3" width="2" height="2.5" fill="#FF0000"/>
-                                                    <rect x="9" y="5.5" width="2" height="2.5" fill="#FF0000"/>
-                                                </svg>
-                                                <span class="fc-nation-code">CRO</span>
-                                            </span>
+
+                        <div class="bento-hero-stage">
+                            <div class="bento-hero-identity">
+                                <h2 class="bento-hero-name" aria-label="Tomi Gelo">
+                                    <span class="bento-name-solid">TOMI</span>
+                                    <span class="bento-name-outline">GELO</span>
+                                </h2>
+                            </div>
+                            <div class="bento-hero-portrait-wrap">
+                                <span class="bento-hero-watermark" aria-hidden="true">26</span>
+                                <div class="bento-avatar-slash-frame">
+                                    <img src="avatar.webp?v=3" alt="Manager Tomi Gelo" class="bento-hero-avatar" width="104" height="104">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bento-hero-foot">
+                            <span class="bento-hero-dot" aria-hidden="true"></span>
+                            <span class="bento-hero-meta">Cloud Data &amp; AI Systems</span>
+                        </div>
+                    </article>
+
+                    <!-- TILE B: HOME NATIONS & BASE (CENTER-TOP) -->
+                    <article class="bento-tile bento-tile-nations" aria-label="Home Nations and Base">
+                        <svg class="bento-dial-bg" viewBox="0 0 320 180" aria-hidden="true">
+                            <circle cx="160" cy="145" r="118" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 8" opacity="0.35"/>
+                            <circle cx="160" cy="145" r="92" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="1 6" opacity="0.25"/>
+                            <path d="M 38 145 A 122 122 0 0 1 282 145" fill="none" stroke="currentColor" stroke-width="2" opacity="0.22"/>
+                        </svg>
+
+                        <div class="bento-tile-head">
+                            <span class="bento-eyebrow">HOME NATIONS &amp; BASE</span>
+                            <span class="bento-micro-code">DE // HR</span>
+                        </div>
+
+                        <div class="bento-nations-stage">
+                            <div class="bento-flag-shield" title="Germany (GER)">
+                                <svg class="bento-flag-svg" viewBox="0 0 24 16" width="38" height="25" aria-hidden="true">
+                                    <rect width="24" height="5.34" y="0" fill="#090d14"/>
+                                    <rect width="24" height="5.34" y="5.33" fill="#dd0000"/>
+                                    <rect width="24" height="5.34" y="10.66" fill="#ffce00"/>
+                                </svg>
+                                <div class="bento-flag-copy">
+                                    <strong class="bento-flag-code">GER</strong>
+                                    <span class="bento-flag-name">GERMANY</span>
+                                </div>
+                            </div>
+                            <div class="bento-flag-shield" title="Croatia (CRO)">
+                                <svg class="bento-flag-svg" viewBox="0 0 24 16" width="38" height="25" aria-hidden="true">
+                                    <rect width="24" height="5.34" y="0" fill="#ff0000"/>
+                                    <rect width="24" height="5.34" y="5.33" fill="#ffffff"/>
+                                    <rect width="24" height="5.34" y="10.66" fill="#002b7f"/>
+                                    <rect x="9.5" y="4" width="5" height="6.5" rx="0.7" fill="#ffffff" stroke="#002b7f" stroke-width="0.6"/>
+                                    <rect x="9.5" y="4" width="2.5" height="3.25" fill="#ff0000"/>
+                                    <rect x="12" y="7.25" width="2.5" height="3.25" fill="#ff0000"/>
+                                </svg>
+                                <div class="bento-flag-copy">
+                                    <strong class="bento-flag-code">CRO</strong>
+                                    <span class="bento-flag-name">CROATIA</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bento-base-pill">
+                            <svg class="bento-pin-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                                <circle cx="12" cy="10" r="3"/>
+                            </svg>
+                            <span>Berlin / Remote / Ingolstadt</span>
+                        </div>
+                    </article>
+
+                    <!-- TILE C: CURRENT CLUB & TACTICAL VISION (RIGHT-TOP) -->
+                    <article class="bento-tile bento-tile-club" aria-label="Current Club and Tactical Vision">
+                        <div class="bento-club-top">
+                            <div class="bento-tile-head">
+                                <span class="bento-eyebrow">CURRENT CLUB</span>
+                                <span class="bento-club-status">FULL-TIME</span>
+                            </div>
+
+                            <a href="https://careers.mediamarktsaturn.com/" target="_blank" rel="noopener noreferrer" class="bento-club-link">
+                                <span class="bento-club-name">MediaMarktSaturn</span>
+                                <span class="bento-club-arrow" aria-hidden="true">↗</span>
+                            </a>
+
+                            <div class="bento-contract-line">
+                                <span class="bento-contract-kicker">CONTRACT</span>
+                                <span class="bento-contract-dates">Oct 2022 – Present (Full-time)</span>
+                            </div>
+                        </div>
+
+                        <div class="bento-club-divider" aria-hidden="true"></div>
+
+                        <div class="bento-vision-split">
+                            <span class="bento-vision-key">TACTICAL VISION</span>
+                            <span class="bento-vision-val">Tiki-Data &amp; Cloud Pipelines</span>
+                        </div>
+                    </article>
+
+                    <!-- TILE D: DIRECT MANAGER CHANNELS (LEFT-BOTTOM) -->
+                    <article class="bento-tile bento-tile-channels" aria-label="Direct Manager Channels">
+                        <div class="bento-tile-head">
+                            <span class="bento-eyebrow">DIRECT MANAGER CHANNELS</span>
+                            <span class="bento-micro-code">COMMS // 05</span>
+                        </div>
+
+                        <div class="bento-channels-title-row">
+                            <h3 class="bento-channels-kicker">
+                                <span class="bento-kicker-solid">OPEN</span>
+                                <span class="bento-kicker-outline">COMMS</span>
+                            </h3>
+                            <p class="bento-channels-sub">Engineering collaboration &amp; product talks</p>
+                        </div>
+
+                        <div class="bento-medallion-grid" role="group" aria-label="Social and Contact Channels">
+                            <a href="mailto:hi@tomigelo.com" class="bento-medallion" aria-label="Email Tomi Gelo (hi@tomigelo.com)" title="Email (hi@tomigelo.com)">
+                                <svg class="bento-medallion-svg" viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">
+                                    <path d="M20 4H4c-1.1 0-2 .9-2 2v.4l10 6.25L22 6.4V6c0-1.1-.9-2-2-2z"/>
+                                    <path d="M2 8.75V18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8.75l-9.47 5.92a1 1 0 0 1-1.06 0L2 8.75z"/>
+                                </svg>
+                            </a>
+                            <a href="https://x.com/tgel0" target="_blank" rel="noopener noreferrer" class="bento-medallion" aria-label="X (@tgel0)" title="X (@tgel0)">
+                                <svg class="bento-medallion-svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+                                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                </svg>
+                            </a>
+                            <a href="https://www.threads.com/@tgel0" target="_blank" rel="noopener noreferrer" class="bento-medallion" aria-label="Threads (@tgel0)" title="Threads (@tgel0)">
+                                <svg class="bento-medallion-svg" viewBox="0 0 192 192" width="21" height="21" fill="currentColor" aria-hidden="true">
+                                    <path d="M141.537 88.988a66.667 66.667 0 0 0-2.518-1.143c-1.482-27.307-16.403-42.94-41.457-43.1h-.34c-14.986 0-27.449 6.396-35.12 18.036l13.779 9.452c5.73-8.695 14.724-10.548 21.348-10.548h.229c8.249.053 14.474 2.452 18.503 7.129 2.932 3.405 4.893 8.111 5.864 14.05-7.314-1.243-15.224-1.626-23.68-1.14-23.82 1.371-39.134 15.264-38.105 34.568.522 9.792 5.4 18.216 13.735 23.719 7.047 4.652 16.124 6.927 25.557 6.412 12.458-.683 22.231-5.436 29.049-14.127 5.178-6.6 8.453-15.153 9.899-25.93 5.937 3.583 10.337 8.298 12.767 13.966 4.132 9.635 4.373 25.468-8.546 38.376-11.319 11.308-24.925 16.2-45.488 16.351-22.809-.169-40.06-7.484-51.275-21.742C35.236 139.966 29.808 120.682 29.605 96c.203-24.682 5.63-43.966 16.133-57.317C56.954 24.425 74.204 17.11 97.013 16.94c22.975.17 40.526 7.52 52.171 21.847 5.71 7.026 10.015 15.86 12.853 26.162l16.147-4.308c-3.44-12.68-8.853-23.606-16.219-32.668C147.036 9.607 125.202.195 97.07 0h-.113C68.882.195 47.292 9.643 32.788 28.08 19.882 44.485 13.224 67.315 13.001 95.932L13 96v.067c.224 28.617 6.882 51.447 19.788 67.854C47.292 182.358 68.882 191.806 96.957 192h.113c24.96-.173 42.554-6.708 57.048-21.189 18.963-18.945 18.392-42.692 12.142-57.27-4.484-10.454-13.033-18.945-24.723-24.553zm-43.096 42.204c-10.44.588-21.286-4.098-21.82-14.135-.397-7.442 5.296-15.746 22.461-16.735 1.966-.113 3.895-.169 5.79-.169 6.235 0 12.068.606 17.371 1.765-1.978 24.702-13.58 28.713-23.802 29.274z"/>
+                                </svg>
+                            </a>
+                            <a href="https://bsky.app/profile/tomigelo.com" target="_blank" rel="noopener noreferrer" class="bento-medallion" aria-label="Bluesky (@tomigelo.com)" title="Bluesky (@tomigelo.com)">
+                                <svg class="bento-medallion-svg" viewBox="0 0 600 530" width="22" height="20" fill="currentColor" aria-hidden="true">
+                                    <path d="m135.72 44.03c66.496 49.921 138.02 151.14 164.28 205.46 26.262-54.316 97.782-155.54 164.28-205.46 47.98-36.021 125.72-63.892 125.72 24.795 0 17.712-10.155 148.79-16.111 170.07-20.703 73.984-96.144 92.854-163.25 81.433 117.3 19.964 147.14 86.092 82.697 152.22-122.39 125.59-175.91-31.511-189.63-71.766-2.514-7.3797-3.6904-10.832-3.7077-7.8964-0.0174-2.9357-1.1937 0.51669-3.7077 7.8964-13.714 40.255-67.233 197.36-189.63 71.766-64.444-66.128-34.605-132.26 82.697-152.22-67.108 11.421-142.55-7.4491-163.25-81.433-5.9562-21.282-16.111-152.36-16.111-170.07 0-88.687 77.742-60.816 125.72-24.795z"/>
+                                </svg>
+                            </a>
+                            <a href="https://github.com/tgel0" target="_blank" rel="noopener noreferrer" class="bento-medallion" aria-label="GitHub (@tgel0)" title="GitHub (@tgel0)">
+                                <svg class="bento-medallion-svg" viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">
+                                    <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </article>
+
+                    <!-- TILE E: PRESS WIRE LEADERBOARD (CENTER-BOTTOM + RIGHT-BOTTOM, SPAN 2 COLS) -->
+                    <section class="bento-tile bento-tile-press" aria-label="Press Wire Leaderboard">
+                        <div class="bento-tile-head bento-press-head">
+                            <span class="bento-eyebrow">PRESS WIRE // BREAKING HEADLINES</span>
+                            <span class="bento-press-live"><span class="pulse-dot" aria-hidden="true"></span> 3 STORIES</span>
+                        </div>
+
+                        <div class="bento-press-layout">
+                            <!-- Left Half: Story #1 Featured Spotlight -->
+                            <a href="https://app.mailbrew.com/tgel0/not-so-bigquery-9HLtpmj0Pl8B" target="_blank" rel="noopener noreferrer" class="bento-press-spotlight">
+                                <div class="bento-spotlight-meta">
+                                    <span class="bento-rank-pill bento-rank-01">★ #01 FEATURED</span>
+                                    <span class="bento-press-date">20 OCT 2026</span>
+                                    <span class="bento-issue-pill">ISSUE #300</span>
+                                </div>
+
+                                <div class="bento-spotlight-hero">
+                                    <div class="bento-spotlight-copy">
+                                        <div class="bento-spotlight-kicker" aria-hidden="true">
+                                            <span class="bento-kicker-solid">LANDMARK</span>
+                                            <span class="bento-kicker-muted">ISSUE #300</span>
                                         </div>
+                                        <h3 class="bento-spotlight-headline">Not So BigQuery hits landmark Issue #300</h3>
                                     </div>
-                                    <h2 class="career-mgr-name">TOMI GELO</h2>
-                                    <p class="career-mgr-sub">Berlin, DE &bull; Cloud Data &amp; AI Systems</p>
+                                    <div class="bento-spotlight-media">
+                                        <img src="press-nsbq-300.jpg?v=tgfc23" alt="Not So BigQuery Newsletter Issue #300 Milestone Announcement" class="bento-press-img" width="1376" height="768" loading="lazy">
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div class="board-confidence-meter">
-                                <div class="confidence-header">
-                                    <span>BOARD CONFIDENCE RATING</span>
-                                    <strong>96 / 100 (CRITICAL)</strong>
-                                </div>
-                                <div class="triad-bar"><div class="triad-fill" style="width: 96%;"></div></div>
-                            </div>
+                                <p class="bento-spotlight-excerpt">300 editions reached. Weekly curated deep-dives into BigQuery architectures, cloud data engineering patterns, and analytics community highlights since 2020.</p>
 
-                            <div class="career-dossier-box">
-                                <dl class="career-quick-facts">
-                                    <div><dt>CURRENT CLUB</dt><dd><a href="https://careers.mediamarktsaturn.com/" target="_blank" rel="noopener noreferrer" class="career-fact-link">MediaMarktSaturn ↗</a></dd></div>
-                                    <div><dt>CONTRACT</dt><dd>Oct 2022 – Present (Full-time)</dd></div>
-                                    <div><dt>TACTICAL VISION</dt><dd>Tiki-Data &amp; Cloud Pipelines</dd></div>
-                                    <div><dt>TOUCHLINE BASE</dt><dd>Berlin / Remote / Ingolstadt</dd></div>
-                                </dl>
-                            </div>
+                                <div class="bento-spotlight-cta">
+                                    <span>READ ISSUE #300</span>
+                                    <span class="bento-cta-arrow" aria-hidden="true">↗</span>
+                                </div>
+                            </a>
 
-                            <div class="career-channels-section" role="region" aria-label="Direct Manager Channels">
-                                <div class="channels-header">
-                                    <span class="channels-kicker">DIRECT MANAGER CHANNELS</span>
-                                    <span class="channels-count">COMMS (5)</span>
-                                </div>
-                                <p class="channels-desc">Reach out for engineering collaboration, technical consulting, or product discussions:</p>
-                                <div class="channel-icon-bar">
-                                    <a href="mailto:hi@tomigelo.com" class="channel-icon-btn" aria-label="Email Tomi Gelo (hi@tomigelo.com)" title="Email (hi@tomigelo.com)">
-                                        <svg class="channel-svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
-                                            <path d="M20 4H4c-1.1 0-2 .9-2 2v.4l10 6.25L22 6.4V6c0-1.1-.9-2-2-2z"/>
-                                            <path d="M2 8.75V18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8.75l-9.47 5.92a1 1 0 0 1-1.06 0L2 8.75z"/>
-                                        </svg>
-                                    </a>
-                                    <a href="https://x.com/tgel0" target="_blank" rel="noopener noreferrer" class="channel-icon-btn" aria-label="X (@tgel0)" title="X (@tgel0)">
-                                        <svg class="channel-svg" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
-                                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                                        </svg>
-                                    </a>
-                                    <a href="https://www.threads.com/@tgel0" target="_blank" rel="noopener noreferrer" class="channel-icon-btn" aria-label="Threads (@tgel0)" title="Threads (@tgel0)">
-                                        <svg class="channel-svg" viewBox="0 0 192 192" width="19" height="19" fill="currentColor" aria-hidden="true">
-                                            <path d="M141.537 88.988a66.667 66.667 0 0 0-2.518-1.143c-1.482-27.307-16.403-42.94-41.457-43.1h-.34c-14.986 0-27.449 6.396-35.12 18.036l13.779 9.452c5.73-8.695 14.724-10.548 21.348-10.548h.229c8.249.053 14.474 2.452 18.503 7.129 2.932 3.405 4.893 8.111 5.864 14.05-7.314-1.243-15.224-1.626-23.68-1.14-23.82 1.371-39.134 15.264-38.105 34.568.522 9.792 5.4 18.216 13.735 23.719 7.047 4.652 16.124 6.927 25.557 6.412 12.458-.683 22.231-5.436 29.049-14.127 5.178-6.6 8.453-15.153 9.899-25.93 5.937 3.583 10.337 8.298 12.767 13.966 4.132 9.635 4.373 25.468-8.546 38.376-11.319 11.308-24.925 16.2-45.488 16.351-22.809-.169-40.06-7.484-51.275-21.742C35.236 139.966 29.808 120.682 29.605 96c.203-24.682 5.63-43.966 16.133-57.317C56.954 24.425 74.204 17.11 97.013 16.94c22.975.17 40.526 7.52 52.171 21.847 5.71 7.026 10.015 15.86 12.853 26.162l16.147-4.308c-3.44-12.68-8.853-23.606-16.219-32.668C147.036 9.607 125.202.195 97.07 0h-.113C68.882.195 47.292 9.643 32.788 28.08 19.882 44.485 13.224 67.315 13.001 95.932L13 96v.067c.224 28.617 6.882 51.447 19.788 67.854C47.292 182.358 68.882 191.806 96.957 192h.113c24.96-.173 42.554-6.708 57.048-21.189 18.963-18.945 18.392-42.692 12.142-57.27-4.484-10.454-13.033-18.945-24.723-24.553zm-43.096 42.204c-10.44.588-21.286-4.098-21.82-14.135-.397-7.442 5.296-15.746 22.461-16.735 1.966-.113 3.895-.169 5.79-.169 6.235 0 12.068.606 17.371 1.765-1.978 24.702-13.58 28.713-23.802 29.274z"/>
-                                        </svg>
-                                    </a>
-                                    <a href="https://bsky.app/profile/tomigelo.com" target="_blank" rel="noopener noreferrer" class="channel-icon-btn" aria-label="Bluesky (@tomigelo.com)" title="Bluesky (@tomigelo.com)">
-                                        <svg class="channel-svg" viewBox="0 0 600 530" width="20" height="18" fill="currentColor" aria-hidden="true">
-                                            <path d="m135.72 44.03c66.496 49.921 138.02 151.14 164.28 205.46 26.262-54.316 97.782-155.54 164.28-205.46 47.98-36.021 125.72-63.892 125.72 24.795 0 17.712-10.155 148.79-16.111 170.07-20.703 73.984-96.144 92.854-163.25 81.433 117.3 19.964 147.14 86.092 82.697 152.22-122.39 125.59-175.91-31.511-189.63-71.766-2.514-7.3797-3.6904-10.832-3.7077-7.8964-0.0174-2.9357-1.1937 0.51669-3.7077 7.8964-13.714 40.255-67.233 197.36-189.63 71.766-64.444-66.128-34.605-132.26 82.697-152.22-67.108 11.421-142.55-7.4491-163.25-81.433-5.9562-21.282-16.111-152.36-16.111-170.07 0-88.687 77.742-60.816 125.72-24.795z"/>
-                                        </svg>
-                                    </a>
-                                    <a href="https://github.com/tgel0" target="_blank" rel="noopener noreferrer" class="channel-icon-btn" aria-label="GitHub (@tgel0)" title="GitHub (@tgel0)">
-                                        <svg class="channel-svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
-                                            <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
-                                        </svg>
-                                    </a>
-                                </div>
-                            </div>
+                            <!-- Right Half: Stacked Ranked Stories #02 and #03 -->
+                            <div class="bento-press-ranks">
+                                <!-- Story #02 -->
+                                <a href="https://careers.mediamarktsaturn.com/" target="_blank" rel="noopener noreferrer" class="bento-rank-row">
+                                    <span class="bento-rank-num">02</span>
+                                    <div class="bento-rank-thumb">
+                                        <img src="press-mms-transfer.jpg?v=tgfc23" alt="MediaMarktSaturn confirms Data Engineer contract signing" class="bento-press-img" width="1376" height="768" loading="lazy">
+                                    </div>
+                                    <div class="bento-rank-body">
+                                        <div class="bento-rank-meta">
+                                            <span class="bento-rank-tag bento-tag-transfer">TRANSFER DESK</span>
+                                            <span class="bento-rank-date">OCT 2022 – PRESENT</span>
+                                        </div>
+                                        <h3 class="bento-rank-headline">MediaMarktSaturn seals deal for Data Engineer</h3>
+                                        <span class="bento-rank-sub">MEDIAMARKTSATURN // CLUB DESK</span>
+                                    </div>
+                                    <span class="bento-rank-arrow" aria-hidden="true">↗</span>
+                                </a>
 
-                            <div class="career-support-card">
-                                <div class="support-header">
-                                    <span class="support-badge">CLUB SPONSORSHIP</span>
-                                    <span class="support-status">OPEN</span>
-                                </div>
-                                <p class="support-text">Support the lab and help fund the next software experiment:</p>
-                                <a href="https://buymeacoffee.com/tgel0" target="_blank" rel="noopener noreferrer" class="fc-btn-primary full-width-btn support-btn">
-                                    <span>Transfer Coffee (buymeacoffee.com/tgel0) ↗</span>
+                                <!-- Story #03 -->
+                                <a href="https://cloud.google.com/blog/products/data-analytics/google-cloud-data-hero-series-meet-tomi" target="_blank" rel="noopener noreferrer" class="bento-rank-row">
+                                    <span class="bento-rank-num">03</span>
+                                    <div class="bento-rank-thumb">
+                                        <img src="press-google-cloud.jpg?v=tgfc23" alt="Google Cloud Blog Feature: Data Heroes Series interview with Tomi Gelo" class="bento-press-img" width="1376" height="768" loading="lazy">
+                                    </div>
+                                    <div class="bento-rank-body">
+                                        <div class="bento-rank-meta">
+                                            <span class="bento-rank-tag bento-tag-press">PRESS EXCLUSIVE</span>
+                                            <span class="bento-rank-date">JULY 2022</span>
+                                        </div>
+                                        <h3 class="bento-rank-headline">Got interviewed for the Google Cloud Blog</h3>
+                                        <span class="bento-rank-sub">GOOGLE CLOUD BLOG // DATA HEROES</span>
+                                    </div>
+                                    <span class="bento-rank-arrow" aria-hidden="true">↗</span>
                                 </a>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Column 2: Press Wire & Breaking Headlines -->
-                    <div class="career-panel career-panel-news">
-                        <div class="panel-header-strip">
-                            <span>PRESS WIRE // BREAKING HEADLINES</span>
-                            <span class="status-live-wire"><span class="pulse-dot"></span> 3 STORIES</span>
-                        </div>
-                        <div class="career-news-feed" tabindex="0" role="region" aria-label="Press Wire Stories">
-                            <!-- Story 1: Not So BigQuery Newsletter Issue #300 Milestone (Most Recent: Oct 2026) -->
-                            <a href="https://app.mailbrew.com/tgel0/not-so-bigquery-9HLtpmj0Pl8B" target="_blank" rel="noopener noreferrer" class="fc-news-card fc-news-card-featured">
-                                <div class="news-media-wrap">
-                                    <img src="press-nsbq-300.jpg" alt="Not So BigQuery Newsletter Issue #300 Milestone Announcement" class="news-img" width="1376" height="768" loading="lazy">
-                                    <div class="news-media-overlay"></div>
-                                    <div class="news-tag-cluster">
-                                        <span class="news-badge news-badge-feat">★ FEATURED STORY</span>
-                                        <span class="news-date-tag">20 OCT 2026</span>
-                                    </div>
-                                </div>
-                                <div class="news-content">
-                                    <div class="news-meta-strip">
-                                        <span class="news-source">NOT SO BIGQUERY // MAILBREW</span>
-                                        <span class="news-badge-pill status-gold">ISSUE #300</span>
-                                    </div>
-                                    <h3 class="news-headline">Not So BigQuery hits landmark Issue #300</h3>
-                                    <p class="news-excerpt">300 editions reached. Weekly curated deep-dives into BigQuery architectures, cloud data engineering patterns, and analytics community highlights since 2020.</p>
-                                    <div class="news-footer">
-                                        <span>READ ISSUE #300 ON MAILBREW</span>
-                                        <span class="news-cta-arrow">↗</span>
-                                    </div>
-                                </div>
-                            </a>
-
-                            <!-- Story 2: MediaMarktSaturn Enterprise Transfer (Oct 2022) -->
-                            <a href="https://careers.mediamarktsaturn.com/" target="_blank" rel="noopener noreferrer" class="fc-news-card">
-                                <div class="news-media-wrap">
-                                    <img src="press-mms-transfer.jpg" alt="MediaMarktSaturn confirms Data Engineer contract signing" class="news-img" width="1376" height="768" loading="lazy">
-                                    <div class="news-media-overlay"></div>
-                                    <div class="news-tag-cluster">
-                                        <span class="news-badge news-badge-transfer">TRANSFER DESK</span>
-                                        <span class="news-date-tag">OCT 2022 – PRESENT</span>
-                                    </div>
-                                </div>
-                                <div class="news-content">
-                                    <div class="news-meta-strip">
-                                        <span class="news-source">MEDIAMARKTSATURN // CLUB DESK</span>
-                                        <span class="news-badge-pill status-volt">CONFIRMED MOVE</span>
-                                    </div>
-                                    <h3 class="news-headline">MediaMarktSaturn seals deal for Data Engineer</h3>
-                                    <p class="news-excerpt">Enterprise contract locked in. Orchestrating central cloud data platforms, high-throughput BigQuery warehouses, and retail analytics engines across Berlin &amp; Ingolstadt.</p>
-                                    <div class="news-footer">
-                                        <span>VISIT CLUB CAREERS PORTAL</span>
-                                        <span class="news-cta-arrow">↗</span>
-                                    </div>
-                                </div>
-                            </a>
-
-                            <!-- Story 3: Google Cloud Blog Interview (July 2022) -->
-                            <a href="https://cloud.google.com/blog/products/data-analytics/google-cloud-data-hero-series-meet-tomi" target="_blank" rel="noopener noreferrer" class="fc-news-card">
-                                <div class="news-media-wrap">
-                                    <img src="press-google-cloud.jpg" alt="Google Cloud Blog Feature: Data Heroes Series interview with Tomi Gelo" class="news-img" width="1376" height="768" loading="lazy">
-                                    <div class="news-media-overlay"></div>
-                                    <div class="news-tag-cluster">
-                                        <span class="news-badge news-badge-labs">PRESS EXCLUSIVE</span>
-                                        <span class="news-date-tag">JULY 2022</span>
-                                    </div>
-                                </div>
-                                <div class="news-content">
-                                    <div class="news-meta-strip">
-                                        <span class="news-source">GOOGLE CLOUD BLOG // DATA HEROES</span>
-                                        <span class="news-badge-pill status-cyan">OFFICIAL PRESS</span>
-                                    </div>
-                                    <h3 class="news-headline">Got interviewed for the Google Cloud Blog</h3>
-                                    <p class="news-excerpt">Featured interview in the official Google Cloud Data Heroes Series, spotlighting modern BigQuery pipeline patterns, the Not So BigQuery newsletter, and community engineering craft.</p>
-                                    <div class="news-footer">
-                                        <span>READ FULL INTERVIEW</span>
-                                        <span class="news-cta-arrow">↗</span>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
+                    </section>
 
                 </div>
             </div>

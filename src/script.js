@@ -641,6 +641,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Handle device rotation between Portrait (locked with Rotate animation) and Landscape (unlocked widescreen)
     function handleViewportOrOrientationChange() {
         updateViewportScale();
+        if (typeof isSettingsMenuOpen === 'function' && isSettingsMenuOpen()) {
+            syncSettingsMenuPosition();
+        }
         if (!state.hasPassedBoot) return;
 
         if (isPortraitLocked() && state.screen !== 'mobile-gate') {
@@ -730,6 +733,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (targetScreen === 'hub' || targetScreen === 'projects' || targetScreen === 'work') {
             state.lastUnlockedScreen = targetScreen;
+        }
+        if (typeof closeSettingsMenu === 'function') {
+            closeSettingsMenu(false);
         }
 
         state.screen = targetScreen;
@@ -905,20 +911,107 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     /* ======================================================================
-       10. SOUNDTRACK CONTROLS & BOTTOM CONTROLLER LEGEND
+       10. SOUNDTRACK CONTROLS, SETTINGS POPOVER & BENTO THEME PICKER
        ====================================================================== */
+    const THEME_STORAGE_KEY = 'tgfc-central-bento-theme';
     const btnAudioToggle = document.getElementById('btn-audio-toggle');
     const audioStatusLabel = document.getElementById('audio-status-label');
     const btnNextTrack = document.getElementById('btn-next-track');
     const promptNextTrackBtn = document.getElementById('prompt-next-track-btn');
 
-    function handleAudioToggle() {
-        const isOn = audio.toggleMute();
-        audioStatusLabel.textContent = isOn ? 'AUDIO: ON' : 'AUDIO: MUTED';
-        btnAudioToggle.setAttribute('aria-pressed', isOn ? 'true' : 'false');
+    const btnSettingsToggle = document.getElementById('btn-settings-toggle');
+    const btnSettingsClose = document.getElementById('btn-settings-close');
+    const hudSettingsMenu = document.getElementById('hud-settings-menu');
+    const settingsAudioToggle = document.getElementById('settings-audio-toggle');
+    const settingsAudioLabel = document.getElementById('settings-audio-label');
+    const settingsNextTrack = document.getElementById('settings-next-track');
+    const themeOptionBtns = Array.from(document.querySelectorAll('[data-bento-theme-option]'));
+
+    function readSavedBentoTheme() {
+        try {
+            const raw = window.localStorage.getItem(THEME_STORAGE_KEY);
+            return raw === 'dark' || raw === 'pop' ? raw : 'pop';
+        } catch (_) {
+            return 'pop';
+        }
+    }
+
+    function applyCentralBentoTheme(themeName, persist = true) {
+        const theme = themeName === 'dark' ? 'dark' : 'pop';
+        if (workViewCentral) {
+            workViewCentral.setAttribute('data-bento-theme', theme);
+        }
+        themeOptionBtns.forEach(btn => {
+            const isSelected = btn.getAttribute('data-bento-theme-option') === theme;
+            btn.classList.toggle('active', isSelected);
+            btn.setAttribute('aria-checked', isSelected ? 'true' : 'false');
+            btn.setAttribute('tabindex', isSelected ? '0' : '-1');
+        });
+        if (persist) {
+            try {
+                window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+            } catch (_) {
+                // Ignore storage quota/privacy-mode errors cleanly
+            }
+        }
+    }
+
+    applyCentralBentoTheme(readSavedBentoTheme(), false);
+
+    function syncAudioButtonsUI(isOn) {
+        const text = isOn ? 'AUDIO: ON' : 'AUDIO: MUTED';
+        const pressed = isOn ? 'true' : 'false';
+        if (audioStatusLabel) audioStatusLabel.textContent = text;
+        if (btnAudioToggle) btnAudioToggle.setAttribute('aria-pressed', pressed);
+        if (settingsAudioLabel) settingsAudioLabel.textContent = text;
+        if (settingsAudioToggle) settingsAudioToggle.setAttribute('aria-pressed', pressed);
         if (hudEqBars) {
             hudEqBars.classList.toggle('paused', !isOn);
         }
+    }
+
+    function isSettingsMenuOpen() {
+        return Boolean(hudSettingsMenu && !hudSettingsMenu.hidden);
+    }
+
+    function syncSettingsMenuPosition() {
+        if (!hudSettingsMenu || !topHud) return;
+        const topOffset = topHud.offsetTop + topHud.offsetHeight + 8;
+        if (topOffset > 8) {
+            hudSettingsMenu.style.top = `${topOffset}px`;
+        } else {
+            hudSettingsMenu.style.removeProperty('top');
+        }
+    }
+
+    function openSettingsMenu(playSound = true) {
+        if (!hudSettingsMenu || topHud?.hidden) return;
+        if (playSound) audio.playTick();
+        syncSettingsMenuPosition();
+        hudSettingsMenu.hidden = false;
+        btnSettingsToggle?.setAttribute('aria-expanded', 'true');
+        btnSettingsToggle?.classList.add('is-open');
+    }
+
+    function closeSettingsMenu(playSound = false) {
+        if (!hudSettingsMenu || hudSettingsMenu.hidden) return;
+        if (playSound) audio.playTick();
+        hudSettingsMenu.hidden = true;
+        btnSettingsToggle?.setAttribute('aria-expanded', 'false');
+        btnSettingsToggle?.classList.remove('is-open');
+    }
+
+    function toggleSettingsMenu() {
+        if (isSettingsMenuOpen()) {
+            closeSettingsMenu(true);
+        } else {
+            openSettingsMenu(true);
+        }
+    }
+
+    function handleAudioToggle() {
+        const isOn = audio.toggleMute();
+        syncAudioButtonsUI(isOn);
     }
 
     function handleNextTrack() {
@@ -928,8 +1021,46 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     btnAudioToggle?.addEventListener('click', handleAudioToggle);
+    settingsAudioToggle?.addEventListener('click', handleAudioToggle);
     btnNextTrack?.addEventListener('click', handleNextTrack);
+    settingsNextTrack?.addEventListener('click', handleNextTrack);
     promptNextTrackBtn?.addEventListener('click', handleNextTrack);
+
+    btnSettingsToggle?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleSettingsMenu();
+    });
+
+    btnSettingsClose?.addEventListener('click', () => {
+        closeSettingsMenu(true);
+        btnSettingsToggle?.focus();
+    });
+
+    themeOptionBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetTheme = btn.getAttribute('data-bento-theme-option');
+            audio.playTick();
+            applyCentralBentoTheme(targetTheme, true);
+        });
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!isSettingsMenuOpen()) return;
+        const target = e.target;
+        if (
+            target instanceof Node &&
+            !hudSettingsMenu.contains(target) &&
+            !btnSettingsToggle?.contains(target)
+        ) {
+            closeSettingsMenu(false);
+        }
+    });
+
+    window.addEventListener('resize', () => {
+        if (isSettingsMenuOpen()) {
+            syncSettingsMenuPosition();
+        }
+    });
 
     promptBackBtn?.addEventListener('click', () => {
         if (state.screen === 'projects' || state.screen === 'work') {
@@ -949,6 +1080,18 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ======================================================================
        11. GLOBAL KEYBOARD / CONTROLLER SHORTCUTS
        ====================================================================== */
+    function isTypingTarget(target) {
+        if (!(target instanceof Element)) return false;
+        const tag = target.tagName;
+        return (
+            tag === 'INPUT' ||
+            tag === 'TEXTAREA' ||
+            tag === 'SELECT' ||
+            target.isContentEditable ||
+            Boolean(target.closest('[contenteditable="true"]'))
+        );
+    }
+
     window.addEventListener('keydown', (e) => {
         // 1. Boot Screen: Any key starts once loaded
         if (state.screen === 'boot') {
@@ -964,17 +1107,53 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        if (isTypingTarget(e.target)) {
+            return;
+        }
+
+        // Escape closes open Settings popover first without navigating back
+        if (e.key === 'Escape' && isSettingsMenuOpen()) {
+            e.preventDefault();
+            e.stopPropagation();
+            closeSettingsMenu(true);
+            btnSettingsToggle?.focus();
+            return;
+        }
+
+        const hasModifier = e.ctrlKey || e.metaKey || e.altKey;
+
+        // Settings & Theme Picker shortcut (O)
+        if (!hasModifier && (e.key === 'o' || e.key === 'O')) {
+            e.preventDefault();
+            toggleSettingsMenu();
+            return;
+        }
+
         // Audio mute shortcut (M)
-        if (e.key === 'm' || e.key === 'M') {
+        if (!hasModifier && (e.key === 'm' || e.key === 'M')) {
             e.preventDefault();
             handleAudioToggle();
             return;
         }
 
         // Next Soundtrack Song shortcut (N)
-        if (e.key === 'n' || e.key === 'N') {
+        if (!hasModifier && (e.key === 'n' || e.key === 'N')) {
             e.preventDefault();
             handleNextTrack();
+            return;
+        }
+
+        // Prevent screen navigation behind open Settings popover
+        if (isSettingsMenuOpen()) {
+            const activeOptIdx = themeOptionBtns.indexOf(document.activeElement);
+            if (activeOptIdx !== -1 && (e.key === 'ArrowRight' || e.key === 'ArrowLeft' || e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+                e.preventDefault();
+                const delta = (e.key === 'ArrowRight' || e.key === 'ArrowDown') ? 1 : -1;
+                const nextBtn = themeOptionBtns[(activeOptIdx + delta + themeOptionBtns.length) % themeOptionBtns.length];
+                audio.playTick();
+                applyCentralBentoTheme(nextBtn.getAttribute('data-bento-theme-option'), true);
+                nextBtn.focus();
+            }
             return;
         }
 
