@@ -25,6 +25,8 @@ document.addEventListener('DOMContentLoaded', () => {
             crestClass: 'crest-volt',
             league: 'LEAGUE 01 // AI & ANALYTICS (PLACEHOLDER)',
             name: 'PROJECT ALPHA FC',
+            namePrimary: 'PROJECT ALPHA',
+            nameOutline: 'FC',
             ovr: '92 OVR',
             stars: '★★★★★',
             desc: 'Placeholder description for Project 01. In Iteration 2, this slot will connect to your real project data, live deployment URLs, and architecture telemetry.',
@@ -42,6 +44,8 @@ document.addEventListener('DOMContentLoaded', () => {
             crestClass: 'crest-cyan',
             league: 'LEAGUE 02 // CONSUMER & AUDIO (PLACEHOLDER)',
             name: 'PROJECT BETA UNITED',
+            namePrimary: 'PROJECT BETA',
+            nameOutline: 'UNITED',
             ovr: '89 OVR',
             stars: '★★★★☆',
             desc: 'Placeholder description for Project 02. Demonstrates how switching clubs in Kick-Off dynamically updates the ATT / MID / DEF telemetry bars and match facts.',
@@ -59,6 +63,8 @@ document.addEventListener('DOMContentLoaded', () => {
             crestClass: 'crest-gold',
             league: 'LEAGUE 03 // OPEN SOURCE & DATA (PLACEHOLDER)',
             name: 'PROJECT GAMMA ATHLETIC',
+            namePrimary: 'PROJECT GAMMA',
+            nameOutline: 'ATHLETIC',
             ovr: '94 OVR',
             stars: '★★★★★',
             desc: 'Placeholder description for Project 03. Showcases a 5-star Open Source club item with top-tier backend and developer experience ratings.',
@@ -784,9 +790,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const clubCounterLabel = document.getElementById('club-counter-label');
     const previewClubLeague = document.getElementById('preview-club-league');
     const previewClubCrest = document.getElementById('preview-club-crest');
+    const previewClubWatermark = document.getElementById('preview-club-watermark');
     const previewClubOvr = document.getElementById('preview-club-ovr');
     const previewClubStars = document.getElementById('preview-club-stars');
     const previewClubName = document.getElementById('preview-club-name');
+    const previewClubNamePrimary = document.getElementById('preview-club-name-primary');
+    const previewClubNameOutline = document.getElementById('preview-club-name-outline');
     const previewClubDesc = document.getElementById('preview-club-desc');
     const previewClubAtt = document.getElementById('preview-club-att');
     const previewClubMid = document.getElementById('preview-club-mid');
@@ -797,8 +806,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const previewClubFormation = document.getElementById('preview-club-formation');
     const previewClubStack = document.getElementById('preview-club-stack');
     const previewClubSeason = document.getElementById('preview-club-season');
+    const previewClubLink = document.getElementById('preview-club-link');
 
     function selectProjectClub(index, playSound = true) {
+        if (!PLACEHOLDER_CLUBS.length) return;
         const clamped = (index + PLACEHOLDER_CLUBS.length) % PLACEHOLDER_CLUBS.length;
         if (state.activeClubIndex !== clamped && playSound) {
             audio.playTick();
@@ -812,30 +823,53 @@ document.addEventListener('DOMContentLoaded', () => {
             card.setAttribute('aria-selected', isSelected ? 'true' : 'false');
         });
 
-        clubCounterLabel.textContent = `CLUB 0${clamped + 1} / 0${PLACEHOLDER_CLUBS.length}`;
-        previewClubLeague.textContent = club.league;
-        previewClubCrest.textContent = club.code;
-        previewClubCrest.className = `club-crest-giant ${club.crestClass}`;
-        previewClubOvr.textContent = club.ovr;
-        previewClubStars.textContent = club.stars;
-        previewClubName.textContent = club.name;
-        previewClubDesc.textContent = club.desc;
+        if (clubCounterLabel) clubCounterLabel.textContent = `CLUB 0${clamped + 1} / 0${PLACEHOLDER_CLUBS.length}`;
+        if (previewClubLeague) previewClubLeague.textContent = club.league;
+        if (previewClubCrest) {
+            previewClubCrest.textContent = club.code;
+            previewClubCrest.className = `club-crest-giant ${club.crestClass}`;
+        }
+        if (previewClubWatermark) previewClubWatermark.textContent = club.code;
+        if (previewClubOvr) previewClubOvr.textContent = club.ovr;
+        if (previewClubStars) {
+            previewClubStars.textContent = club.stars;
+            const starCount = (club.stars.match(/★/g) || []).length;
+            previewClubStars.setAttribute('aria-label', `${starCount} out of 5 stars`);
+        }
 
-        previewClubAtt.textContent = club.att;
-        previewClubMid.textContent = club.mid;
-        previewClubDef.textContent = club.def;
-        previewBarAtt.style.width = `${club.att}%`;
-        previewBarMid.style.width = `${club.mid}%`;
-        previewBarDef.style.width = `${club.def}%`;
+        if (previewClubNamePrimary && previewClubNameOutline) {
+            const parts = club.name ? club.name.split(' ') : ['PROJECT', 'CLUB'];
+            const fallbackPrimary = parts.slice(0, -1).join(' ') || club.name || '';
+            const fallbackOutline = parts.length > 1 ? parts[parts.length - 1] : '';
+            previewClubNamePrimary.textContent = club.namePrimary || fallbackPrimary;
+            previewClubNameOutline.textContent = club.nameOutline || fallbackOutline;
+            if (previewClubName) {
+                previewClubName.setAttribute('aria-label', club.name);
+            }
+        } else if (previewClubName) {
+            previewClubName.textContent = club.name;
+        }
 
-        previewClubFormation.textContent = club.formation;
-        previewClubStack.textContent = club.stack;
-        previewClubSeason.textContent = club.season;
+        if (previewClubDesc) previewClubDesc.textContent = club.desc;
+
+        if (previewClubAtt) previewClubAtt.textContent = club.att;
+        if (previewClubMid) previewClubMid.textContent = club.mid;
+        if (previewClubDef) previewClubDef.textContent = club.def;
+        if (previewBarAtt) previewBarAtt.style.height = `${club.att}%`;
+        if (previewBarMid) previewBarMid.style.height = `${club.mid}%`;
+        if (previewBarDef) previewBarDef.style.height = `${club.def}%`;
+
+        if (previewClubFormation) previewClubFormation.textContent = club.formation;
+        if (previewClubStack) previewClubStack.textContent = club.stack;
+        if (previewClubSeason) previewClubSeason.textContent = club.season;
+        if (previewClubLink && club.url) previewClubLink.setAttribute('href', club.url);
     }
 
     clubCards.forEach((card, idx) => {
         card.addEventListener('click', () => selectProjectClub(idx, true));
     });
+
+    selectProjectClub(0, false);
 
     const projectsTabBtns = Array.from(document.querySelectorAll('[data-projects-tab]'));
     const projectsViewKickoff = document.getElementById('projects-view-kickoff');
@@ -940,6 +974,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const theme = themeName === 'dark' ? 'dark' : 'pop';
         if (workViewCentral) {
             workViewCentral.setAttribute('data-bento-theme', theme);
+        }
+        if (projectsViewKickoff) {
+            projectsViewKickoff.setAttribute('data-bento-theme', theme);
         }
         themeOptionBtns.forEach(btn => {
             const isSelected = btn.getAttribute('data-bento-theme-option') === theme;
@@ -1184,10 +1221,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.preventDefault();
                 switchProjectsTab(state.projectsTab === 'kickoff' ? 'pitch' : 'kickoff');
             } else if (state.projectsTab === 'kickoff') {
-                if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
+                if (e.key === 'ArrowDown' || (!hasModifier && (e.key === 's' || e.key === 'S'))) {
                     e.preventDefault();
                     selectProjectClub(state.activeClubIndex + 1, true);
-                } else if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
+                } else if (e.key === 'ArrowUp' || (!hasModifier && (e.key === 'w' || e.key === 'W'))) {
                     e.preventDefault();
                     selectProjectClub(state.activeClubIndex - 1, true);
                 }

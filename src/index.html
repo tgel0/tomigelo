@@ -33,8 +33,8 @@
     <meta name="twitter:image" content="https://tomigelo.com/og-image.webp">
     <meta name="twitter:image:alt" content="Portrait of Tomi Gelo">
 
-    <link rel="stylesheet" href="styles.css?v=tgfc23">
-    <script defer src="script.js?v=tgfc23"></script>
+    <link rel="stylesheet" href="styles.css?v=tgfc24">
+    <script defer src="script.js?v=tgfc24"></script>
     <!-- 3D pitch stage scripts disabled while Central Hub displays manager avatar view; uncomment to re-enable:
     <script defer src="three.min.js?v=tgfc21"></script>
     <script defer src="eafc-trio-3d.js?v=tgfc21"></script>
@@ -261,8 +261,8 @@
             </div>
 
             <div class="settings-section">
-                <div class="settings-section-label">CENTRAL HUB // BENTO THEME</div>
-                <div class="settings-theme-group" role="radiogroup" aria-label="Central Hub Bento Theme">
+                <div class="settings-section-label">BENTO CONTRAST THEME</div>
+                <div class="settings-theme-group" role="radiogroup" aria-label="Bento Contrast Theme">
                     <button type="button" role="radio" aria-checked="true" tabindex="0" class="settings-theme-option active" data-bento-theme-option="pop">
                         <span class="theme-swatches" aria-hidden="true">
                             <span class="sw-chalk"></span>
@@ -481,15 +481,15 @@
                 <button type="button" class="bumper-btn" id="projects-rb-btn" title="Next Tab (E or RB)">RB / E</button>
             </div>
 
-            <!-- SUB-VIEW 1: KICK OFF / CLUB & MATCH SELECTOR -->
-            <div id="projects-view-kickoff" class="submode-view active">
-                <div class="kickoff-widescreen-layout">
+            <!-- SUB-VIEW 1: KICK OFF / CLUB & MATCH SELECTOR (ASYMMETRIC BENTO MOSAIC) -->
+            <div id="projects-view-kickoff" class="submode-view active" data-bento-theme="pop">
+                <div class="kickoff-bento-grid">
 
-                    <!-- Left Column: Playable Project Club Roster (Placeholders) -->
-                    <div class="kickoff-roster-panel">
-                        <div class="panel-header-strip">
-                            <span>SELECT PROJECT CLUB</span>
-                            <span class="panel-counter" id="club-counter-label">CLUB 01 / 03</span>
+                    <!-- TILE A (LEFT COLUMN): PROJECT ROSTER SELECTOR -->
+                    <aside class="bento-tile kickoff-tile-roster" aria-label="Project Club Roster">
+                        <div class="bento-tile-head kickoff-roster-head">
+                            <span class="bento-eyebrow">SELECT PROJECT CLUB</span>
+                            <span class="bento-pill kickoff-counter-pill" id="club-counter-label">CLUB 01 / 03</span>
                         </div>
 
                         <div class="club-selector-list" role="listbox" aria-label="Project Clubs">
@@ -498,9 +498,12 @@
                                 <div class="club-select-meta">
                                     <span class="club-league-tag">LEAGUE 01 // AI &amp; ANALYTICS (PLACEHOLDER)</span>
                                     <strong class="club-select-name">PROJECT ALPHA FC</strong>
-                                    <span class="club-select-stars">★★★★★ &bull; 92 OVR</span>
+                                    <div class="club-select-bottom">
+                                        <span class="club-select-stars">★★★★★</span>
+                                        <span class="club-select-ovr">92 OVR</span>
+                                    </div>
                                 </div>
-                                <span class="club-select-chevron">▶</span>
+                                <span class="club-select-chevron" aria-hidden="true">▶</span>
                             </button>
 
                             <button type="button" class="club-select-card" data-club-index="1" role="option" aria-selected="false">
@@ -508,9 +511,12 @@
                                 <div class="club-select-meta">
                                     <span class="club-league-tag">LEAGUE 02 // CONSUMER &amp; AUDIO (PLACEHOLDER)</span>
                                     <strong class="club-select-name">PROJECT BETA UNITED</strong>
-                                    <span class="club-select-stars">★★★★☆ &bull; 89 OVR</span>
+                                    <div class="club-select-bottom">
+                                        <span class="club-select-stars">★★★★☆</span>
+                                        <span class="club-select-ovr">89 OVR</span>
+                                    </div>
                                 </div>
-                                <span class="club-select-chevron">▶</span>
+                                <span class="club-select-chevron" aria-hidden="true">▶</span>
                             </button>
 
                             <button type="button" class="club-select-card" data-club-index="2" role="option" aria-selected="false">
@@ -518,83 +524,155 @@
                                 <div class="club-select-meta">
                                     <span class="club-league-tag">LEAGUE 03 // OPEN SOURCE &amp; DATA (PLACEHOLDER)</span>
                                     <strong class="club-select-name">PROJECT GAMMA ATHLETIC</strong>
-                                    <span class="club-select-stars">★★★★★ &bull; 94 OVR</span>
+                                    <div class="club-select-bottom">
+                                        <span class="club-select-stars">★★★★★</span>
+                                        <span class="club-select-ovr">94 OVR</span>
+                                    </div>
                                 </div>
-                                <span class="club-select-chevron">▶</span>
+                                <span class="club-select-chevron" aria-hidden="true">▶</span>
                             </button>
                         </div>
-                    </div>
 
-                    <!-- Center/Right Column: Club Rating & Match Preview Inspector -->
-                    <div class="kickoff-preview-panel">
-                        <div class="panel-header-strip">
-                            <span id="preview-club-league">LEAGUE 01 // AI &amp; ANALYTICS (PLACEHOLDER)</span>
+                        <div class="kickoff-roster-foot" aria-hidden="true">
+                            <span class="kickoff-key-hint"><kbd>W/S</kbd> SELECT</span>
+                            <span class="kickoff-hint-sep">&bull;</span>
+                            <span class="kickoff-key-hint"><kbd>Q/E</kbd> TAB</span>
+                        </div>
+                    </aside>
+
+                    <!-- TILE B (CENTER-TOP): HERO CLUB SPOTLIGHT -->
+                    <article class="bento-tile kickoff-tile-hero" aria-label="Selected Project Spotlight">
+                        <div class="kickoff-corner-slash" aria-hidden="true"></div>
+
+                        <div class="bento-tile-head kickoff-hero-head">
+                            <span id="preview-club-league" class="bento-pill kickoff-league-pill">LEAGUE 01 // AI &amp; ANALYTICS (PLACEHOLDER)</span>
+                            <span class="bento-pill kickoff-status-pill">FIRST TEAM PLACEHOLDER</span>
+                        </div>
+
+                        <div class="kickoff-hero-stage">
+                            <div class="kickoff-hero-identity">
+                                <h2 id="preview-club-name" class="kickoff-hero-name" aria-label="PROJECT ALPHA FC">
+                                    <span id="preview-club-name-primary" class="kickoff-name-solid">PROJECT ALPHA</span>
+                                    <span id="preview-club-name-outline" class="kickoff-name-outline">FC</span>
+                                </h2>
+                            </div>
+                            <div class="kickoff-hero-crest-wrap">
+                                <span id="preview-club-watermark" class="kickoff-hero-watermark" aria-hidden="true">P1</span>
+                                <div id="preview-club-crest" class="club-crest-giant crest-volt">P1</div>
+                            </div>
+                        </div>
+
+                        <p id="preview-club-desc" class="kickoff-hero-desc">
+                            Placeholder description for Project 01. In Iteration 2, this slot will connect to your real project data, live deployment URLs, and architecture telemetry.
+                        </p>
+                    </article>
+
+                    <!-- TILE C (RIGHT-TOP): ELECTRIC VIOLET MATCHDAY RATING DIAL -->
+                    <article class="bento-tile kickoff-tile-rating" aria-label="Matchday Rating Dial">
+                        <svg class="kickoff-dial-bg" viewBox="0 0 320 180" aria-hidden="true">
+                            <circle cx="160" cy="148" r="122" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 7" opacity="0.36"/>
+                            <circle cx="160" cy="148" r="94" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="1 6" opacity="0.26"/>
+                            <path d="M 34 148 A 126 126 0 0 1 286 148" fill="none" stroke="currentColor" stroke-width="2.2" opacity="0.24"/>
+                            <polygon points="160,34 154,50 166,50" fill="currentColor" opacity="0.88"/>
+                        </svg>
+
+                        <div class="bento-tile-head">
+                            <span class="bento-eyebrow">MATCHDAY RATING</span>
+                            <span class="bento-micro-code">CLUB // OVR</span>
+                        </div>
+
+                        <div class="kickoff-rating-stage">
+                            <strong id="preview-club-ovr" class="kickoff-rating-ovr">92 OVR</strong>
+                            <span id="preview-club-stars" class="kickoff-rating-stars" aria-label="5 out of 5 stars">★★★★★</span>
+                        </div>
+
+                        <div class="kickoff-stadium-pill">
                             <span>STADIUM // CLOUD PRODUCTION ARENA</span>
                         </div>
+                    </article>
 
-                        <div class="club-inspector-body">
-                            <div class="club-inspector-hero">
-                                <div id="preview-club-crest" class="club-crest-giant crest-volt">P1</div>
-                                <div class="club-inspector-title-block">
-                                    <div class="inspector-badges">
-                                        <span id="preview-club-ovr" class="inspector-ovr-badge">92 OVR</span>
-                                        <span id="preview-club-stars" class="inspector-stars">★★★★★</span>
-                                        <span class="inspector-status-pill">FIRST TEAM PLACEHOLDER</span>
-                                    </div>
-                                    <h2 id="preview-club-name" class="inspector-club-name">PROJECT ALPHA FC</h2>
-                                    <p id="preview-club-desc" class="inspector-club-desc">
-                                        Placeholder description for Project 01. In Iteration 2, this slot will connect to your real project data, live deployment URLs, and architecture telemetry.
-                                    </p>
+                    <!-- TILE D (CENTER-BOTTOM): VERTICAL PILL-BAR TRIAD RATINGS -->
+                    <article class="bento-tile kickoff-tile-triad" aria-label="Squad Triad Telemetry">
+                        <div class="bento-tile-head kickoff-triad-head">
+                            <span class="bento-eyebrow">SQUAD TELEMETRY</span>
+                            <span class="bento-micro-code">ATT &bull; MID &bull; DEF</span>
+                        </div>
+
+                        <div class="kickoff-triad-columns">
+                            <div class="kickoff-pill-col kickoff-pill-att">
+                                <div class="kickoff-pill-track" aria-hidden="true">
+                                    <div id="preview-bar-att" class="kickoff-pill-fill" style="height: 94%;"></div>
+                                </div>
+                                <div class="kickoff-pill-meta">
+                                    <strong id="preview-club-att" class="kickoff-pill-value">94</strong>
+                                    <span class="kickoff-pill-code">ATT</span>
+                                    <span class="kickoff-pill-label">FRONTEND &amp; UX</span>
                                 </div>
                             </div>
 
-                            <!-- Three-Column ATT / MID / DEF Rating Bar -->
-                            <div class="fc-triad-ratings">
-                                <div class="triad-stat-box">
-                                    <span class="triad-label">ATT // FRONTEND &amp; UX</span>
-                                    <strong id="preview-club-att" class="triad-value">94</strong>
-                                    <div class="triad-bar"><div id="preview-bar-att" class="triad-fill" style="width: 94%;"></div></div>
+                            <div class="kickoff-pill-col kickoff-pill-mid">
+                                <div class="kickoff-pill-track" aria-hidden="true">
+                                    <div id="preview-bar-mid" class="kickoff-pill-fill" style="height: 92%;"></div>
                                 </div>
-                                <div class="triad-stat-box">
-                                    <span class="triad-label">MID // ENGINE &amp; API</span>
-                                    <strong id="preview-club-mid" class="triad-value">92</strong>
-                                    <div class="triad-bar"><div id="preview-bar-mid" class="triad-fill" style="width: 92%;"></div></div>
-                                </div>
-                                <div class="triad-stat-box">
-                                    <span class="triad-label">DEF // INFRA &amp; SCALE</span>
-                                    <strong id="preview-club-def" class="triad-value">90</strong>
-                                    <div class="triad-bar"><div id="preview-bar-def" class="triad-fill" style="width: 90%;"></div></div>
+                                <div class="kickoff-pill-meta">
+                                    <strong id="preview-club-mid" class="kickoff-pill-value">92</strong>
+                                    <span class="kickoff-pill-code">MID</span>
+                                    <span class="kickoff-pill-label">ENGINE &amp; API</span>
                                 </div>
                             </div>
 
-                            <!-- Match Specs / Kit Tags -->
-                            <div class="club-match-facts">
-                                <div class="fact-tile">
-                                    <span class="fact-label">TACTICAL FORMATION</span>
-                                    <strong id="preview-club-formation" class="fact-val">4-3-3 ATTACKING</strong>
+                            <div class="kickoff-pill-col kickoff-pill-def">
+                                <div class="kickoff-pill-track" aria-hidden="true">
+                                    <div id="preview-bar-def" class="kickoff-pill-fill" style="height: 90%;"></div>
                                 </div>
-                                <div class="fact-tile">
-                                    <span class="fact-label">KEY TECH PLAYSTYLE</span>
-                                    <strong id="preview-club-stack" class="fact-val">AUTONOMOUS AGENTS // PLACEHOLDER</strong>
+                                <div class="kickoff-pill-meta">
+                                    <strong id="preview-club-def" class="kickoff-pill-value">90</strong>
+                                    <span class="kickoff-pill-code">DEF</span>
+                                    <span class="kickoff-pill-label">INFRA &amp; SCALE</span>
                                 </div>
-                                <div class="fact-tile">
-                                    <span class="fact-label">RELEASE SEASON</span>
-                                    <strong id="preview-club-season" class="fact-val">2026 SEASON</strong>
-                                </div>
-                            </div>
-
-                            <div class="club-inspector-actions">
-                                <a id="preview-club-link" href="#projects" class="fc-btn-primary">
-                                    <span class="controller-key-badge key-a">A</span>
-                                    <span>KICK OFF // LAUNCH PROJECT (PLACEHOLDER)</span>
-                                </a>
-                                <button type="button" class="fc-btn-secondary" data-back-to-hub>
-                                    <span class="controller-key-badge key-b">B</span>
-                                    <span>BACK TO MAIN MENU</span>
-                                </button>
                             </div>
                         </div>
-                    </div>
+                    </article>
+
+                    <!-- TILE E (RIGHT-MIDDLE): ACID VOLT-LIME MATCH SPECS -->
+                    <article class="bento-tile kickoff-tile-specs" aria-label="Match Specifications">
+                        <div class="kickoff-specs-corner" aria-hidden="true"></div>
+
+                        <div class="bento-tile-head">
+                            <span class="bento-eyebrow">TACTICAL FORMATION</span>
+                            <span id="preview-club-season" class="bento-pill kickoff-season-pill" title="Release Season">2026 SEASON</span>
+                        </div>
+
+                        <div class="kickoff-formation-row">
+                            <strong id="preview-club-formation" class="kickoff-formation-value">4-3-3 ATTACKING</strong>
+                        </div>
+
+                        <div class="kickoff-specs-divider" aria-hidden="true"></div>
+
+                        <div class="kickoff-stack-split">
+                            <span class="kickoff-stack-key">KEY TECH PLAYSTYLE</span>
+                            <strong id="preview-club-stack" class="kickoff-stack-val">AUTONOMOUS AGENTS // PLACEHOLDER</strong>
+                        </div>
+                    </article>
+
+                    <!-- TILE F (RIGHT-BOTTOM): BUBBLEGUM PINK ACTIONS CARD -->
+                    <article class="bento-tile kickoff-tile-actions" aria-label="Kick Off Actions">
+                        <div class="bento-tile-head">
+                            <span class="bento-eyebrow">MATCHDAY ACTIONS</span>
+                            <span class="bento-micro-code">A / B</span>
+                        </div>
+
+                        <div class="kickoff-actions-stack">
+                            <a id="preview-club-link" href="#projects" class="fc-btn-primary kickoff-btn-launch">
+                                <span class="controller-key-badge key-a">A</span>
+                                <span>KICK OFF // LAUNCH PROJECT (PLACEHOLDER)</span>
+                            </a>
+                            <button type="button" class="fc-btn-secondary kickoff-btn-back" data-back-to-hub>
+                                <span class="controller-key-badge key-b">B</span>
+                                <span>BACK TO MAIN MENU</span>
+                            </button>
+                        </div>
+                    </article>
 
                 </div>
             </div>
