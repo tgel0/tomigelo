@@ -1959,8 +1959,12 @@ body {
     min-height: 0;
 }
 
-.career-mgr-card,
-.career-inbox-box {
+/* Central Hub uses a balanced 2-column layout while Tactics preserves 3 columns */
+#work-view-central .career-bento-grid {
+    grid-template-columns: 1fr 1.25fr;
+}
+
+.career-mgr-card {
     padding: 22px;
     display: flex;
     flex-direction: column;
@@ -1969,154 +1973,64 @@ body {
     min-height: 0;
 }
 
-/* Full EAFC 3D Character Spotlight Stage Layout (Column 1) */
-.career-mgr-stage-layout {
-    padding: 0;
-    justify-content: flex-start;
-    overflow: hidden;
+#work-view-central .career-mgr-card {
+    padding: 22px 24px;
+    gap: 14px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 255, 104, 0.3) rgba(255, 255, 255, 0.02);
 }
 
-.fc-trio-stage {
-    position: relative;
-    width: 100%;
-    flex: 1.15;
-    min-height: 215px;
-    background: radial-gradient(circle at 50% 55%, rgba(0, 255, 104, 0.14) 0%, #04070d 75%);
-    border-bottom: 1px solid rgba(0, 255, 104, 0.32);
-    overflow: hidden;
-    isolation: isolate;
-    cursor: grab;
-    user-select: none;
+#work-view-central .career-mgr-card > * {
+    flex-shrink: 0;
 }
 
-.fc-trio-stage.is-dragging {
-    cursor: grabbing;
+#work-view-central .career-mgr-card::-webkit-scrollbar {
+    width: 6px;
 }
 
-.fc-trio-stage-img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
+#work-view-central .career-mgr-card::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+#work-view-central .career-mgr-card::-webkit-scrollbar-thumb {
+    background: rgba(0, 255, 104, 0.35);
+    border-radius: 3px;
+}
+
+#work-view-central .career-mgr-card::-webkit-scrollbar-thumb:hover {
+    background: var(--fc-hyper-green);
+}
+
+.career-mgr-top {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--fc-border-subtle);
+}
+
+.career-mgr-img {
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
     object-fit: cover;
-    object-position: 50% 45%;
-    z-index: 0;
-    display: block;
-    pointer-events: none;
-    transition: opacity 0.25s ease;
+    border: 2px solid var(--fc-hyper-green);
+    box-shadow: 0 8px 24px rgba(0, 255, 104, 0.18);
+    flex-shrink: 0;
 }
 
-.fc-trio-stage.webgl-ready .fc-trio-stage-img {
-    opacity: 0;
+.career-mgr-meta {
+    flex: 1;
+    min-width: 0;
 }
 
-.fc-trio-webgl-canvas,
-.fc-trio-hud-canvas {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    display: block;
-    pointer-events: none;
-}
-
-.fc-trio-webgl-canvas {
-    z-index: 1;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-}
-
-.fc-trio-stage.webgl-ready .fc-trio-webgl-canvas {
-    opacity: 1;
-}
-
-.fc-trio-hud-canvas {
-    z-index: 2;
-}
-
-.fc-stage-hud-top {
-    position: absolute;
-    top: 8px;
-    left: 10px;
-    right: 10px;
-    z-index: 3;
+.mgr-badge-strip {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    pointer-events: none;
-}
-
-.fc-stage-engine-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 3px 8px;
-    background: rgba(5, 9, 15, 0.82);
-    border: 1px solid rgba(0, 255, 104, 0.38);
-    border-left: 2.5px solid var(--fc-hyper-green);
-    font-family: var(--font-mono);
-    font-size: 0.56rem;
-    font-weight: 800;
-    letter-spacing: 0.11em;
-    color: var(--fc-text-white);
-    backdrop-filter: blur(6px);
-    white-space: nowrap;
-}
-
-.fc-engine-dot {
-    width: 6px;
-    height: 6px;
-    flex-shrink: 0;
-    border-radius: 50%;
-    background: var(--fc-hyper-green);
-    box-shadow: 0 0 6px var(--fc-hyper-green);
-    animation: fcPulseGlow 1.6s infinite ease-in-out;
-}
-
-.fc-stage-celebrate-btn {
-    pointer-events: auto;
-    appearance: none;
-    flex-shrink: 0;
-    white-space: nowrap;
-    background: rgba(0, 255, 104, 0.15);
-    border: 1px solid var(--fc-hyper-green);
-    color: var(--fc-hyper-green);
-    font-family: var(--font-mono);
-    font-size: 0.58rem;
-    font-weight: 900;
-    letter-spacing: 0.1em;
-    padding: 3px 9px;
-    cursor: pointer;
-    backdrop-filter: blur(6px);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-    transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.fc-stage-celebrate-btn:hover,
-.fc-stage-celebrate-btn:focus-visible {
-    outline: none;
-    background: var(--fc-hyper-green);
-    color: #04070d;
-    transform: translateY(-1px);
-    box-shadow: 0 0 14px rgba(0, 255, 104, 0.55);
-}
-
-/* Manager Identity Bar inside Dossier Body */
-.fc-mgr-identity-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    padding-bottom: 7px;
-    border-bottom: 1px solid var(--fc-border-subtle);
-}
-
-.fc-mgr-id-left {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-    min-width: 0;
+    margin-bottom: 4px;
 }
 
 .fc-card-nation-cluster {
@@ -2170,123 +2084,156 @@ body {
 
 .career-mgr-badge {
     font-family: var(--font-mono);
-    font-size: 0.6rem;
+    font-size: 0.64rem;
     font-weight: 800;
     color: var(--fc-gold);
-    letter-spacing: 0.12em;
+    letter-spacing: 0.13em;
     white-space: nowrap;
 }
 
 .career-mgr-name {
-    margin: 0;
+    margin: 2px 0;
     font-family: var(--font-display);
-    font-size: 1.85rem;
+    font-size: 2.15rem;
     letter-spacing: 0.04em;
-    line-height: 0.95;
+    line-height: 0.96;
     color: var(--fc-text-white);
 }
 
-/* Lower Dossier Body: 2-Column Spatially Aligned Trio Callouts + Quick Facts */
-.career-mgr-dossier-body {
-    padding: 10px 15px 12px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    gap: 8px;
-    background: linear-gradient(180deg, rgba(8, 12, 20, 0.88) 0%, rgba(5, 8, 14, 0.98) 100%);
+.career-mgr-sub {
+    margin: 4px 0 0;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    color: var(--fc-text-secondary);
 }
 
-.fc-trio-roster-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-}
-
-.fc-roster-callout {
-    appearance: none;
-    text-align: left;
-    width: 100%;
-    cursor: pointer;
-    background: rgba(255, 255, 255, 0.025);
+.board-confidence-meter {
+    background: rgba(5, 8, 14, 0.65);
     border: 1px solid var(--fc-border-subtle);
-    border-top: 2px solid var(--fc-hyper-green);
-    padding: 6px 9px;
+    padding: 12px 16px;
+}
+
+.confidence-header {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    margin-bottom: 8px;
+}
+
+.confidence-header strong {
+    color: var(--fc-hyper-green);
+}
+
+.career-dossier-box {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--fc-border-subtle);
+    padding: 12px 16px;
+}
+
+#work-view-central .career-quick-facts {
+    gap: 9px;
+}
+
+#work-view-central .career-quick-facts div {
+    padding-bottom: 8px;
+    font-size: 0.72rem;
+}
+
+#work-view-central .career-quick-facts div:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+/* Direct Manager Channels (Icon-Only Comms Bar) */
+.career-channels-section {
+    background: rgba(5, 8, 14, 0.65);
+    border: 1px solid var(--fc-border-subtle);
+    border-left: 3px solid var(--fc-hyper-green);
+    padding: 12px 16px;
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    color: var(--fc-text-white);
-    transition: border-color 0.18s ease, background 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+    gap: 8px;
 }
 
-.fc-roster-callout:hover,
-.fc-roster-callout:focus-visible,
-.fc-roster-callout.active-actor {
-    outline: none;
-    border-color: rgba(0, 255, 104, 0.55);
-    background: rgba(0, 255, 104, 0.06);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 14px rgba(0, 255, 104, 0.12);
-}
-
-.fc-roster-callout[data-trio-actor="son"].active-actor {
-    border-color: var(--fc-gold);
-    background: rgba(245, 196, 81, 0.09);
-    box-shadow: 0 4px 16px rgba(245, 196, 81, 0.22), 0 0 10px rgba(245, 196, 81, 0.14);
-}
-
-.fc-roster-callout[data-trio-actor="son"].active-actor .fc-callout-ovr {
-    background: var(--fc-gold);
-}
-
-.fc-roster-callout[data-trio-actor="dog"].active-actor {
-    border-color: var(--fc-cyan);
-    background: rgba(0, 229, 255, 0.09);
-    box-shadow: 0 4px 16px rgba(0, 229, 255, 0.22), 0 0 10px rgba(0, 229, 255, 0.14);
-}
-
-.fc-roster-callout[data-trio-actor="dog"].active-actor .fc-callout-ovr {
-    background: var(--fc-cyan);
-}
-
-.fc-callout-header {
+.channels-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 4px;
+    gap: 8px;
 }
 
-.fc-callout-pos {
+.channels-kicker {
     font-family: var(--font-mono);
-    font-size: 0.56rem;
-    font-weight: 800;
-    letter-spacing: 0.06em;
-    color: var(--fc-text-secondary);
-    white-space: nowrap;
-}
-
-.fc-callout-ovr {
-    font-family: var(--font-mono);
-    font-size: 0.55rem;
-    font-weight: 900;
-    color: #04070d;
-    background: var(--fc-hyper-green);
-    padding: 1px 4px;
-    border-radius: 2px;
-    line-height: 1.2;
-}
-
-.fc-callout-role {
-    font-family: var(--font-mono);
-    font-size: 0.65rem;
-    font-weight: 900;
-    letter-spacing: 0.06em;
-    color: var(--fc-text-white);
-}
-
-.fc-callout-desc {
     font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    color: var(--fc-hyper-green);
+}
+
+.channels-count {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
     color: var(--fc-text-muted);
-    line-height: 1.22;
+}
+
+.channels-desc {
+    margin: 0;
+    font-size: 0.74rem;
+    line-height: 1.35;
+    color: var(--fc-text-secondary);
+}
+
+.channel-icon-bar {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.channel-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 46px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--fc-border-subtle);
+    border-top: 2px solid rgba(0, 255, 104, 0.42);
+    color: var(--fc-text-secondary);
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+        color 0.16s ease,
+        background-color 0.16s ease,
+        border-color 0.16s ease,
+        transform 0.16s ease,
+        box-shadow 0.16s ease;
+}
+
+.channel-icon-btn:hover {
+    color: var(--fc-hyper-green);
+    background: rgba(0, 255, 104, 0.12);
+    border-color: rgba(0, 255, 104, 0.7);
+    border-top-color: var(--fc-hyper-green);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0, 255, 104, 0.18);
+}
+
+.channel-icon-btn:focus-visible {
+    outline: 2px solid var(--fc-hyper-green);
+    outline-offset: 2px;
+    color: var(--fc-hyper-green);
+    background: rgba(0, 255, 104, 0.14);
+    border-color: var(--fc-hyper-green);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0, 255, 104, 0.22);
+}
+
+.channel-svg {
+    display: block;
+    flex-shrink: 0;
 }
 
 .career-quick-facts {
@@ -2299,6 +2246,8 @@ body {
 .career-quick-facts div {
     display: flex;
     justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
     padding-bottom: 6px;
     border-bottom: 1px solid var(--fc-border-subtle);
     font-family: var(--font-mono);
@@ -2312,12 +2261,15 @@ body {
 
 .career-quick-facts dt {
     color: var(--fc-text-muted);
+    flex-shrink: 0;
 }
 
 .career-quick-facts dd {
     margin: 0;
     color: var(--fc-text-white);
     font-weight: 700;
+    text-align: right;
+    min-width: 0;
 }
 
 /* ==========================================================================
@@ -2615,65 +2567,6 @@ body {
     margin: 0;
     font-size: 0.8rem;
     color: var(--fc-text-secondary);
-}
-
-/* Inbox & Channels */
-.inbox-message {
-    background: rgba(0, 255, 104, 0.06);
-    border: 1px solid rgba(0, 255, 104, 0.25);
-    padding: 14px 16px;
-}
-
-.inbox-sender {
-    display: block;
-    font-family: var(--font-mono);
-    font-size: 0.64rem;
-    color: var(--fc-hyper-green);
-    margin-bottom: 4px;
-}
-
-.inbox-message strong {
-    display: block;
-    margin-bottom: 4px;
-    font-size: 0.95rem;
-}
-
-.inbox-message p {
-    margin: 0;
-    font-size: 0.82rem;
-    line-height: 1.45;
-    color: var(--fc-text-secondary);
-}
-
-.panel-sub-label {
-    display: block;
-    font-family: var(--font-mono);
-    font-size: 0.68rem;
-    color: var(--fc-text-muted);
-    margin-bottom: 8px;
-    letter-spacing: 0.1em;
-}
-
-.mini-channel-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.mini-channel-pill {
-    text-decoration: none;
-    color: var(--fc-text-white);
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--fc-border-subtle);
-    padding: 8px 12px;
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    transition: border-color 0.15s ease, background-color 0.15s ease;
-}
-
-.mini-channel-pill:hover {
-    border-color: var(--fc-hyper-green);
-    background: rgba(0, 255, 104, 0.1);
 }
 
 /* Career Transfers Table & Freelance Entity */
@@ -3019,8 +2912,8 @@ a.club-name-cell:hover .club-link-arrow,
 
 /* Sponsorship Card */
 .career-support-card {
-    margin-top: 10px;
-    padding: 10px 12px;
+    margin-top: 0;
+    padding: 12px 16px;
     background: rgba(0, 255, 104, 0.05);
     border: 1px solid rgba(0, 255, 104, 0.2);
 }
@@ -3054,8 +2947,8 @@ a.club-name-cell:hover .club-link-arrow,
 }
 
 .support-btn {
-    padding: 6px 12px;
-    font-size: 0.88rem;
+    padding: 7px 14px;
+    font-size: 0.9rem;
 }
 
 /* PlayStyles+ & Tactics View */
@@ -3215,8 +3108,238 @@ a.club-name-cell:hover .club-link-arrow,
 }
 
 /* ==========================================================================
-   PORTRAIT MODE ADAPTATION (< 960px PORTRAIT) — ZERO OVERFLOW GUARANTEE
+   RESPONSIVE VIEWPORT HEIGHT TIERS & PORTRAIT ADAPTATION
    ========================================================================== */
+
+/* Intermediate landscape heights (e.g. 1440x921, 1440x900, 1536x864, 1366x801) */
+@media (orientation: landscape) and (max-height: 960px) {
+    #work-view-central .career-mgr-card {
+        padding: 10px 18px;
+        gap: 7px;
+    }
+
+    #work-view-central .career-mgr-top {
+        padding-bottom: 8px;
+        gap: 14px;
+    }
+
+    #work-view-central .career-mgr-img {
+        width: 64px;
+        height: 64px;
+    }
+
+    #work-view-central .career-mgr-name {
+        font-size: 1.8rem;
+    }
+
+    #work-view-central .career-mgr-sub {
+        font-size: 0.69rem;
+    }
+
+    #work-view-central .board-confidence-meter {
+        padding: 8px 14px;
+    }
+
+    #work-view-central .confidence-header {
+        font-size: 0.66rem;
+        margin-bottom: 5px;
+    }
+
+    #work-view-central .career-dossier-box {
+        padding: 8px 14px;
+    }
+
+    #work-view-central .career-quick-facts {
+        gap: 5px;
+    }
+
+    #work-view-central .career-quick-facts div {
+        padding-bottom: 5px;
+        font-size: 0.69rem;
+    }
+
+    #work-view-central .career-channels-section {
+        padding: 8px 14px;
+        gap: 5px;
+    }
+
+    #work-view-central .channels-desc {
+        font-size: 0.71rem;
+        line-height: 1.32;
+    }
+
+    #work-view-central .channel-icon-btn {
+        height: 38px;
+    }
+
+    #work-view-central .career-support-card {
+        padding: 8px 14px;
+    }
+
+    #work-view-central .support-text {
+        font-size: 0.72rem;
+        line-height: 1.3;
+        margin-bottom: 6px;
+    }
+
+    #work-view-central .support-btn {
+        padding: 6px 12px;
+        font-size: 0.84rem;
+    }
+}
+
+/* Compact viewport heights (small laptops, horizontal phones, compact windows) */
+@media (max-height: 800px) {
+    .console-viewport {
+        padding: 10px 24px;
+    }
+
+    .screen-submode {
+        gap: 10px;
+    }
+
+    .fc-bumper-bar {
+        padding: 5px 12px;
+    }
+
+    .bumper-tab {
+        font-size: 0.95rem;
+        padding: 5px 14px;
+    }
+
+    .panel-header-strip {
+        padding: 8px 14px;
+    }
+
+    .transfer-table-wrap {
+        padding: 8px 14px;
+    }
+
+    .fc-transfer-table th,
+    .fc-transfer-table td {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+    }
+
+    .club-name-cell {
+        font-size: 0.92rem;
+    }
+
+    .mono-cell {
+        font-size: 0.72rem;
+    }
+
+    /* Compact Manager Dossier, Channels & Sponsorship overrides */
+    #work-view-central .career-mgr-card {
+        padding: 10px 16px;
+        gap: 7px;
+    }
+
+    #work-view-central .career-mgr-top {
+        padding-bottom: 8px;
+        gap: 12px;
+    }
+
+    #work-view-central .career-mgr-img {
+        width: 62px;
+        height: 62px;
+    }
+
+    #work-view-central .career-mgr-name {
+        font-size: 1.72rem;
+    }
+
+    #work-view-central .career-mgr-sub {
+        font-size: 0.68rem;
+    }
+
+    #work-view-central .board-confidence-meter {
+        padding: 8px 12px;
+    }
+
+    #work-view-central .confidence-header {
+        font-size: 0.65rem;
+        margin-bottom: 5px;
+    }
+
+    #work-view-central .career-dossier-box {
+        padding: 8px 12px;
+    }
+
+    .career-quick-facts {
+        gap: 5px;
+    }
+
+    .career-quick-facts div {
+        padding-bottom: 4px;
+        font-size: 0.66rem;
+    }
+
+    #work-view-central .career-quick-facts {
+        gap: 5px;
+    }
+
+    #work-view-central .career-quick-facts div {
+        padding-bottom: 4px;
+        font-size: 0.66rem;
+    }
+
+    #work-view-central .career-channels-section {
+        padding: 8px 12px;
+        gap: 5px;
+    }
+
+    #work-view-central .channels-desc {
+        font-size: 0.7rem;
+        line-height: 1.3;
+    }
+
+    #work-view-central .channel-icon-btn {
+        height: 36px;
+    }
+
+    #work-view-central .career-support-card {
+        padding: 8px 12px;
+    }
+
+    #work-view-central .support-text {
+        font-size: 0.71rem;
+        line-height: 1.3;
+        margin-bottom: 6px;
+    }
+
+    #work-view-central .support-btn {
+        padding: 5px 12px;
+        font-size: 0.82rem;
+    }
+
+    /* Compact Newsfeed overrides */
+    .career-news-feed {
+        padding: 10px;
+        gap: 10px;
+    }
+
+    .news-media-wrap {
+        height: 105px;
+    }
+
+    .news-content {
+        padding: 10px 12px;
+        gap: 4px;
+    }
+
+    .news-headline {
+        font-size: 1.02rem;
+    }
+
+    .news-excerpt {
+        font-size: 0.72rem;
+        line-height: 1.35;
+    }
+}
+
+/* PORTRAIT MODE ADAPTATION (< 960px PORTRAIT) — ZERO OVERFLOW GUARANTEE
+   Placed after max-height queries so portrait layout always takes precedence */
 @media (max-width: 959px) and (orientation: portrait) {
     .console-viewport {
         padding: 14px 16px;
@@ -3327,125 +3450,55 @@ a.club-name-cell:hover .club-link-arrow,
     .mobile-gate-lock-pill {
         font-size: 0.62rem;
     }
-}
 
-/* Compact viewport heights (small laptops, horizontal phones, compact windows) */
-@media (max-height: 800px) {
-    .console-viewport {
-        padding: 10px 24px;
+    /* Central Hub 2-column -> 1-column portrait fallback */
+    #work-view-central.submode-view {
+        flex: none;
+        min-height: auto;
     }
 
-    .screen-submode {
-        gap: 10px;
+    #work-view-central .career-bento-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+        flex: none;
+        min-height: auto;
     }
 
-    .fc-bumper-bar {
-        padding: 5px 12px;
+    #work-view-central .career-panel {
+        overflow: visible;
     }
 
-    .bumper-tab {
-        font-size: 0.95rem;
-        padding: 5px 14px;
+    #work-view-central .career-mgr-card {
+        padding: 14px;
+        gap: 12px;
+        flex: none;
+        min-height: auto;
+        overflow-y: visible;
     }
 
-    .panel-header-strip {
-        padding: 8px 14px;
+    #work-view-central .career-news-feed {
+        flex: none;
+        min-height: auto;
+        overflow-y: visible;
     }
 
-    .transfer-table-wrap {
-        padding: 8px 14px;
+    #work-view-central .career-mgr-top {
+        gap: 12px;
+        padding-bottom: 10px;
     }
 
-    .fc-transfer-table th,
-    .fc-transfer-table td {
-        padding: 6px 10px;
-        font-size: 0.8rem;
+    #work-view-central .career-mgr-img {
+        width: 64px;
+        height: 64px;
     }
 
-    .club-name-cell {
-        font-size: 0.92rem;
-    }
-
-    .mono-cell {
-        font-size: 0.72rem;
-    }
-
-    /* Compact Manager 3D Stage & Trio Dossier overrides */
-    .fc-trio-stage {
-        min-height: 165px;
-    }
-
-    .career-mgr-name {
-        font-size: 1.75rem;
-    }
-
-    .career-mgr-dossier-body {
-        padding: 8px 12px 10px;
-        gap: 7px;
-    }
-
-    .fc-roster-callout {
-        padding: 5px 7px;
-    }
-
-    .fc-callout-role {
-        font-size: 0.6rem;
-    }
-
-    .fc-callout-desc {
-        font-size: 0.61rem;
-    }
-
-    .career-quick-facts {
-        gap: 5px;
-    }
-
-    .career-quick-facts div {
-        padding-bottom: 4px;
-        font-size: 0.66rem;
-    }
-
-    /* Compact Newsfeed overrides */
-    .career-news-feed {
-        padding: 10px;
-        gap: 10px;
-    }
-
-    .news-media-wrap {
-        height: 105px;
-    }
-
-    .news-content {
-        padding: 10px 12px;
-        gap: 4px;
-    }
-
-    .news-headline {
-        font-size: 1.02rem;
-    }
-
-    .news-excerpt {
-        font-size: 0.72rem;
-        line-height: 1.35;
-    }
-}
-
-@media (max-height: 800px), (max-width: 1480px) {
-    .fc-stage-hud-top {
+    #work-view-central .mgr-badge-strip {
+        flex-wrap: wrap;
         gap: 6px;
     }
 
-    .fc-stage-engine-pill {
-        gap: 5px;
-        padding: 3px 6px;
-        font-size: 0.5rem;
-        letter-spacing: 0.06em;
-    }
-
-    .fc-stage-celebrate-btn {
-        padding: 3px 7px;
-        font-size: 0.54rem;
-        letter-spacing: 0.08em;
+    #work-view-central .channel-icon-bar {
+        gap: 8px;
     }
 }
 

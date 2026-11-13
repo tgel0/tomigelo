@@ -33,10 +33,12 @@
     <meta name="twitter:image" content="https://tomigelo.com/og-image.webp">
     <meta name="twitter:image:alt" content="Portrait of Tomi Gelo">
 
-    <link rel="stylesheet" href="styles.css?v=tgfc21">
+    <link rel="stylesheet" href="styles.css?v=tgfc22">
     <script defer src="script.js?v=tgfc21"></script>
+    <!-- 3D pitch stage scripts disabled while Central Hub displays manager avatar view; uncomment to re-enable:
     <script defer src="three.min.js?v=tgfc21"></script>
     <script defer src="eafc-trio-3d.js?v=tgfc21"></script>
+    -->
 
     <script type="application/ld+json">
     {
@@ -603,89 +605,107 @@
             <div id="work-view-central" class="submode-view active">
                 <div class="career-bento-grid">
 
-                    <!-- Column 1: Manager & Squad Bio 3D Match Pitch Stage -->
+                    <!-- Column 1: Manager Dossier, Direct Channels & Club Sponsorship -->
                     <div class="career-panel career-panel-manager">
                         <div class="panel-header-strip">
-                            <span>MANAGER &amp; SQUAD BIO // 3D PITCH</span>
+                            <span>MANAGER DOSSIER</span>
                             <span class="status-volt">SEASON 26/27</span>
                         </div>
-                        <div class="career-mgr-card career-mgr-stage-layout">
-                            <!-- Photorealistic Frostbite 2.5D Interactive Match Pitch Stage & 3D Telemetry -->
-                            <div class="fc-trio-stage" id="fc-trio-stage" role="region" aria-label="Interactive EAFC Frostbite 2.5D Match Pitch Stage: Move camera or click any player (Junior Tactician, Manager Tomi Gelo, or Assistant Gaffer dog) to focus active player cursor and trigger celebration">
-                                <!-- Frostbite match pitch source texture (also serves as instant progressive fallback) -->
-                                <img src="career-dugout-trio.jpg?v=tgfc21" alt="EAFC Frostbite match pitch lineup: 1-year-old son (Junior Tactician), Tomi Gelo (Data & AI Engineer), and 7-year-old black schnauzer-poodle (Assistant Gaffer) in full TGFC kits" class="fc-trio-stage-img" id="fc-trio-source-img" width="1376" height="768">
-                                <!-- 60fps WebGL Frostbite 2.5D Stage & 3D Pitch Telemetry Canvas -->
-                                <canvas id="fc-trio-webgl-canvas" class="fc-trio-webgl-canvas" aria-hidden="true"></canvas>
-                                <!-- 60fps Projected HUD Gamertags & Celebration Telemetry Overlay Canvas -->
-                                <canvas id="fc-trio-hud-canvas" class="fc-trio-hud-canvas" aria-hidden="true"></canvas>
-
-                                <!-- Stage Top HUD: Frostbite Stage Status & Interactive Celebration Trigger -->
-                                <div class="fc-stage-hud-top">
-                                    <span class="fc-stage-engine-pill">
-                                        <span class="fc-engine-dot" aria-hidden="true"></span>
-                                        FROSTBITE STAGE // MOVE CAM &bull; CLICK PLAYER
-                                    </span>
-                                    <button type="button" class="fc-stage-celebrate-btn" id="fc-stage-celebrate-btn" title="Trigger Full Squad Frostbite Goal Celebration">
-                                        ⚽ CELEBRATE
-                                    </button>
+                        <div class="career-mgr-card">
+                            <div class="career-mgr-top">
+                                <img src="avatar.webp?v=3" alt="Manager Tomi Gelo" class="career-mgr-img" width="84" height="84">
+                                <div class="career-mgr-meta">
+                                    <div class="mgr-badge-strip">
+                                        <span class="career-mgr-badge">DATA &amp; AI ENGINEER</span>
+                                        <div class="fc-card-nation-cluster" aria-label="Dual Nationality: Germany and Croatia">
+                                            <span class="fc-card-nation-pill" title="Germany (GER)">
+                                                <svg class="fc-nation-flag-svg" viewBox="0 0 18 12" width="16" height="11" aria-hidden="true">
+                                                    <rect width="18" height="4" y="0" fill="#000000"/>
+                                                    <rect width="18" height="4" y="4" fill="#DD0000"/>
+                                                    <rect width="18" height="4" y="8" fill="#FFCE00"/>
+                                                </svg>
+                                                <span class="fc-nation-code">GER</span>
+                                            </span>
+                                            <span class="fc-card-nation-pill" title="Croatia (CRO)">
+                                                <svg class="fc-nation-flag-svg" viewBox="0 0 18 12" width="16" height="11" aria-hidden="true">
+                                                    <rect width="18" height="4" y="0" fill="#FF0000"/>
+                                                    <rect width="18" height="4" y="4" fill="#FFFFFF"/>
+                                                    <rect width="18" height="4" y="8" fill="#002B7F"/>
+                                                    <rect x="7" y="3" width="4" height="5" rx="0.5" fill="#FFFFFF" stroke="#002B7F" stroke-width="0.5"/>
+                                                    <rect x="7" y="3" width="2" height="2.5" fill="#FF0000"/>
+                                                    <rect x="9" y="5.5" width="2" height="2.5" fill="#FF0000"/>
+                                                </svg>
+                                                <span class="fc-nation-code">CRO</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <h2 class="career-mgr-name">TOMI GELO</h2>
+                                    <p class="career-mgr-sub">Berlin, DE &bull; Cloud Data &amp; AI Systems</p>
                                 </div>
                             </div>
 
-                            <!-- Body Below Stage: Manager Identity Bar + Interactive Trio Callouts + Dossier Telemetry -->
-                            <div class="career-mgr-dossier-body">
-                                <div class="fc-mgr-identity-bar">
-                                    <div class="fc-mgr-id-left">
-                                        <h2 class="career-mgr-name">TOMI GELO</h2>
-                                        <span class="career-mgr-badge">DATA &amp; AI ENGINEER</span>
-                                    </div>
-                                    <div class="fc-card-nation-cluster" aria-label="Dual Nationality: Germany and Croatia">
-                                        <span class="fc-card-nation-pill" title="Germany (GER)">
-                                            <svg class="fc-nation-flag-svg" viewBox="0 0 18 12" width="16" height="11" aria-hidden="true">
-                                                <rect width="18" height="4" y="0" fill="#000000"/>
-                                                <rect width="18" height="4" y="4" fill="#DD0000"/>
-                                                <rect width="18" height="4" y="8" fill="#FFCE00"/>
-                                            </svg>
-                                            <span class="fc-nation-code">GER</span>
-                                        </span>
-                                        <span class="fc-card-nation-pill" title="Croatia (CRO)">
-                                            <svg class="fc-nation-flag-svg" viewBox="0 0 18 12" width="16" height="11" aria-hidden="true">
-                                                <rect width="18" height="4" y="0" fill="#FF0000"/>
-                                                <rect width="18" height="4" y="4" fill="#FFFFFF"/>
-                                                <rect width="18" height="4" y="8" fill="#002B7F"/>
-                                                <rect x="7" y="3" width="4" height="5" rx="0.5" fill="#FFFFFF" stroke="#002B7F" stroke-width="0.5"/>
-                                                <rect x="7" y="3" width="2" height="2.5" fill="#FF0000"/>
-                                                <rect x="9" y="5.5" width="2" height="2.5" fill="#FF0000"/>
-                                            </svg>
-                                            <span class="fc-nation-code">CRO</span>
-                                        </span>
-                                    </div>
+                            <div class="board-confidence-meter">
+                                <div class="confidence-header">
+                                    <span>BOARD CONFIDENCE RATING</span>
+                                    <strong>96 / 100 (CRITICAL)</strong>
                                 </div>
+                                <div class="triad-bar"><div class="triad-fill" style="width: 96%;"></div></div>
+                            </div>
 
-                                <div class="fc-trio-roster-grid" aria-label="Touchline Assistants in 3D Stage">
-                                    <button type="button" class="fc-roster-callout" data-trio-actor="son">
-                                        <div class="fc-callout-header">
-                                            <span class="fc-callout-pos">👶 LEFT // 1 Y/O SON</span>
-                                            <span class="fc-callout-ovr">OVR 99</span>
-                                        </div>
-                                        <strong class="fc-callout-role">JUNIOR TACTICIAN</strong>
-                                        <span class="fc-callout-desc">Head of Chaos &amp; Academy Prospect</span>
-                                    </button>
-                                    <button type="button" class="fc-roster-callout" data-trio-actor="dog">
-                                        <div class="fc-callout-header">
-                                            <span class="fc-callout-pos">🐾 RIGHT // 7 Y/O DOG</span>
-                                            <span class="fc-callout-ovr">OVR 99</span>
-                                        </div>
-                                        <strong class="fc-callout-role">ASSISTANT GAFFER</strong>
-                                        <span class="fc-callout-desc">Chief Morale &amp; Touchline Anchor</span>
-                                    </button>
-                                </div>
-
+                            <div class="career-dossier-box">
                                 <dl class="career-quick-facts">
                                     <div><dt>CURRENT CLUB</dt><dd><a href="https://careers.mediamarktsaturn.com/" target="_blank" rel="noopener noreferrer" class="career-fact-link">MediaMarktSaturn ↗</a></dd></div>
                                     <div><dt>CONTRACT</dt><dd>Oct 2022 – Present (Full-time)</dd></div>
                                     <div><dt>TACTICAL VISION</dt><dd>Tiki-Data &amp; Cloud Pipelines</dd></div>
                                     <div><dt>TOUCHLINE BASE</dt><dd>Berlin / Remote / Ingolstadt</dd></div>
                                 </dl>
+                            </div>
+
+                            <div class="career-channels-section" role="region" aria-label="Direct Manager Channels">
+                                <div class="channels-header">
+                                    <span class="channels-kicker">DIRECT MANAGER CHANNELS</span>
+                                    <span class="channels-count">COMMS (5)</span>
+                                </div>
+                                <p class="channels-desc">Reach out for engineering collaboration, technical consulting, or product discussions:</p>
+                                <div class="channel-icon-bar">
+                                    <a href="mailto:hi@tomigelo.com" class="channel-icon-btn" aria-label="Email Tomi Gelo (hi@tomigelo.com)" title="Email (hi@tomigelo.com)">
+                                        <svg class="channel-svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+                                            <path d="M20 4H4c-1.1 0-2 .9-2 2v.4l10 6.25L22 6.4V6c0-1.1-.9-2-2-2z"/>
+                                            <path d="M2 8.75V18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8.75l-9.47 5.92a1 1 0 0 1-1.06 0L2 8.75z"/>
+                                        </svg>
+                                    </a>
+                                    <a href="https://x.com/tgel0" target="_blank" rel="noopener noreferrer" class="channel-icon-btn" aria-label="X (@tgel0)" title="X (@tgel0)">
+                                        <svg class="channel-svg" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+                                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                        </svg>
+                                    </a>
+                                    <a href="https://www.threads.com/@tgel0" target="_blank" rel="noopener noreferrer" class="channel-icon-btn" aria-label="Threads (@tgel0)" title="Threads (@tgel0)">
+                                        <svg class="channel-svg" viewBox="0 0 192 192" width="19" height="19" fill="currentColor" aria-hidden="true">
+                                            <path d="M141.537 88.988a66.667 66.667 0 0 0-2.518-1.143c-1.482-27.307-16.403-42.94-41.457-43.1h-.34c-14.986 0-27.449 6.396-35.12 18.036l13.779 9.452c5.73-8.695 14.724-10.548 21.348-10.548h.229c8.249.053 14.474 2.452 18.503 7.129 2.932 3.405 4.893 8.111 5.864 14.05-7.314-1.243-15.224-1.626-23.68-1.14-23.82 1.371-39.134 15.264-38.105 34.568.522 9.792 5.4 18.216 13.735 23.719 7.047 4.652 16.124 6.927 25.557 6.412 12.458-.683 22.231-5.436 29.049-14.127 5.178-6.6 8.453-15.153 9.899-25.93 5.937 3.583 10.337 8.298 12.767 13.966 4.132 9.635 4.373 25.468-8.546 38.376-11.319 11.308-24.925 16.2-45.488 16.351-22.809-.169-40.06-7.484-51.275-21.742C35.236 139.966 29.808 120.682 29.605 96c.203-24.682 5.63-43.966 16.133-57.317C56.954 24.425 74.204 17.11 97.013 16.94c22.975.17 40.526 7.52 52.171 21.847 5.71 7.026 10.015 15.86 12.853 26.162l16.147-4.308c-3.44-12.68-8.853-23.606-16.219-32.668C147.036 9.607 125.202.195 97.07 0h-.113C68.882.195 47.292 9.643 32.788 28.08 19.882 44.485 13.224 67.315 13.001 95.932L13 96v.067c.224 28.617 6.882 51.447 19.788 67.854C47.292 182.358 68.882 191.806 96.957 192h.113c24.96-.173 42.554-6.708 57.048-21.189 18.963-18.945 18.392-42.692 12.142-57.27-4.484-10.454-13.033-18.945-24.723-24.553zm-43.096 42.204c-10.44.588-21.286-4.098-21.82-14.135-.397-7.442 5.296-15.746 22.461-16.735 1.966-.113 3.895-.169 5.79-.169 6.235 0 12.068.606 17.371 1.765-1.978 24.702-13.58 28.713-23.802 29.274z"/>
+                                        </svg>
+                                    </a>
+                                    <a href="https://bsky.app/profile/tomigelo.com" target="_blank" rel="noopener noreferrer" class="channel-icon-btn" aria-label="Bluesky (@tomigelo.com)" title="Bluesky (@tomigelo.com)">
+                                        <svg class="channel-svg" viewBox="0 0 600 530" width="20" height="18" fill="currentColor" aria-hidden="true">
+                                            <path d="m135.72 44.03c66.496 49.921 138.02 151.14 164.28 205.46 26.262-54.316 97.782-155.54 164.28-205.46 47.98-36.021 125.72-63.892 125.72 24.795 0 17.712-10.155 148.79-16.111 170.07-20.703 73.984-96.144 92.854-163.25 81.433 117.3 19.964 147.14 86.092 82.697 152.22-122.39 125.59-175.91-31.511-189.63-71.766-2.514-7.3797-3.6904-10.832-3.7077-7.8964-0.0174-2.9357-1.1937 0.51669-3.7077 7.8964-13.714 40.255-67.233 197.36-189.63 71.766-64.444-66.128-34.605-132.26 82.697-152.22-67.108 11.421-142.55-7.4491-163.25-81.433-5.9562-21.282-16.111-152.36-16.111-170.07 0-88.687 77.742-60.816 125.72-24.795z"/>
+                                        </svg>
+                                    </a>
+                                    <a href="https://github.com/tgel0" target="_blank" rel="noopener noreferrer" class="channel-icon-btn" aria-label="GitHub (@tgel0)" title="GitHub (@tgel0)">
+                                        <svg class="channel-svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+                                            <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+                                        </svg>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="career-support-card">
+                                <div class="support-header">
+                                    <span class="support-badge">CLUB SPONSORSHIP</span>
+                                    <span class="support-status">OPEN</span>
+                                </div>
+                                <p class="support-text">Support the lab and help fund the next software experiment:</p>
+                                <a href="https://buymeacoffee.com/tgel0" target="_blank" rel="noopener noreferrer" class="fc-btn-primary full-width-btn support-btn">
+                                    <span>Transfer Coffee (buymeacoffee.com/tgel0) ↗</span>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -768,50 +788,6 @@
                                     </div>
                                 </div>
                             </a>
-                        </div>
-                    </div>
-
-                    <!-- Column 3: Manager Office, Touchline Comms & Sponsorship -->
-                    <div class="career-panel">
-                        <div class="panel-header-strip">
-                            <span>MANAGER OFFICE // COMMS &amp; SPONSORSHIP</span>
-                            <span>CHANNELS (5)</span>
-                        </div>
-                        <div class="career-inbox-box">
-                            <div class="inbox-message">
-                                <span class="inbox-sender">TOUCHLINE COMMS &amp; SCOUTING</span>
-                                <strong>Direct Manager Channels</strong>
-                                <p>Get in touch for engineering collaboration, technical consulting, or product discussions:</p>
-                            </div>
-                            <div class="inbox-channels-placeholder">
-                                <div class="mini-channel-grid">
-                                    <a href="mailto:hi@tomigelo.com" class="mini-channel-pill">
-                                        <span>✉ hi@tomigelo.com</span> <span>↗</span>
-                                    </a>
-                                    <a href="https://x.com/tgel0" target="_blank" rel="noopener noreferrer" class="mini-channel-pill">
-                                        <span>𝕏 @tgel0</span> <span>↗</span>
-                                    </a>
-                                    <a href="https://www.threads.com/@tgel0" target="_blank" rel="noopener noreferrer" class="mini-channel-pill">
-                                        <span>Threads @tgel0</span> <span>↗</span>
-                                    </a>
-                                    <a href="https://bsky.app/profile/tomigelo.com" target="_blank" rel="noopener noreferrer" class="mini-channel-pill">
-                                        <span>Bluesky @tomigelo.com</span> <span>↗</span>
-                                    </a>
-                                    <a href="https://github.com/tgel0" target="_blank" rel="noopener noreferrer" class="mini-channel-pill">
-                                        <span>GitHub @tgel0</span> <span>↗</span>
-                                    </a>
-                                </div>
-                            </div>
-                            <div class="career-support-card">
-                                <div class="support-header">
-                                    <span class="support-badge">CLUB SPONSORSHIP</span>
-                                    <span class="support-status">OPEN</span>
-                                </div>
-                                <p class="support-text">Support the lab and help fund the next software experiment:</p>
-                                <a href="https://buymeacoffee.com/tgel0" target="_blank" rel="noopener noreferrer" class="fc-btn-primary full-width-btn support-btn">
-                                    <span>Transfer Coffee (buymeacoffee.com/tgel0) ↗</span>
-                                </a>
-                            </div>
                         </div>
                     </div>
 
