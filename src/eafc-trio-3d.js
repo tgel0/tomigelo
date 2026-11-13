@@ -1,17 +1,634 @@
 /**
- * TGFC 26 — Real-Time Three.js 3D Match Pitch & Articulated Trio Engine
- * Builds articulated 3D character rigs for:
- *  1. Tomi Gelo (#10, Tall white mid-30s dad, short black hair, full TGFC kit)
- *  2. Junior Tactician (#7, 1-year-old son, curly light-brown hair, mini TGFC kit)
- *  3. Assistant Gaffer (#1, 7-year-old black Schnauzer-Poodle mix with volt bandana)
- * Includes continuous 60fps 3D skeletal animations, ball juggling, camera orbit/focus,
- * and full 3D goal celebrations triggered by the stage HUD buttons & player clicks.
+ * TGFC 26 — EAFC Frostbite 2.5D Broadcast Stage + 3D Telemetry Engine
+ * Renders photorealistic career-dugout-trio.jpg through a depth-parallax GLSL
+ * ShaderMaterial with living stadium floodlight atmosphere, aspect-safe
+ * cover-biased framing, smooth focus zoom/pan, and a pixel-locked 3D
+ * Perspective Pitch & HUD Telemetry layer (rings, spinning chevrons, dust motes,
+ * pyro sparks, DPR-crisp gamertags, and celebration popups).
  */
 (function () {
     'use strict';
 
-    function initThreeJsTrioStage() {
+    const IMG_WIDTH = 1376;
+    const IMG_HEIGHT = 768;
+    const IMG_ASPECT = IMG_WIDTH / IMG_HEIGHT;
+
+    const DEPTH_W = 512;
+    const DEPTH_H = 288;
+    const PIVOT_DEPTH = 0.62;
+
+    // Measured normalized landmarks (top-left origin: u in [0..1], vTop in [0..1])
+    const HORIZON_V_TOP = 0.6940;
+    const TOUCHLINE_V_TOP = 0.8802;
+
+    // Six measured stadium floodlight clusters in bottom-left UV space
+    const FLOODLIGHTS_UV = [
+        [0.0203, 0.9284],
+        [0.1548, 0.7956],
+        [0.3001, 0.7409],
+        [0.6977, 0.7409],
+        [0.8408, 0.7969],
+        [0.9760, 0.9245]
+    ];
+
+    // Combined bounding box protecting Son's raised left hand, Dog's tail/paws,
+    // Dad's hair top, and underfoot turf rings across all stage aspect ratios.
+    const TRIO_SAFE_BOX = {
+        minU: 0.095,
+        maxU: 0.915,
+        minVtop: 0.048,
+        maxVtop: 0.938
+    };
+
+    const ACTORS = {
+        son: {
+            id: 'son',
+            label: 'JR. TACTICIAN #7',
+            color: '#F5C451',
+            colorHex: 0xf5c451,
+            colorRgb: [0.961, 0.769, 0.318],
+            popupText: '👶 GOAL CELEBRATION +99!',
+            footU: 0.215,
+            footVtop: 0.886,
+            chevU: 0.2049,
+            chevVtop: 0.362,
+            headTopVtop: 0.4180,
+            faceBox: { minU: 0.180, maxU: 0.229, minVtop: 0.424, maxVtop: 0.525 },
+            spotlightU: 0.205,
+            spotlightVtop: 0.650,
+            hitbox: { minU: 0.110, maxU: 0.305, minVtop: 0.340, maxVtop: 0.930 },
+            focusCenter: [0.215, 0.630],
+            focusBox: { minU: 0.095, maxU: 0.320, minVtop: 0.270, maxVtop: 0.938 },
+            ringRadius: 0.37
+        },
+        dad: {
+            id: 'dad',
+            label: 'GELO #10',
+            color: '#00FF68',
+            colorHex: 0x00ff68,
+            colorRgb: [0.0, 1.0, 0.408],
+            popupText: '⚽ RAINBOW JUGGLE +99!',
+            footU: 0.492,
+            footVtop: 0.884,
+            chevU: 0.5051,
+            chevVtop: 0.044,
+            chevFallback: [0.562, 0.185],
+            headTopVtop: 0.0755,
+            faceBox: { minU: 0.480, maxU: 0.530, minVtop: 0.080, maxVtop: 0.205 },
+            spotlightU: 0.504,
+            spotlightVtop: 0.480,
+            hitbox: { minU: 0.405, maxU: 0.590, minVtop: 0.055, maxVtop: 0.928 },
+            focusCenter: [0.498, 0.485],
+            focusBox: { minU: 0.395, maxU: 0.605, minVtop: 0.052, maxVtop: 0.918 },
+            ringRadius: 0.46
+        },
+        dog: {
+            id: 'dog',
+            label: 'ASST. GAFFER #1',
+            color: '#00E5FF',
+            colorHex: 0x00e5ff,
+            colorRgb: [0.0, 0.898, 1.0],
+            popupText: '🐾 ZOOMIE SPIN +100!',
+            footU: 0.805,
+            footVtop: 0.892,
+            chevU: 0.7544,
+            chevVtop: 0.455,
+            headTopVtop: 0.5117,
+            faceBox: { minU: 0.720, maxU: 0.790, minVtop: 0.515, maxVtop: 0.640 },
+            spotlightU: 0.790,
+            spotlightVtop: 0.700,
+            hitbox: { minU: 0.705, maxU: 0.900, minVtop: 0.440, maxVtop: 0.932 },
+            focusCenter: [0.798, 0.680],
+            focusBox: { minU: 0.695, maxU: 0.915, minVtop: 0.360, maxVtop: 0.940 },
+            ringRadius: 0.41
+        }
+    };
+
+    const ACTOR_KEYS = ['son', 'dad', 'dog'];
+
+    function clamp(v, lo, hi) {
+        return v < lo ? lo : (v > hi ? hi : v);
+    }
+
+    function smoothstep(edge0, edge1, x) {
+        const t = clamp((x - edge0) / (edge1 - edge0), 0, 1);
+        return t * t * (3 - 2 * t);
+    }
+
+    /**
+     * Generates a smooth, artifact-free 2.5D depth buffer + linear CanvasTexture
+     * aligned to the measured silhouettes, footballs, turf plane, and stands.
+     */
+    function buildDepthMap(THREE) {
+        const w = DEPTH_W;
+        const h = DEPTH_H;
+        const buf = new Float32Array(w * h);
+
+        // 1. Background sky, stadium bowl, and perspective-sloped turf
+        for (let y = 0; y < h; y++) {
+            const vTop = (y + 0.5) / h;
+            for (let x = 0; x < w; x++) {
+                const u = (x + 0.5) / w;
+                let d;
+                if (vTop <= 0.34) {
+                    d = 0.03 + (vTop / 0.34) * 0.10;
+                } else if (vTop <= HORIZON_V_TOP) {
+                    const t = (vTop - 0.34) / (HORIZON_V_TOP - 0.34);
+                    const bowl = 0.042 * Math.pow(2 * u - 1, 2);
+                    d = 0.13 + t * 0.23 + bowl * t;
+                } else {
+                    const t = (vTop - HORIZON_V_TOP) / (1.0 - HORIZON_V_TOP);
+                    // Matches ~0.760 at touchline (vTop=0.8802) so feet anchor cleanly
+                    d = 0.36 + (0.48 * t + 0.095 * t * t);
+                }
+                buf[y * w + x] = d;
+            }
+        }
+
+        function blendEllipse(cu, cvTop, ru, rv, peakDepth, feather, bulge) {
+            const padU = ru + feather;
+            const padV = rv + feather * IMG_ASPECT;
+            const x0 = Math.max(0, Math.floor((cu - padU) * w));
+            const x1 = Math.min(w - 1, Math.ceil((cu + padU) * w));
+            const y0 = Math.max(0, Math.floor((cvTop - padV) * h));
+            const y1 = Math.min(h - 1, Math.ceil((cvTop + padV) * h));
+            const fNorm = feather / Math.max(0.001, Math.min(ru, rv));
+
+            for (let y = y0; y <= y1; y++) {
+                const dy = ((y + 0.5) / h - cvTop) / rv;
+                for (let x = x0; x <= x1; x++) {
+                    const dx = ((x + 0.5) / w - cu) / ru;
+                    const dist = Math.hypot(dx, dy);
+                    if (dist < 1.0 + fNorm) {
+                        const alpha = 1.0 - smoothstep(Math.max(0, 1.0 - fNorm * 0.55), 1.0 + fNorm, dist);
+                        const dome = bulge * Math.sqrt(Math.max(0, 1.0 - Math.min(1.0, dist * dist)));
+                        const idx = y * w + x;
+                        const target = peakDepth + dome;
+                        const mixed = buf[idx] + (target - buf[idx]) * alpha;
+                        if (mixed > buf[idx]) buf[idx] = mixed;
+                    }
+                }
+            }
+        }
+
+        function blendCapsule(u0, v0, u1, v1, radiusU, depth0, depth1, feather, bulge) {
+            const radiusV = radiusU * IMG_ASPECT;
+            const padU = radiusU + feather;
+            const padV = radiusV + feather * IMG_ASPECT;
+            const minX = Math.max(0, Math.floor((Math.min(u0, u1) - padU) * w));
+            const maxX = Math.min(w - 1, Math.ceil((Math.max(u0, u1) + padU) * w));
+            const minY = Math.max(0, Math.floor((Math.min(v0, v1) - padV) * h));
+            const maxY = Math.min(h - 1, Math.ceil((Math.max(v0, v1) + padV) * h));
+
+            const vx = u1 - u0;
+            const vy = (v1 - v0) / IMG_ASPECT;
+            const lenSq = Math.max(1e-6, vx * vx + vy * vy);
+
+            for (let y = minY; y <= maxY; y++) {
+                const py = (y + 0.5) / h;
+                for (let x = minX; x <= maxX; x++) {
+                    const px = (x + 0.5) / w;
+                    const wx = px - u0;
+                    const wy = (py - v0) / IMG_ASPECT;
+                    const t = clamp((wx * vx + wy * vy) / lenSq, 0, 1);
+                    const dist = Math.hypot(wx - vx * t, wy - vy * t);
+                    if (dist < radiusU + feather) {
+                        const alpha = 1.0 - smoothstep(Math.max(0, radiusU - feather * 0.35), radiusU + feather, dist);
+                        const segDepth = depth0 + (depth1 - depth0) * t;
+                        const dome = bulge * (1.0 - Math.min(1.0, (dist / radiusU) * (dist / radiusU)));
+                        const idx = y * w + x;
+                        const mixed = buf[idx] + (segDepth + dome - buf[idx]) * alpha;
+                        if (mixed > buf[idx]) buf[idx] = mixed;
+                    }
+                }
+            }
+        }
+
+        // 2. Dad (#10, center) — feet seamlessly match ~0.76 turf line depth
+        blendEllipse(0.505, 0.145, 0.024, 0.068, 0.785, 0.012, 0.025); // head & hair
+        blendCapsule(0.504, 0.220, 0.503, 0.460, 0.044, 0.790, 0.805, 0.014, 0.028); // torso
+        blendEllipse(0.502, 0.520, 0.044, 0.088, 0.795, 0.012, 0.020); // shorts
+        blendCapsule(0.456, 0.245, 0.431, 0.515, 0.016, 0.785, 0.780, 0.010, 0.014); // left arm
+        blendCapsule(0.552, 0.245, 0.568, 0.520, 0.016, 0.785, 0.780, 0.010, 0.014); // right arm
+        blendCapsule(0.472, 0.535, 0.448, 0.788, 0.021, 0.805, 0.818, 0.010, 0.016); // raised leg on ball
+        blendCapsule(0.528, 0.545, 0.533, 0.878, 0.021, 0.792, 0.762, 0.010, 0.014); // planted leg
+        blendEllipse(0.443, 0.846, 0.027, 0.045, 0.805, 0.010, 0.032); // Dad's match ball
+
+        // 3. Son (#7, left) — slightly closer on touchline
+        blendEllipse(0.204, 0.475, 0.028, 0.060, 0.790, 0.012, 0.025); // curly head
+        blendCapsule(0.200, 0.545, 0.200, 0.720, 0.034, 0.795, 0.802, 0.012, 0.022); // torso & shorts
+        blendCapsule(0.174, 0.560, 0.128, 0.475, 0.014, 0.788, 0.795, 0.010, 0.012); // raised left arm
+        blendCapsule(0.226, 0.560, 0.282, 0.472, 0.014, 0.788, 0.795, 0.010, 0.012); // raised right arm
+        blendCapsule(0.184, 0.735, 0.188, 0.885, 0.017, 0.790, 0.768, 0.010, 0.012); // planted right leg
+        blendCapsule(0.218, 0.710, 0.244, 0.808, 0.017, 0.805, 0.815, 0.010, 0.014); // leg on mini ball
+        blendEllipse(0.246, 0.861, 0.022, 0.039, 0.810, 0.010, 0.028); // Son's mini ball
+
+        // 4. Dog (#1, Schnoodle, right)
+        blendEllipse(0.752, 0.580, 0.038, 0.070, 0.805, 0.012, 0.026); // head & snout
+        blendCapsule(0.775, 0.675, 0.848, 0.738, 0.056, 0.802, 0.782, 0.014, 0.022); // chest/bandana/body
+        blendCapsule(0.856, 0.700, 0.852, 0.590, 0.015, 0.775, 0.765, 0.010, 0.010); // curved tail
+        blendCapsule(0.758, 0.760, 0.752, 0.896, 0.016, 0.790, 0.730, 0.009, 0.010); // front left paw
+        blendCapsule(0.795, 0.760, 0.795, 0.900, 0.016, 0.790, 0.732, 0.009, 0.010); // front right paw
+        blendCapsule(0.844, 0.770, 0.842, 0.876, 0.016, 0.772, 0.715, 0.009, 0.010); // back left paw
+        blendCapsule(0.874, 0.770, 0.878, 0.878, 0.016, 0.772, 0.718, 0.009, 0.010); // back right paw
+
+        // 5. Two-pass separable box blur for C2 silky-smooth parallax transitions
+        const tmp = new Float32Array(w * h);
+        const radius = 2;
+        for (let pass = 0; pass < 2; pass++) {
+            for (let y = 0; y < h; y++) {
+                const rowOff = y * w;
+                for (let x = 0; x < w; x++) {
+                    let sum = 0;
+                    let cnt = 0;
+                    const xa = Math.max(0, x - radius);
+                    const xb = Math.min(w - 1, x + radius);
+                    for (let ix = xa; ix <= xb; ix++) {
+                        sum += buf[rowOff + ix];
+                        cnt++;
+                    }
+                    tmp[rowOff + x] = sum / cnt;
+                }
+            }
+            for (let y = 0; y < h; y++) {
+                const ya = Math.max(0, y - radius);
+                const yb = Math.min(h - 1, y + radius);
+                for (let x = 0; x < w; x++) {
+                    let sum = 0;
+                    let cnt = 0;
+                    for (let iy = ya; iy <= yb; iy++) {
+                        sum += tmp[iy * w + x];
+                        cnt++;
+                    }
+                    buf[y * w + x] = sum / cnt;
+                }
+            }
+        }
+
+        // Write into linear CanvasTexture
+        const c = document.createElement('canvas');
+        c.width = w;
+        c.height = h;
+        const ctx = c.getContext('2d');
+        const imgData = ctx.createImageData(w, h);
+        const px = imgData.data;
+        for (let i = 0; i < w * h; i++) {
+            const v = Math.round(clamp(buf[i], 0, 1) * 255);
+            const p = i * 4;
+            px[p] = v;
+            px[p + 1] = v;
+            px[p + 2] = v;
+            px[p + 3] = 255;
+        }
+        ctx.putImageData(imgData, 0, 0);
+
+        const tex = new THREE.CanvasTexture(c);
+        tex.encoding = THREE.LinearEncoding;
+        tex.minFilter = THREE.LinearFilter;
+        tex.magFilter = THREE.LinearFilter;
+        tex.wrapS = THREE.ClampToEdgeWrapping;
+        tex.wrapT = THREE.ClampToEdgeWrapping;
+        tex.generateMipmaps = false;
+
+        function sample(u, vUv) {
+            const fx = clamp(u, 0, 1) * (w - 1);
+            const fy = clamp(1.0 - vUv, 0, 1) * (h - 1);
+            const x0 = Math.floor(fx);
+            const y0 = Math.floor(fy);
+            const x1 = Math.min(w - 1, x0 + 1);
+            const y1 = Math.min(h - 1, y0 + 1);
+            const tx = fx - x0;
+            const ty = fy - y0;
+            const a = buf[y0 * w + x0];
+            const b = buf[y0 * w + x1];
+            const c0 = buf[y1 * w + x0];
+            const d0 = buf[y1 * w + x1];
+            return (a * (1 - tx) + b * tx) * (1 - ty) + (c0 * (1 - tx) + d0 * tx) * ty;
+        }
+
+        return { texture: tex, sample };
+    }
+
+    function createGlowSpriteTexture(THREE) {
+        const c = document.createElement('canvas');
+        c.width = 64;
+        c.height = 64;
+        const ctx = c.getContext('2d');
+        const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+        g.addColorStop(0.0, 'rgba(255, 255, 255, 1.0)');
+        g.addColorStop(0.28, 'rgba(255, 255, 255, 0.72)');
+        g.addColorStop(0.65, 'rgba(255, 255, 255, 0.16)');
+        g.addColorStop(1.0, 'rgba(255, 255, 255, 0.0)');
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, 64, 64);
+        const tex = new THREE.CanvasTexture(c);
+        tex.encoding = THREE.sRGBEncoding;
+        return tex;
+    }
+
+    function createPlayerRing3D(THREE, colorHex, radius) {
+        const group = new THREE.Group();
+        group.position.y = 0.008;
+
+        const ringGeo = new THREE.RingGeometry(radius * 0.85, radius, 48);
+        const ringMat = new THREE.MeshBasicMaterial({
+            color: colorHex,
+            side: THREE.DoubleSide,
+            transparent: true,
+            opacity: 0.88,
+            depthTest: false
+        });
+        const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+        ringMesh.rotation.x = -Math.PI / 2;
+        group.add(ringMesh);
+
+        const innerGeo = new THREE.RingGeometry(radius * 0.60, radius * 0.69, 36, 1, 0, Math.PI * 1.35);
+        const innerMat = new THREE.MeshBasicMaterial({
+            color: 0xffffff,
+            side: THREE.DoubleSide,
+            transparent: true,
+            opacity: 0.58,
+            depthTest: false
+        });
+        const innerMesh = new THREE.Mesh(innerGeo, innerMat);
+        innerMesh.rotation.x = -Math.PI / 2;
+        group.add(innerMesh);
+
+        const ptrGeo = new THREE.ConeGeometry(radius * 0.15, radius * 0.27, 3);
+        const ptrMat = new THREE.MeshBasicMaterial({
+            color: colorHex,
+            transparent: true,
+            opacity: 0.92,
+            depthTest: false
+        });
+        const ptrMesh = new THREE.Mesh(ptrGeo, ptrMat);
+        ptrMesh.rotation.x = Math.PI / 2;
+        ptrMesh.position.set(0, 0.008, radius * 1.12);
+        group.add(ptrMesh);
+
+        return { group, ringMesh, innerMesh, ringMat, innerMat, ptrMat };
+    }
+
+    function createOverheadChevron3D(THREE, colorHex) {
+        const group = new THREE.Group();
+        const coneGeo = new THREE.ConeGeometry(0.088, 0.165, 4);
+        const coneMat = new THREE.MeshStandardMaterial({
+            color: colorHex,
+            emissive: colorHex,
+            emissiveIntensity: 0.72,
+            roughness: 0.22,
+            metalness: 0.28
+        });
+        const cone = new THREE.Mesh(coneGeo, coneMat);
+        cone.rotation.x = Math.PI;
+        cone.rotation.y = Math.PI / 4;
+        group.add(cone);
+        return { group, cone, coneMat };
+    }
+
+    function createFrostbiteShaderMaterial(THREE, depthTex) {
+        const uniforms = {
+            uColorMap: { value: null },
+            uDepthMap: { value: depthTex },
+            uViewCenter: { value: new THREE.Vector2(0.503, 0.512) },
+            uViewSpan: { value: new THREE.Vector2(0.96, 0.96) },
+            uParallax: { value: new THREE.Vector2(0, 0) },
+            uPivotDepth: { value: PIVOT_DEPTH },
+            uTime: { value: 0 },
+            uReducedMotion: { value: 0 },
+            uActorFocusUv: { value: new THREE.Vector2(0.504, 0.520) },
+            uActorFootUv: { value: new THREE.Vector2(0.492, 0.116) },
+            uActorColor: { value: new THREE.Vector3(0.0, 1.0, 0.408) },
+            uActorIntensity: { value: 0.35 },
+            uCelebrateBurst: { value: 0.0 },
+            uShockwave: { value: 0.0 },
+            uStageAspect: { value: IMG_ASPECT }
+        };
+
+        const vertexShader = `
+            varying vec2 vUv;
+            void main() {
+                vUv = uv;
+                gl_Position = vec4(position.xy, 0.0, 1.0);
+            }
+        `;
+
+        const fragmentShader = `
+            precision highp float;
+            uniform sampler2D uColorMap;
+            uniform sampler2D uDepthMap;
+            uniform vec2 uViewCenter;
+            uniform vec2 uViewSpan;
+            uniform vec2 uParallax;
+            uniform float uPivotDepth;
+            uniform float uTime;
+            uniform float uReducedMotion;
+            uniform vec2 uActorFocusUv;
+            uniform vec2 uActorFootUv;
+            uniform vec3 uActorColor;
+            uniform float uActorIntensity;
+            uniform float uCelebrateBurst;
+            uniform float uShockwave;
+            uniform float uStageAspect;
+            varying vec2 vUv;
+
+            vec3 sRGBToLinearVec3(vec3 c) {
+                vec3 lo = c * 0.0773993808;
+                vec3 hi = pow(max(c * 0.9478672986 + vec3(0.0521327014), vec3(0.0)), vec3(2.4));
+                return mix(hi, lo, vec3(lessThanEqual(c, vec3(0.04045))));
+            }
+
+            vec3 linearToSRGBVec3(vec3 c) {
+                vec3 lo = c * 12.92;
+                vec3 hi = pow(max(c, vec3(0.0)), vec3(0.4166667)) * 1.055 - vec3(0.055);
+                return mix(hi, lo, vec3(lessThanEqual(c, vec3(0.0031308))));
+            }
+
+            void main() {
+                vec2 baseUv = uViewCenter + (vUv - 0.5) * uViewSpan;
+
+                // Smoothly attenuate parallax near image edges so void/tearing never occurs
+                vec2 borderFade = smoothstep(0.0, 0.05, baseUv) * (1.0 - smoothstep(0.95, 1.0, baseUv));
+                vec2 localParallax = uParallax * (borderFade.x * borderFade.y);
+
+                float d0 = texture2D(uDepthMap, clamp(baseUv, 0.002, 0.998)).r;
+                vec2 uv1 = baseUv + localParallax * (d0 - uPivotDepth);
+                float d1 = texture2D(uDepthMap, clamp(uv1, 0.002, 0.998)).r;
+                float depth = 0.5 * (d0 + d1);
+
+                vec2 sampleUv = baseUv + localParallax * (depth - uPivotDepth);
+                vec2 clampedUv = clamp(sampleUv, 0.002, 0.998);
+
+                float outDist = max(
+                    max(-sampleUv.x, sampleUv.x - 1.0),
+                    max(-sampleUv.y, sampleUv.y - 1.0)
+                );
+                float inBounds = 1.0 - smoothstep(0.0, 0.055, outDist);
+
+                vec3 texLinear = sRGBToLinearVec3(texture2D(uColorMap, clampedUv).rgb);
+                vec3 outTurf = vec3(0.005, 0.020, 0.007);
+                vec3 outSky = vec3(0.003, 0.006, 0.013);
+                vec3 edgeAtmos = mix(outTurf, outSky, smoothstep(0.24, 0.38, sampleUv.y));
+                vec3 col = mix(edgeAtmos, texLinear, inBounds);
+
+                vec3 accentLin = sRGBToLinearVec3(uActorColor);
+                float motion = 1.0 - step(0.5, uReducedMotion);
+
+                // 1. Living stadium atmosphere: drifting volumetric floodlight rays above horizon
+                float horizonMask = smoothstep(0.26, 0.54, sampleUv.y);
+                vec2 lights[6];
+                lights[0] = vec2(${FLOODLIGHTS_UV[0][0].toFixed(4)}, ${FLOODLIGHTS_UV[0][1].toFixed(4)});
+                lights[1] = vec2(${FLOODLIGHTS_UV[1][0].toFixed(4)}, ${FLOODLIGHTS_UV[1][1].toFixed(4)});
+                lights[2] = vec2(${FLOODLIGHTS_UV[2][0].toFixed(4)}, ${FLOODLIGHTS_UV[2][1].toFixed(4)});
+                lights[3] = vec2(${FLOODLIGHTS_UV[3][0].toFixed(4)}, ${FLOODLIGHTS_UV[3][1].toFixed(4)});
+                lights[4] = vec2(${FLOODLIGHTS_UV[4][0].toFixed(4)}, ${FLOODLIGHTS_UV[4][1].toFixed(4)});
+                lights[5] = vec2(${FLOODLIGHTS_UV[5][0].toFixed(4)}, ${FLOODLIGHTS_UV[5][1].toFixed(4)});
+
+                float rayAccum = 0.0;
+                float strobeAccum = 0.0;
+                float tDrift = uTime * motion;
+                for (int i = 0; i < 6; i++) {
+                    vec2 lp = lights[i];
+                    vec2 toFrag = sampleUv - lp;
+                    toFrag.x *= 1.7917;
+                    float dist = length(toFrag);
+                    vec2 beamTarget = vec2(mix(0.50, lp.x, 0.38), 0.14);
+                    vec2 beamDir = normalize(vec2((beamTarget.x - lp.x) * 1.7917, beamTarget.y - lp.y));
+                    vec2 fragDir = toFrag / max(dist, 0.0001);
+                    float cone = pow(max(dot(fragDir, beamDir), 0.0), 10.0);
+                    float wave = 0.74 + 0.26 * sin(fragDir.x * 16.0 + tDrift * 0.55 + float(i) * 1.4);
+                    float falloff = exp(-dist * 1.85);
+                    rayAccum += cone * wave * falloff * 0.055;
+
+                    if (uCelebrateBurst > 0.001 && motion > 0.5) {
+                        float pulse = 0.55 + 0.45 * sin(uTime * 19.0 + float(i) * 1.7);
+                        float halo = exp(-dist * 7.5) * pulse;
+                        strobeAccum += halo;
+                    }
+                }
+                col += vec3(0.45, 0.72, 0.85) * rayAccum * horizonMask * inBounds;
+                col += mix(vec3(0.85, 0.95, 1.0), accentLin, 0.22) * strobeAccum * min(1.0, uCelebrateBurst) * 0.24;
+
+                // 2. Per-actor subtle silhouette rim light + turf ground bounce
+                vec2 texelStep = vec2(1.0 / 512.0, 1.0 / 288.0);
+                float dL = texture2D(uDepthMap, clamp(clampedUv - vec2(texelStep.x, 0.0), 0.002, 0.998)).r;
+                float dR = texture2D(uDepthMap, clamp(clampedUv + vec2(texelStep.x, 0.0), 0.002, 0.998)).r;
+                float dD = texture2D(uDepthMap, clamp(clampedUv - vec2(0.0, texelStep.y), 0.002, 0.998)).r;
+                float dU = texture2D(uDepthMap, clamp(clampedUv + vec2(0.0, texelStep.y), 0.002, 0.998)).r;
+                float depthEdge = clamp((abs(dR - dL) + abs(dU - dD)) * 10.0, 0.0, 1.0);
+                float actorSilhouette = smoothstep(0.68, 0.79, depth);
+
+                vec2 deltaFocus = (sampleUv - uActorFocusUv) * vec2(1.7917, 0.90);
+                float actorProx = exp(-dot(deltaFocus, deltaFocus) * 18.0);
+                float rimBoost = depthEdge * actorSilhouette * actorProx * uActorIntensity * 0.55;
+                col += accentLin * rimBoost;
+
+                // Soft turf bounce glow around active actor's feet
+                vec2 deltaFoot = (sampleUv - uActorFootUv) * vec2(1.7917, 4.2);
+                float turfGlow = exp(-dot(deltaFoot, deltaFoot) * 28.0) * (1.0 - smoothstep(0.28, 0.33, sampleUv.y));
+                col += accentLin * turfGlow * (0.10 + uActorIntensity * 0.14);
+
+                // 3. Expanding turf shockwave ring during celebration burst
+                if (uShockwave > 0.001 && uShockwave < 1.0 && motion > 0.5) {
+                    vec2 swDelta = (sampleUv - vec2(0.495, 0.120)) * vec2(1.7917, 3.8);
+                    float swDist = length(swDelta);
+                    float swRadius = uShockwave * 1.15;
+                    float ring = exp(-pow((swDist - swRadius) / 0.036, 2.0));
+                    float turfOnly = 1.0 - smoothstep(0.27, 0.32, sampleUv.y);
+                    float fade = (1.0 - uShockwave) * smoothstep(0.0, 0.08, uShockwave);
+                    vec3 swColor = mix(vec3(0.0, 1.0, 0.25), accentLin, 0.45);
+                    col += swColor * ring * turfOnly * fade * 0.55;
+                }
+
+                // 4. Subtle broadcast vignette framing
+                vec2 vigUv = (vUv - 0.5) * vec2(1.08, 1.0);
+                float vig = mix(1.0, 0.84, smoothstep(0.28, 0.88, length(vigUv)));
+                col *= vig;
+
+                gl_FragColor = vec4(linearToSRGBVec3(clamp(col, 0.0, 1.0)), 1.0);
+            }
+        `;
+
+        return new THREE.ShaderMaterial({
+            uniforms,
+            vertexShader,
+            fragmentShader,
+            depthTest: false,
+            depthWrite: false,
+            toneMapped: false
+        });
+    }
+
+    /**
+     * Computes an aspect-safe cover-biased framing window (centerU, centerV_uv, visW, visH)
+     * ensuring the required safeBox never clips at any stage aspect ratio and bounds
+     * remain clean inside [0, 1] whenever possible.
+     */
+    function computeFramingWindow(stageAspect, targetCenterU, targetCenterVtop, zoom, safeBox) {
+        const ratio = Math.max(0.4, stageAspect) / IMG_ASPECT;
+        const safeSpanU = safeBox.maxU - safeBox.minU;
+        const safeSpanV = safeBox.maxVtop - safeBox.minVtop;
+
+        // Wide baseline cover-biased span (leaves 2% parallax margin inside [0..1])
+        let wideW;
+        let wideH;
+        if (ratio >= 1.0) {
+            wideW = 0.96;
+            wideH = wideW / ratio;
+            if (wideH < TRIO_SAFE_BOX.maxVtop - TRIO_SAFE_BOX.minVtop) {
+                wideH = TRIO_SAFE_BOX.maxVtop - TRIO_SAFE_BOX.minVtop;
+                wideW = wideH * ratio;
+            }
+        } else {
+            wideH = 0.96;
+            wideW = wideH * ratio;
+            if (wideW < TRIO_SAFE_BOX.maxU - TRIO_SAFE_BOX.minU) {
+                wideW = TRIO_SAFE_BOX.maxU - TRIO_SAFE_BOX.minU;
+                wideH = wideW / ratio;
+            }
+        }
+
+        // Apply requested push-in zoom while clamping to the required safeBox
+        let visW = wideW / zoom;
+        let visH = wideH / zoom;
+        if (visW < safeSpanU) {
+            visW = safeSpanU;
+            visH = visW / ratio;
+        }
+        if (visH < safeSpanV) {
+            visH = safeSpanV;
+            visW = visH * ratio;
+        }
+
+        const safeMinVuv = 1.0 - safeBox.maxVtop;
+        const safeMaxVuv = 1.0 - safeBox.minVtop;
+        const targetCenterVuv = 1.0 - targetCenterVtop;
+
+        // Keep center inside image bounds when vis <= 1.0, and strictly enclosing safeBox
+        const marginU = visW <= 0.985 ? 0.005 : 0.0;
+        let minCU = visW <= 1.0 ? visW * 0.5 + marginU : 0.505;
+        let maxCU = visW <= 1.0 ? 1.0 - visW * 0.5 - marginU : 0.505;
+        minCU = Math.max(minCU, safeBox.maxU - visW * 0.5);
+        maxCU = Math.min(maxCU, safeBox.minU + visW * 0.5);
+        const centerU = minCU <= maxCU
+            ? clamp(targetCenterU, minCU, maxCU)
+            : (safeBox.minU + safeBox.maxU) * 0.5;
+
+        const marginV = visH <= 0.985 ? 0.005 : 0.0;
+        let minCV = visH <= 1.0 ? visH * 0.5 + marginV : 0.515;
+        let maxCV = visH <= 1.0 ? 1.0 - visH * 0.5 - marginV : 0.515;
+        minCV = Math.max(minCV, safeMaxVuv - visH * 0.5);
+        maxCV = Math.min(maxCV, safeMinVuv + visH * 0.5);
+        const centerVuv = minCV <= maxCV
+            ? clamp(targetCenterVuv, minCV, maxCV)
+            : (safeMinVuv + safeMaxVuv) * 0.5;
+
+        return { centerU, centerVuv, visW, visH };
+    }
+
+    function initFrostbiteTrioStage() {
         const stageEl = document.getElementById('fc-trio-stage');
+        const sourceImg = document.getElementById('fc-trio-source-img');
         const glCanvas = document.getElementById('fc-trio-webgl-canvas');
         const hudCanvas = document.getElementById('fc-trio-hud-canvas');
         const celebrateBtn = document.getElementById('fc-stage-celebrate-btn');
@@ -23,16 +640,7 @@
 
         const THREE = window.THREE;
         const ctx2d = hudCanvas.getContext('2d');
-
-        // =====================================================================
-        // 1. SCENE, CAMERA & RENDERER
-        // =====================================================================
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x050912);
-        scene.fog = new THREE.FogExp2(0x050912, 0.065);
-
-        const camera = new THREE.PerspectiveCamera(36, 1.5, 0.1, 100);
-        camera.position.set(0, 1.35, 5.2);
+        if (!ctx2d) return;
 
         let renderer;
         try {
@@ -43,1246 +651,332 @@
                 powerPreference: 'high-performance'
             });
         } catch (err) {
-            console.warn('Three.js WebGLRenderer init error:', err);
+            console.warn('Frostbite WebGLRenderer init error:', err);
             return;
         }
 
         renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         renderer.outputEncoding = THREE.sRGBEncoding;
-        renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.15;
+        renderer.autoClear = false;
+
+        glCanvas.addEventListener('webglcontextlost', (e) => {
+            e.preventDefault();
+            stageEl.classList.remove('webgl-ready');
+        });
 
         // =====================================================================
-        // 2. STADIUM LIGHTING (Floodlights + Neon Volt & Cyan Rim Lights)
+        // 1. REDUCED MOTION & SCENE SETUP (2.5D BG PASS + 3D TELEMETRY PASS)
         // =====================================================================
-        const hemiLight = new THREE.HemisphereLight(0xdff4ff, 0x0a2916, 0.75);
-        hemiLight.position.set(0, 10, 0);
-        scene.add(hemiLight);
-
-        const keyLight = new THREE.DirectionalLight(0xfffbf0, 1.35);
-        keyLight.position.set(2.8, 5.5, 4.2);
-        keyLight.castShadow = true;
-        keyLight.shadow.mapSize.width = 1024;
-        keyLight.shadow.mapSize.height = 1024;
-        keyLight.shadow.camera.near = 0.5;
-        keyLight.shadow.camera.far = 15;
-        const d = 2.6;
-        keyLight.shadow.camera.left = -d;
-        keyLight.shadow.camera.right = d;
-        keyLight.shadow.camera.top = d;
-        keyLight.shadow.camera.bottom = -d;
-        keyLight.shadow.bias = -0.0008;
-        scene.add(keyLight);
-
-        // EAFC signature neon volt left rim light
-        const voltRimLight = new THREE.SpotLight(0x00ff68, 2.2, 12, Math.PI / 3, 0.5, 1.5);
-        voltRimLight.position.set(-3.5, 3.2, -1.8);
-        scene.add(voltRimLight);
-
-        // Stadium cyan right rim light
-        const cyanRimLight = new THREE.SpotLight(0x00e5ff, 1.9, 12, Math.PI / 3, 0.5, 1.5);
-        cyanRimLight.position.set(3.5, 3.2, -1.8);
-        scene.add(cyanRimLight);
-
-        // Front fill light for faces
-        const fillLight = new THREE.PointLight(0xd8ecff, 0.55, 8);
-        fillLight.position.set(0, 1.6, 3.2);
-        scene.add(fillLight);
-
-        /**
-         * Injects EA Sports FC Frostbite-style dual-color grazing Fresnel rim lighting:
-         * - Left silhouette edge (-X view normal) glows Neon Volt (#00FF68)
-         * - Right silhouette edge (+X view normal) glows Stadium Cyan (#00E5FF)
-         * Essential for separating the jet-black Schnoodle's curls and player silhouettes.
-         */
-        function applyEafcRimShader(material, opts) {
-            const rimIntensity = (opts && opts.rimIntensity !== undefined) ? opts.rimIntensity : 0.45;
-            const rimPower = (opts && opts.rimPower !== undefined) ? opts.rimPower : 2.6;
-
-            material.onBeforeCompile = function (shader) {
-                shader.fragmentShader = shader.fragmentShader.replace(
-                    '#include <dithering_fragment>',
-                    `
-                    vec3 viewDir = normalize(vViewPosition);
-                    float fresnel = pow(1.0 - clamp( abs(dot(normal, viewDir)), 0.0, 1.0 ), ${rimPower.toFixed(2)});
-                    vec3 voltRim = vec3(0.0, 1.0, 0.408);
-                    vec3 cyanRim = vec3(0.0, 0.898, 1.0);
-                    float sideBlend = smoothstep(-0.35, 0.35, normal.x);
-                    vec3 rimGlow = mix(voltRim, cyanRim, sideBlend) * fresnel * ${rimIntensity.toFixed(3)};
-                    gl_FragColor.rgb += rimGlow;
-                    #include <dithering_fragment>
-                    `
-                );
+        const motionQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+        let reducedMotion = Boolean(motionQuery && motionQuery.matches);
+        if (motionQuery) {
+            const onMotionChange = (ev) => {
+                reducedMotion = Boolean(ev.matches);
             };
-            material.needsUpdate = true;
-            return material;
+            if (typeof motionQuery.addEventListener === 'function') {
+                motionQuery.addEventListener('change', onMotionChange);
+            } else if (typeof motionQuery.addListener === 'function') {
+                motionQuery.addListener(onMotionChange);
+            }
         }
 
-        // =====================================================================
-        // 3. PROCEDURAL CANVAS TEXTURES (Pitch Turf, Jersey Crest, Ball Panels)
-        // =====================================================================
-        function createPitchTexture() {
-            const c = document.createElement('canvas');
-            c.width = 1024;
-            c.height = 1024;
-            const ctx = c.getContext('2d');
-
-            // Mowed stadium grass stripes
-            const stripes = 16;
-            for (let i = 0; i < stripes; i++) {
-                ctx.fillStyle = i % 2 === 0 ? '#0d3b1e' : '#114825';
-                ctx.fillRect(0, (i * c.height) / stripes, c.width, c.height / stripes);
-            }
-
-            // Subtle turf blade noise
-            ctx.fillStyle = 'rgba(0, 255, 104, 0.03)';
-            for (let i = 0; i < 4000; i++) {
-                const x = (i * 73) % c.width;
-                const y = (i * 137) % c.height;
-                ctx.fillRect(x, y, 2, 4);
-            }
-
-            // Crisp white pitch touchline & center circle markings
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.65)';
-            ctx.lineWidth = 6;
-            ctx.beginPath();
-            ctx.moveTo(0, 560);
-            ctx.lineTo(1024, 560);
-            ctx.stroke();
-
-            ctx.beginPath();
-            ctx.arc(512, 560, 190, 0, Math.PI * 2);
-            ctx.stroke();
-
-            const tex = new THREE.CanvasTexture(c);
-            tex.encoding = THREE.sRGBEncoding;
-            tex.wrapS = THREE.RepeatWrapping;
-            tex.wrapT = THREE.RepeatWrapping;
-            return tex;
-        }
-
-        function createJerseyTexture(numberStr) {
-            const c = document.createElement('canvas');
-            c.width = 512;
-            c.height = 512;
-            const ctx = c.getContext('2d');
-
-            // Obsidian charcoal technical fabric base
-            ctx.fillStyle = '#151a24';
-            ctx.fillRect(0, 0, 512, 512);
-
-            // Subtle diagonal carbon-weave chevron pattern
-            ctx.strokeStyle = 'rgba(0, 255, 104, 0.08)';
-            ctx.lineWidth = 14;
-            for (let y = 80; y < 440; y += 70) {
-                ctx.beginPath();
-                ctx.moveTo(120, y);
-                ctx.lineTo(256, y + 48);
-                ctx.lineTo(392, y);
-                ctx.stroke();
-            }
-
-            // Neon volt side piping
-            ctx.fillStyle = '#00ff68';
-            ctx.fillRect(40, 0, 14, 512);
-            ctx.fillRect(458, 0, 14, 512);
-
-            // TGFC Shield Crest on left chest
-            ctx.save();
-            ctx.translate(310, 135);
-            ctx.fillStyle = '#0b1018';
-            ctx.strokeStyle = '#00ff68';
-            ctx.lineWidth = 6;
-            ctx.beginPath();
-            ctx.moveTo(0, -32);
-            ctx.lineTo(28, -20);
-            ctx.lineTo(24, 14);
-            ctx.lineTo(0, 34);
-            ctx.lineTo(-24, 14);
-            ctx.lineTo(-28, -20);
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
-
-            ctx.fillStyle = '#00ff68';
-            ctx.font = '900 18px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('TG', 0, -2);
-            ctx.restore();
-
-            // Gold squad number on chest
-            ctx.fillStyle = '#f5c451';
-            ctx.font = '900 54px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText(numberStr, 195, 155);
-
-            // Subtle sponsor bar ("TIKI-DATA")
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.88)';
-            ctx.font = '800 32px monospace';
-            ctx.fillText('TIKI // DATA', 256, 255);
-
-            const tex = new THREE.CanvasTexture(c);
-            tex.encoding = THREE.sRGBEncoding;
-            return tex;
-        }
-
-        function createSoccerBallTexture() {
-            const c = document.createElement('canvas');
-            c.width = 512;
-            c.height = 256;
-            const ctx = c.getContext('2d');
-            ctx.fillStyle = '#f4f7fa';
-            ctx.fillRect(0, 0, 512, 256);
-
-            // Classic pro match ball pentagons + neon volt accents
-            const spots = [
-                [64, 64], [192, 64], [320, 64], [448, 64],
-                [128, 160], [256, 160], [384, 160], [500, 160],
-                [64, 220], [192, 220], [320, 220], [448, 220]
-            ];
-            spots.forEach(([x, y], idx) => {
-                ctx.fillStyle = idx % 4 === 0 ? '#00ff68' : '#101520';
-                ctx.beginPath();
-                for (let a = 0; a < 5; a++) {
-                    const ang = (a * Math.PI * 2) / 5 - Math.PI / 2;
-                    const px = x + Math.cos(ang) * 26;
-                    const py = y + Math.sin(ang) * 26;
-                    if (a === 0) ctx.moveTo(px, py);
-                    else ctx.lineTo(px, py);
-                }
-                ctx.closePath();
-                ctx.fill();
-            });
-
-            const tex = new THREE.CanvasTexture(c);
-            tex.encoding = THREE.sRGBEncoding;
-            return tex;
-        }
-
-        function createFaceTexture(opts) {
-            const isToddler = Boolean(opts && opts.isToddler);
-            const c = document.createElement('canvas');
-            c.width = 512;
-            c.height = 512;
-            const ctx = c.getContext('2d');
-
-            // 1. Base Subsurface Skin Tone
-            const baseSkin = isToddler ? '#f6ccb0' : '#ecc0a0';
-            ctx.fillStyle = baseSkin;
-            ctx.fillRect(0, 0, 512, 512);
-
-            // Subtle cranial crown & neck ambient occlusion gradient
-            const vertGrad = ctx.createLinearGradient(0, 0, 0, 512);
-            vertGrad.addColorStop(0.0, 'rgba(20, 14, 12, 0.18)');
-            vertGrad.addColorStop(0.22, 'rgba(255, 220, 200, 0.06)');
-            vertGrad.addColorStop(0.75, 'rgba(0, 0, 0, 0.0)');
-            vertGrad.addColorStop(1.0, 'rgba(35, 18, 14, 0.28)');
-            ctx.fillStyle = vertGrad;
-            ctx.fillRect(0, 0, 512, 512);
-
-            // 2. Subsurface Cheek & Nose Warmth / Blush
-            const blushY = isToddler ? 275 : 265;
-            const blushSpanX = isToddler ? 44 : 50;
-            const blushR = isToddler ? 38 : 34;
-
-            [-1, 1].forEach((side) => {
-                const bx = 256 + side * blushSpanX;
-                const blushG = ctx.createRadialGradient(bx, blushY, 2, bx, blushY, blushR);
-                blushG.addColorStop(0.0, isToddler ? 'rgba(240, 115, 115, 0.38)' : 'rgba(215, 110, 95, 0.26)');
-                blushG.addColorStop(0.65, isToddler ? 'rgba(240, 125, 115, 0.18)' : 'rgba(215, 120, 100, 0.12)');
-                blushG.addColorStop(1.0, 'rgba(240, 125, 115, 0.0)');
-                ctx.fillStyle = blushG;
-                ctx.beginPath();
-                ctx.arc(bx, blushY, blushR, 0, Math.PI * 2);
-                ctx.fill();
-            });
-
-            // 3. Dad's Neat Dark Stubble Beard Pattern & Mustache Shadow
-            if (!isToddler) {
-                ctx.save();
-                // Subtle jawline/chin shadow
-                const jawGrad = ctx.createRadialGradient(256, 350, 20, 256, 350, 85);
-                jawGrad.addColorStop(0.0, 'rgba(18, 20, 26, 0.40)');
-                jawGrad.addColorStop(0.7, 'rgba(24, 26, 34, 0.22)');
-                jawGrad.addColorStop(1.0, 'rgba(30, 32, 40, 0.0)');
-                ctx.fillStyle = jawGrad;
-                ctx.beginPath();
-                ctx.ellipse(256, 342, 72, 64, 0, 0, Math.PI);
-                ctx.fill();
-
-                // Mustache shadow arch above upper lip
-                ctx.strokeStyle = 'rgba(22, 24, 30, 0.36)';
-                ctx.lineWidth = 10;
-                ctx.lineCap = 'round';
-                ctx.beginPath();
-                ctx.moveTo(228, 314);
-                ctx.quadraticCurveTo(256, 302, 284, 314);
-                ctx.stroke();
-
-                // Fine procedural hair follicle stippling across jaw & chin
-                ctx.fillStyle = 'rgba(18, 20, 26, 0.28)';
-                for (let i = 0; i < 420; i++) {
-                    const a = (i * 1.6180339) * Math.PI * 2;
-                    const r = Math.sqrt(i / 420) * 64;
-                    const sx = 256 + Math.cos(a) * r * 1.05;
-                    const sy = 336 + Math.sin(a) * r * 0.72;
-                    if (sy > 296 && sy < 395) {
-                        ctx.fillRect(sx, sy, 1.5, 2.2);
-                    }
-                }
-                ctx.restore();
-            }
-
-            // 4. Multi-Layered Eyes (Socket AO, Sclera, Iris, Pupil, Dual Catchlights, Eyelids)
-            const eyeY = isToddler ? 248 : 232;
-            const eyeSpanX = isToddler ? 33 : 31;
-            const eyeRx = isToddler ? 15 : 13.5;
-            const eyeRy = isToddler ? 13.5 : 10.5;
-
-            [-1, 1].forEach((side) => {
-                const ex = 256 + side * eyeSpanX;
-
-                // Eye socket soft shadow
-                const sockG = ctx.createRadialGradient(ex, eyeY, 4, ex, eyeY, eyeRx * 1.6);
-                sockG.addColorStop(0, 'rgba(95, 55, 42, 0.22)');
-                sockG.addColorStop(1, 'rgba(95, 55, 42, 0)');
-                ctx.fillStyle = sockG;
-                ctx.beginPath();
-                ctx.arc(ex, eyeY, eyeRx * 1.6, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Sclera
-                ctx.fillStyle = '#f8fafc';
-                ctx.beginPath();
-                ctx.ellipse(ex, eyeY, eyeRx, eyeRy, 0, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Iris (warm dark brown/hazel)
-                const irisR = isToddler ? 8.8 : 7.4;
-                const irisG = ctx.createRadialGradient(ex, eyeY, 1, ex, eyeY, irisR);
-                irisG.addColorStop(0.0, isToddler ? '#4a2c16' : '#331d10');
-                irisG.addColorStop(0.7, isToddler ? '#6e4425' : '#4d2e1c');
-                irisG.addColorStop(1.0, isToddler ? '#2a170b' : '#1c1008');
-                ctx.fillStyle = irisG;
-                ctx.beginPath();
-                ctx.arc(ex, eyeY, irisR, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Pupil
-                ctx.fillStyle = '#06080d';
-                ctx.beginPath();
-                ctx.arc(ex, eyeY, irisR * 0.48, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Primary & secondary specular catchlights
-                ctx.fillStyle = '#ffffff';
-                ctx.beginPath();
-                ctx.arc(ex + 2.6, eyeY - 2.6, isToddler ? 2.6 : 2.1, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(ex - 2.2, eyeY + 2.2, 1.1, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Upper lash line / eyelid crease
-                ctx.strokeStyle = isToddler ? '#3a2518' : '#14171f';
-                ctx.lineWidth = isToddler ? 2.8 : 3.2;
-                ctx.lineCap = 'round';
-                ctx.beginPath();
-                ctx.arc(ex, eyeY + 1, eyeRx, Math.PI * 1.08, Math.PI * 1.92);
-                ctx.stroke();
-
-                // Tapered Eyebrow
-                ctx.strokeStyle = isToddler ? '#6e4726' : '#12151d';
-                ctx.lineWidth = isToddler ? 4.5 : 6.2;
-                ctx.beginPath();
-                ctx.moveTo(ex - side * (eyeRx + 3), eyeY - eyeRy - (isToddler ? 7 : 6));
-                ctx.quadraticCurveTo(
-                    ex,
-                    eyeY - eyeRy - (isToddler ? 13 : 11),
-                    ex + side * (eyeRx + 4),
-                    eyeY - eyeRy - (isToddler ? 5 : 4)
-                );
-                ctx.stroke();
-            });
-
-            // 5. Shaded Nose Contour & Nostrils
-            const noseBottomY = isToddler ? 282 : 278;
-            ctx.strokeStyle = 'rgba(130, 75, 58, 0.35)';
-            ctx.lineWidth = 2.4;
-            ctx.beginPath();
-            ctx.arc(256, noseBottomY, isToddler ? 8 : 9.5, 0.15 * Math.PI, 0.85 * Math.PI);
-            ctx.stroke();
-
-            // 6. Confident Smile with Teeth Highlight
-            const mouthY = isToddler ? 312 : 320;
-            const mouthW = isToddler ? 22 : 25;
-            ctx.fillStyle = '#7a2828';
-            ctx.beginPath();
-            ctx.arc(256, mouthY, mouthW, 0.05 * Math.PI, 0.95 * Math.PI, false);
-            ctx.closePath();
-            ctx.fill();
-
-            // Upper teeth strip
-            ctx.fillStyle = '#f4f6fa';
-            ctx.beginPath();
-            ctx.arc(256, mouthY, mouthW * 0.84, 0.12 * Math.PI, 0.88 * Math.PI, false);
-            ctx.closePath();
-            ctx.fill();
-
-            const tex = new THREE.CanvasTexture(c);
-            tex.encoding = THREE.sRGBEncoding;
-            return tex;
-        }
-
-        function createJerseyBumpTexture() {
-            const c = document.createElement('canvas');
-            c.width = 512;
-            c.height = 512;
-            const ctx = c.getContext('2d');
-
-            ctx.fillStyle = '#808080';
-            ctx.fillRect(0, 0, 512, 512);
-
-            // 1. Micro Dri-FIT honeycomb breathable knit pattern
-            ctx.fillStyle = '#969696';
-            for (let y = 0; y < 512; y += 6) {
-                const offset = (y / 6) % 2 === 0 ? 0 : 3;
-                for (let x = offset; x < 512; x += 6) {
-                    ctx.fillRect(x, y, 2, 2);
-                }
-            }
-
-            // 2. Diagonal cloth tension creases across chest
-            ctx.strokeStyle = '#686868';
-            ctx.lineWidth = 4;
-            for (let cy = 120; cy < 420; cy += 45) {
-                ctx.beginPath();
-                ctx.moveTo(140, cy);
-                ctx.quadraticCurveTo(256, cy + 18, 372, cy);
-                ctx.stroke();
-            }
-
-            const tex = new THREE.CanvasTexture(c);
-            tex.encoding = THREE.sRGBEncoding;
-            return tex;
-        }
-
-        const sharedJerseyBumpTex = createJerseyBumpTexture();
-
-        /**
-         * Creates an organic anatomical limb or torso segment via SplineCurve + LatheGeometry.
-         * Expects radiiFromTopToBottom = [topRadius, upperMid, lowerMid, bottomRadius].
-         * Automatically builds bottom-to-top so normals face outward and top is at y = 0
-         * (extending downward to y = -length, matching existing bone pivots!).
-         */
-        function createAnatomicalSegmentGeo(radiiTopToBot, length, radialSegs = 20) {
-            const n = radiiTopToBot.length;
-            const pts = [];
-            // Build from bottom (y = -length) to top (y = 0) so y is ascending
-            for (let i = 0; i < n; i++) {
-                const t = i / (n - 1); // 0 at bottom, 1 at top
-                const r = radiiTopToBot[n - 1 - i];
-                const y = -length * (1 - t);
-                pts.push(new THREE.Vector2(Math.max(0.001, r), y));
-            }
-            const curve = new THREE.SplineCurve(pts);
-            return new THREE.LatheGeometry(curve.getPoints(20), radialSegs, Math.PI, Math.PI * 2);
-        }
-
-        // =====================================================================
-        // 4. 3D STADIUM PITCH, GOALPOSTS & FLOODLIGHT TOWERS
-        // =====================================================================
-        const pitchGeo = new THREE.PlaneGeometry(18, 18);
-        const pitchMat = new THREE.MeshStandardMaterial({
-            map: createPitchTexture(),
-            roughness: 0.78,
-            metalness: 0.05
-        });
-        const pitchMesh = new THREE.Mesh(pitchGeo, pitchMat);
-        pitchMesh.rotation.x = -Math.PI / 2;
-        pitchMesh.receiveShadow = true;
-        scene.add(pitchMesh);
-
-        // Background 3D Goalposts on the pitch
-        const goalGroup = new THREE.Group();
-        goalGroup.position.set(0, 0, -5.2);
-        const postMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2, metalness: 0.5 });
-        const leftPost = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1.9, 12), postMat);
-        leftPost.position.set(-2.2, 0.95, 0);
-        const rightPost = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1.9, 12), postMat);
-        rightPost.position.set(2.2, 0.95, 0);
-        const crossbar = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 4.48, 12), postMat);
-        crossbar.rotation.z = Math.PI / 2;
-        crossbar.position.set(0, 1.9, 0);
-        goalGroup.add(leftPost, rightPost, crossbar);
-        scene.add(goalGroup);
-
-        // Stadium Floodlight Halo Nodes in upper background
-        const floodlightGroup = new THREE.Group();
-        [-3.6, -1.8, 1.8, 3.6].forEach((fx, idx) => {
-            const glowMat = new THREE.MeshBasicMaterial({
-                color: idx % 2 === 0 ? 0xdff8ff : 0x00ff68
-            });
-            const bank = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.22, 0.08), glowMat);
-            bank.position.set(fx, 3.6, -5.5);
-            floodlightGroup.add(bank);
-        });
-        scene.add(floodlightGroup);
-
-        // =====================================================================
-        // 5. 3D UNDERFOOT EAFC SELECTION RINGS & OVERHEAD 3D CHEVRONS (▼)
-        // =====================================================================
-        function createPlayerRing3D(colorHex, radius) {
-            const group = new THREE.Group();
-            group.position.y = 0.012;
-
-            // Outer glowing torus ring on the grass
-            const ringGeo = new THREE.RingGeometry(radius * 0.86, radius, 48);
-            const ringMat = new THREE.MeshBasicMaterial({
-                color: colorHex,
-                side: THREE.DoubleSide,
-                transparent: true,
-                opacity: 0.85
-            });
-            const ringMesh = new THREE.Mesh(ringGeo, ringMat);
-            ringMesh.rotation.x = -Math.PI / 2;
-            group.add(ringMesh);
-
-            // Inner segmented radar arc
-            const innerGeo = new THREE.RingGeometry(radius * 0.62, radius * 0.70, 32, 1, 0, Math.PI * 1.35);
-            const innerMat = new THREE.MeshBasicMaterial({
-                color: 0xffffff,
-                side: THREE.DoubleSide,
-                transparent: true,
-                opacity: 0.55
-            });
-            const innerMesh = new THREE.Mesh(innerGeo, innerMat);
-            innerMesh.rotation.x = -Math.PI / 2;
-            group.add(innerMesh);
-
-            // Forward direction pointer triangle on turf
-            const ptrGeo = new THREE.ConeGeometry(radius * 0.16, radius * 0.28, 3);
-            const ptrMat = new THREE.MeshBasicMaterial({ color: colorHex });
-            const ptrMesh = new THREE.Mesh(ptrGeo, ptrMat);
-            ptrMesh.rotation.x = Math.PI / 2;
-            ptrMesh.position.set(0, 0.01, radius * 1.12);
-            group.add(ptrMesh);
-
-            return { group, ringMesh, innerMesh, ringMat, innerMat };
-        }
-
-        function createOverheadChevron3D(colorHex) {
-            const group = new THREE.Group();
-            // Inverted 3D pyramid (authentic EAFC overhead player indicator ▼)
-            const coneGeo = new THREE.ConeGeometry(0.11, 0.20, 4);
-            const coneMat = new THREE.MeshStandardMaterial({
-                color: colorHex,
-                emissive: colorHex,
-                emissiveIntensity: 0.65,
-                roughness: 0.2,
-                metalness: 0.3
-            });
-            const cone = new THREE.Mesh(coneGeo, coneMat);
-            cone.rotation.x = Math.PI; // point downward
-            cone.rotation.y = Math.PI / 4;
-            group.add(cone);
-            return { group, cone, coneMat };
-        }
-
-        // =====================================================================
-        // 6. BUILD ARTICULATED 3D FOOTBALL PLAYER RIG (DAD & 1-YEAR-OLD SON)
-        // =====================================================================
-        const skinMatDad = new THREE.MeshStandardMaterial({ color: 0xf0c2a2, roughness: 0.52, metalness: 0.04 });
-        applyEafcRimShader(skinMatDad, { rimIntensity: 0.32, rimPower: 2.6 });
-
-        const skinMatSon = new THREE.MeshStandardMaterial({ color: 0xf6ccb0, roughness: 0.48, metalness: 0.02 });
-        applyEafcRimShader(skinMatSon, { rimIntensity: 0.30, rimPower: 2.6 });
-
-        const hairMatBlack = new THREE.MeshStandardMaterial({ color: 0x111318, roughness: 0.65 });
-        applyEafcRimShader(hairMatBlack, { rimIntensity: 0.38, rimPower: 2.4 });
-
-        const hairMatLightBrown = new THREE.MeshStandardMaterial({ color: 0x8b5e38, roughness: 0.55 });
-        applyEafcRimShader(hairMatLightBrown, { rimIntensity: 0.35, rimPower: 2.4 });
-
-        const shortsMat = new THREE.MeshStandardMaterial({ color: 0x12161f, roughness: 0.6 });
-        applyEafcRimShader(shortsMat, { rimIntensity: 0.36, rimPower: 2.5 });
-
-        const sockMat = new THREE.MeshStandardMaterial({ color: 0x141923, roughness: 0.6 });
-        applyEafcRimShader(sockMat, { rimIntensity: 0.36, rimPower: 2.5 });
-
-        const voltMat = new THREE.MeshStandardMaterial({
-            color: 0x00ff68,
-            emissive: 0x00ff68,
-            emissiveIntensity: 0.25,
-            roughness: 0.35
-        });
-        const bootMat = new THREE.MeshStandardMaterial({ color: 0x0c0f14, roughness: 0.3, metalness: 0.25 });
-        applyEafcRimShader(bootMat, { rimIntensity: 0.40, rimPower: 2.5 });
-        const eyeWhiteMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-        const pupilMat = new THREE.MeshBasicMaterial({ color: 0x161920 });
-        const smileMat = new THREE.MeshBasicMaterial({ color: 0x9e4747 });
-
-        function buildHumanPlayerRig(opts) {
-            const {
-                scale = 1.0,
-                isToddler = false,
-                numberStr = '10',
-                skinMat = skinMatDad,
-                hairMat = hairMatBlack
-            } = opts;
-
-            const root = new THREE.Group();
-            root.scale.setScalar(scale);
-
-            const pelvis = new THREE.Group();
-            pelvis.position.y = isToddler ? 0.48 : 0.92;
-            root.add(pelvis);
-
-            // Shorts / Hip block
-            const pelvisMesh = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.16, 0.15, 0.16, 16),
-                shortsMat
-            );
-            pelvisMesh.castShadow = true;
-            pelvis.add(pelvisMesh);
-
-            // Torso group
-            const torso = new THREE.Group();
-            torso.position.y = 0.06;
-            pelvis.add(torso);
-
-            const torsoHeight = isToddler ? 0.34 : 0.48;
-            const torsoTopR = isToddler ? 0.165 : 0.195;
-
-            // Sculpted V-Taper Torso with LatheGeometry
-            const torsoPts = isToddler
-                ? [
-                    new THREE.Vector2(0.145, 0.0),
-                    new THREE.Vector2(0.150, torsoHeight * 0.35),
-                    new THREE.Vector2(0.162, torsoHeight * 0.75),
-                    new THREE.Vector2(0.165, torsoHeight)
-                ]
-                : [
-                    new THREE.Vector2(0.155, 0.0), // hem
-                    new THREE.Vector2(0.160, torsoHeight * 0.28), // waist taper
-                    new THREE.Vector2(0.185, torsoHeight * 0.70), // chest volume
-                    new THREE.Vector2(0.195, torsoHeight) // broad athletic shoulders
-                ];
-            const torsoCurve = new THREE.SplineCurve(torsoPts);
-            const torsoGeo = new THREE.LatheGeometry(torsoCurve.getPoints(24), 24, Math.PI, Math.PI * 2);
-            torsoGeo.scale(1.0, 1.0, 0.88); // subtle front-to-back flatter chest/ribcage
-
-            const jerseyMat = new THREE.MeshStandardMaterial({
-                map: createJerseyTexture(numberStr),
-                bumpMap: sharedJerseyBumpTex,
-                bumpScale: 0.007,
-                roughness: 0.44,
-                metalness: 0.10
-            });
-            applyEafcRimShader(jerseyMat, { rimIntensity: 0.42 });
-
-            const torsoMesh = new THREE.Mesh(torsoGeo, jerseyMat);
-            torsoMesh.castShadow = true;
-            torso.add(torsoMesh);
-
-            // Rounded chest/shoulder cap with neon volt collar ring
-            const collarRing = new THREE.Mesh(
-                new THREE.TorusGeometry(isToddler ? 0.085 : 0.095, 0.014, 10, 24),
-                voltMat
-            );
-            collarRing.rotation.x = Math.PI / 2;
-            collarRing.position.y = torsoHeight + 0.01;
-            torso.add(collarRing);
-
-            // Neck & Head Group
-            const neckGroup = new THREE.Group();
-            neckGroup.position.y = torsoHeight + 0.02;
-            torso.add(neckGroup);
-
-            const neckMesh = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.055, 0.062, 0.07, 14),
-                skinMat
-            );
-            neckMesh.position.y = 0.025;
-            neckGroup.add(neckMesh);
-
-            const headGroup = new THREE.Group();
-            headGroup.position.y = 0.055;
-            neckGroup.add(headGroup);
-
-            const headFaceMat = new THREE.MeshStandardMaterial({
-                map: createFaceTexture({ isToddler }),
-                roughness: 0.48,
-                metalness: 0.04
-            });
-            applyEafcRimShader(headFaceMat, { rimIntensity: 0.36 });
-
-            const headR = isToddler ? 0.152 : 0.138;
-
-            const headProfile = isToddler
-                ? [
-                    new THREE.Vector2(0.001, 0.00),
-                    new THREE.Vector2(headR * 0.48, headR * 0.12),
-                    new THREE.Vector2(headR * 0.88, headR * 0.45),
-                    new THREE.Vector2(headR * 0.96, headR * 0.95),
-                    new THREE.Vector2(headR * 0.94, headR * 1.45),
-                    new THREE.Vector2(headR * 0.62, headR * 1.82),
-                    new THREE.Vector2(0.001, headR * 1.96)
-                ]
-                : [
-                    new THREE.Vector2(0.001, 0.00),
-                    new THREE.Vector2(headR * 0.42, headR * 0.10),
-                    new THREE.Vector2(headR * 0.78, headR * 0.42),
-                    new THREE.Vector2(headR * 0.88, headR * 0.88),
-                    new THREE.Vector2(headR * 0.90, headR * 1.32),
-                    new THREE.Vector2(headR * 0.82, headR * 1.72),
-                    new THREE.Vector2(headR * 0.48, headR * 2.00),
-                    new THREE.Vector2(0.001, headR * 2.10)
-                ];
-
-            const headCurve = new THREE.SplineCurve(headProfile);
-            const headLatheGeo = new THREE.LatheGeometry(headCurve.getPoints(28), 32, Math.PI, Math.PI * 2);
-            headLatheGeo.scale(1.0, 1.0, 1.06);
-
-            const headMesh = new THREE.Mesh(headLatheGeo, headFaceMat);
-            headMesh.castShadow = true;
-            headGroup.add(headMesh);
-
-            // Subtle 3D nose bridge contour so profile views have real 3D relief
-            const noseBridge = new THREE.Mesh(
-                new THREE.CylinderGeometry(headR * 0.045, headR * 0.085, headR * 0.30, 12),
-                skinMat
-            );
-            noseBridge.position.set(0, headR * (isToddler ? 0.86 : 0.96), headR * 0.92);
-            noseBridge.rotation.x = -0.22;
-            headGroup.add(noseBridge);
-
-            // Sculpted Ears
-            [-1, 1].forEach((side) => {
-                const ear = new THREE.Mesh(new THREE.SphereGeometry(headR * 0.19, 12, 12), skinMat);
-                ear.scale.set(0.42, 1.05, 0.68);
-                ear.position.set(side * headR * 0.88, headR * (isToddler ? 0.88 : 0.96), -0.01);
-                headGroup.add(ear);
-            });
-
-            // 3D Sculpted Hair
-            if (!isToddler) {
-                // Dad: Short black hair with neat crown & side fade
-                const hairCap = new THREE.Mesh(
-                    new THREE.SphereGeometry(headR * 0.98, 20, 20, 0, Math.PI * 2, 0, Math.PI * 0.58),
-                    hairMat
-                );
-                hairCap.scale.set(0.95, 1.12, 0.98);
-                hairCap.position.y = headR * 0.94;
-                hairCap.rotation.x = -0.18;
-                headGroup.add(hairCap);
-
-                // Textured front quiff / fringe
-                for (let i = -2; i <= 2; i++) {
-                    const tuft = new THREE.Mesh(new THREE.SphereGeometry(headR * 0.24, 10, 10), hairMat);
-                    tuft.scale.set(1.1, 0.65, 0.9);
-                    tuft.position.set(i * headR * 0.18, headR * 1.72, headR * 0.55 - Math.abs(i) * 0.012);
-                    headGroup.add(tuft);
-                }
-            } else {
-                // 1-Year-Old Son: Soft wavy light-brown toddler curls
-                const curlBase = new THREE.Mesh(
-                    new THREE.SphereGeometry(headR * 0.96, 18, 18, 0, Math.PI * 2, 0, Math.PI * 0.55),
-                    hairMat
-                );
-                curlBase.position.y = headR * 0.95;
-                curlBase.rotation.x = -0.15;
-                headGroup.add(curlBase);
-
-                const curlPositions = [
-                    [0, 1.72, 0.45], [-0.35, 1.65, 0.38], [0.35, 1.65, 0.38],
-                    [-0.62, 1.42, 0.15], [0.62, 1.42, 0.15], [0, 1.78, 0.1],
-                    [-0.22, 1.74, 0.52], [0.22, 1.74, 0.52]
-                ];
-                curlPositions.forEach(([cx, cy, cz]) => {
-                    const curl = new THREE.Mesh(new THREE.SphereGeometry(headR * 0.24, 10, 10), hairMat);
-                    curl.position.set(cx * headR, cy * headR, cz * headR);
-                    headGroup.add(curl);
-                });
-            }
-
-            // Articulated Arms (Shoulder -> UpperArm -> Elbow -> Forearm -> Hand)
-            function buildArm(side) {
-                const shoulder = new THREE.Group();
-                shoulder.position.set(side * (torsoTopR + 0.035), torsoHeight - 0.04, 0);
-                torso.add(shoulder);
-
-                // Short sleeve with neon volt cuff
-                const sleeveLen = isToddler ? 0.11 : 0.16;
-                const sleeve = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.058, 0.052, sleeveLen, 14),
-                    shortsMat
-                );
-                sleeve.position.y = -sleeveLen / 2;
-                sleeve.castShadow = true;
-                shoulder.add(sleeve);
-
-                const cuff = new THREE.Mesh(
-                    new THREE.TorusGeometry(0.053, 0.008, 8, 18),
-                    voltMat
-                );
-                cuff.rotation.x = Math.PI / 2;
-                cuff.position.y = -sleeveLen;
-                shoulder.add(cuff);
-
-                const upperLen = isToddler ? 0.14 : 0.23;
-                const upperArm = new THREE.Mesh(
-                    createAnatomicalSegmentGeo(
-                        isToddler ? [0.046, 0.048, 0.042, 0.038] : [0.048, 0.052, 0.044, 0.038],
-                        upperLen
-                    ),
-                    skinMat
-                );
-                shoulder.add(upperArm);
-
-                const elbow = new THREE.Group();
-                elbow.position.y = -upperLen;
-                shoulder.add(elbow);
-
-                const elbowCap = new THREE.Mesh(new THREE.SphereGeometry(isToddler ? 0.040 : 0.042, 12, 12), skinMat);
-                elbow.add(elbowCap);
-
-                const foreLen = isToddler ? 0.13 : 0.21;
-                const forearm = new THREE.Mesh(
-                    createAnatomicalSegmentGeo(
-                        isToddler ? [0.042, 0.044, 0.036, 0.032] : [0.044, 0.048, 0.038, 0.032],
-                        foreLen
-                    ),
-                    skinMat
-                );
-                elbow.add(forearm);
-
-                const hand = new THREE.Mesh(
-                    new THREE.SphereGeometry(isToddler ? 0.044 : 0.042, 12, 12),
-                    skinMat
-                );
-                hand.scale.set(0.85, 1.15, 0.65);
-                hand.position.y = -foreLen - 0.02;
-                elbow.add(hand);
-
-                return { shoulder, elbow, hand };
-            }
-
-            const leftArm = buildArm(-1);
-            const rightArm = buildArm(1);
-
-            // Articulated Legs (Hip -> Thigh -> Knee -> Shin/Sock -> Cleat)
-            function buildLeg(side) {
-                const hip = new THREE.Group();
-                hip.position.set(side * (isToddler ? 0.085 : 0.098), -0.04, 0);
-                pelvis.add(hip);
-
-                const shortLegLen = isToddler ? 0.11 : 0.20;
-                const shortLeg = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.078, 0.068, shortLegLen, 14),
-                    shortsMat
-                );
-                shortLeg.position.y = -shortLegLen / 2;
-                shortLeg.castShadow = true;
-                hip.add(shortLeg);
-
-                const thighLen = isToddler ? 0.16 : 0.36;
-                const thigh = new THREE.Mesh(
-                    createAnatomicalSegmentGeo(
-                        isToddler ? [0.066, 0.068, 0.056, 0.050] : [0.074, 0.078, 0.062, 0.052],
-                        thighLen
-                    ),
-                    skinMat
-                );
-                thigh.castShadow = true;
-                hip.add(thigh);
-
-                const knee = new THREE.Group();
-                knee.position.y = -thighLen;
-                hip.add(knee);
-
-                const kneeJoint = new THREE.Mesh(new THREE.SphereGeometry(isToddler ? 0.044 : 0.050, 12, 12), skinMat);
-                knee.add(kneeJoint);
-
-                const shinLen = isToddler ? 0.18 : 0.38;
-                const sock = new THREE.Mesh(
-                    createAnatomicalSegmentGeo(
-                        isToddler ? [0.050, 0.056, 0.044, 0.036] : [0.052, 0.062, 0.046, 0.036],
-                        shinLen
-                    ),
-                    sockMat
-                );
-                sock.castShadow = true;
-                knee.add(sock);
-
-                // Triple neon volt sock stripes
-                [-0.03, -0.055, -0.08].forEach((sy) => {
-                    const stripe = new THREE.Mesh(
-                        new THREE.TorusGeometry(0.050, 0.006, 8, 18),
-                        voltMat
-                    );
-                    stripe.rotation.x = Math.PI / 2;
-                    stripe.position.y = sy;
-                    knee.add(stripe);
-                });
-
-                const ankle = new THREE.Group();
-                ankle.position.y = -shinLen;
-                knee.add(ankle);
-
-                const bootGroup = new THREE.Group();
-                ankle.add(bootGroup);
-
-                // Contoured upper boot body (tapered forefoot + anatomical instep)
-                const bootUpperGeo = new THREE.CylinderGeometry(0.036, 0.044, 0.165, 16);
-                bootUpperGeo.rotateX(Math.PI / 2);
-                bootUpperGeo.scale(0.95, 0.68, 1.0);
-                const bootUpper = new THREE.Mesh(bootUpperGeo, bootMat);
-                bootUpper.position.set(0, -0.022, 0.038);
-                bootUpper.castShadow = true;
-                bootGroup.add(bootUpper);
-
-                // Rounded aerodynamic toe cap
-                const toeCap = new THREE.Mesh(new THREE.SphereGeometry(0.041, 14, 14), bootMat);
-                toeCap.scale.set(0.92, 0.58, 1.15);
-                toeCap.position.set(0, -0.026, 0.115);
-                bootGroup.add(toeCap);
-
-                // Sculpted ankle collar & heel cup
-                const heelCup = new THREE.Mesh(new THREE.CylinderGeometry(0.038, 0.041, 0.055, 14), bootMat);
-                heelCup.position.set(0, -0.005, -0.025);
-                bootGroup.add(heelCup);
-
-                // Neon volt speed-stripe chevron & soleplate
-                const solePlate = new THREE.Mesh(new THREE.BoxGeometry(0.076, 0.010, 0.175), voltMat);
-                solePlate.position.set(0, -0.048, 0.038);
-                bootGroup.add(solePlate);
-
-                // Conical turf studs under soleplate
-                [-0.024, 0.024].forEach((sx) => {
-                    [-0.02, 0.04, 0.09].forEach((sz) => {
-                        const stud = new THREE.Mesh(new THREE.ConeGeometry(0.007, 0.014, 6), voltMat);
-                        stud.rotation.x = Math.PI;
-                        stud.position.set(sx, -0.056, sz);
-                        bootGroup.add(stud);
-                    });
-                });
-
-                return { hip, knee, ankle };
-            }
-
-            const leftLeg = buildLeg(-1);
-            const rightLeg = buildLeg(1);
-
-            return {
-                root,
-                pelvis,
-                torso,
-                neckGroup,
-                headGroup,
-                leftArm,
-                rightArm,
-                leftLeg,
-                rightLeg
-            };
-        }
-
-        // =====================================================================
-        // 7. BUILD ARTICULATED 3D BLACK SCHNAUZER-POODLE MIX (SCHNOODLE) RIG
-        // =====================================================================
-        function buildSchnoodleRig() {
-            const root = new THREE.Group();
-
-            const furMat = new THREE.MeshStandardMaterial({
-                color: 0x121620,
-                roughness: 0.62,
-                metalness: 0.12
-            });
-            applyEafcRimShader(furMat, { rimIntensity: 0.68, rimPower: 2.2 });
-            const noseMat = new THREE.MeshStandardMaterial({
-                color: 0x050608,
-                roughness: 0.18,
-                metalness: 0.3
-            });
-            const tongueMat = new THREE.MeshStandardMaterial({
-                color: 0xff6b8b,
-                roughness: 0.4
-            });
-
-            const bodyGroup = new THREE.Group();
-            bodyGroup.position.y = 0.34;
-            root.add(bodyGroup);
-
-            // Curly torso core + shaggy fur tufts
-            const torsoCore = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.145, 0.135, 0.44, 16),
-                furMat
-            );
-            torsoCore.rotation.x = Math.PI / 2;
-            torsoCore.castShadow = true;
-            bodyGroup.add(torsoCore);
-
-            // Add shaggy Schnoodle coat curls along torso & chest
-            for (let i = 0; i < 24; i++) {
-                const ang = (i * 2.4);
-                const zPos = -0.18 + (i / 24) * 0.38;
-                const r = 0.065 + (i % 3) * 0.012;
-                const tuft = new THREE.Mesh(new THREE.SphereGeometry(r, 10, 10), furMat);
-                tuft.position.set(Math.cos(ang) * 0.10, Math.sin(ang) * 0.09, zPos);
-                tuft.castShadow = true;
-                bodyGroup.add(tuft);
-            }
-
-            // Neon Volt TGFC Team Bandana & Glowing Collar Ring
-            const collar = new THREE.Mesh(
-                new THREE.TorusGeometry(0.142, 0.016, 10, 24),
-                voltMat
-            );
-            collar.position.set(0, 0.05, 0.19);
-            collar.rotation.x = 0.35;
-            bodyGroup.add(collar);
-
-            const bandana = new THREE.Mesh(
-                new THREE.ConeGeometry(0.11, 0.16, 3),
-                voltMat
-            );
-            bandana.position.set(0, -0.06, 0.24);
-            bandana.rotation.x = Math.PI;
-            bodyGroup.add(bandana);
-
-            // Neck & Head Group
-            const headGroup = new THREE.Group();
-            headGroup.position.set(0, 0.14, 0.20);
-            bodyGroup.add(headGroup);
-
-            const skull = new THREE.Mesh(new THREE.SphereGeometry(0.135, 18, 18), furMat);
-            skull.position.set(0, 0.06, 0.02);
-            skull.castShadow = true;
-            headGroup.add(skull);
-
-            // Shaggy topknot & schnauzer eyebrows
-            [-1, 1].forEach((side) => {
-                const browTuft = new THREE.Mesh(new THREE.SphereGeometry(0.045, 10, 10), furMat);
-                browTuft.scale.set(1.3, 0.7, 1.1);
-                browTuft.position.set(side * 0.055, 0.115, 0.115);
-                headGroup.add(browTuft);
-
-                // Expressive dark eyes with bright catchlights
-                const eye = new THREE.Mesh(new THREE.SphereGeometry(0.024, 10, 10), pupilMat);
-                eye.position.set(side * 0.052, 0.085, 0.135);
-                headGroup.add(eye);
-
-                const catchlight = new THREE.Mesh(new THREE.SphereGeometry(0.008, 8, 8), eyeWhiteMat);
-                catchlight.position.set(side * 0.052 + 0.006, 0.092, 0.154);
-                headGroup.add(catchlight);
-            });
-
-            // Scruffy Schnauzer-Poodle Muzzle & Beard
-            const snout = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.095, 0.14), furMat);
-            snout.position.set(0, 0.03, 0.14);
-            headGroup.add(snout);
-
-            const beard = new THREE.Mesh(new THREE.SphereGeometry(0.068, 12, 12), furMat);
-            beard.scale.set(1.1, 1.15, 0.9);
-            beard.position.set(0, -0.01, 0.15);
-            headGroup.add(beard);
-
-            // Shiny wet black nose
-            const nose = new THREE.Mesh(new THREE.SphereGeometry(0.028, 12, 12), noseMat);
-            nose.scale.set(1.2, 0.9, 0.9);
-            nose.position.set(0, 0.062, 0.215);
-            headGroup.add(nose);
-
-            // Happy panting pink tongue
-            const tongue = new THREE.Mesh(new THREE.BoxGeometry(0.036, 0.012, 0.065), tongueMat);
-            tongue.position.set(0, -0.012, 0.195);
-            tongue.rotation.x = 0.35;
-            headGroup.add(tongue);
-
-            // Floppy Schnoodle Ears
-            const leftEar = new THREE.Group();
-            leftEar.position.set(-0.12, 0.11, 0.02);
-            const earMeshL = new THREE.Mesh(new THREE.BoxGeometry(0.045, 0.16, 0.09), furMat);
-            earMeshL.position.y = -0.07;
-            leftEar.add(earMeshL);
-            leftEar.rotation.z = 0.22;
-            headGroup.add(leftEar);
-
-            const rightEar = new THREE.Group();
-            rightEar.position.set(0.12, 0.11, 0.02);
-            const earMeshR = new THREE.Mesh(new THREE.BoxGeometry(0.045, 0.16, 0.09), furMat);
-            earMeshR.position.y = -0.07;
-            rightEar.add(earMeshR);
-            rightEar.rotation.z = -0.22;
-            headGroup.add(rightEar);
-
-            // Articulated Curly Tail
-            const tailGroup = new THREE.Group();
-            tailGroup.position.set(0, 0.08, -0.21);
-            bodyGroup.add(tailGroup);
-
-            for (let t = 0; t < 5; t++) {
-                const seg = new THREE.Mesh(new THREE.SphereGeometry(0.038 - t * 0.004, 10, 10), furMat);
-                seg.position.set(0, t * 0.042, -t * 0.015);
-                tailGroup.add(seg);
-            }
-
-            // 4 Articulated Furry Legs & Paws
-            function buildDogLeg(lx, lz) {
-                const legGroup = new THREE.Group();
-                legGroup.position.set(lx, -0.06, lz);
-                bodyGroup.add(legGroup);
-
-                const legCyl = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.046, 0.038, 0.26, 12),
-                    furMat
-                );
-                legCyl.position.y = -0.13;
-                legCyl.castShadow = true;
-                legGroup.add(legCyl);
-
-                const paw = new THREE.Mesh(new THREE.SphereGeometry(0.046, 12, 12), furMat);
-                paw.scale.set(1.0, 0.65, 1.25);
-                paw.position.set(0, -0.26, 0.015);
-                legGroup.add(paw);
-
-                return legGroup;
-            }
-
-            const flLeg = buildDogLeg(-0.085, 0.14);
-            const frLeg = buildDogLeg(0.085, 0.14);
-            const blLeg = buildDogLeg(-0.085, -0.14);
-            const brLeg = buildDogLeg(0.085, -0.14);
-
-            return {
-                root,
-                bodyGroup,
-                headGroup,
-                tongue,
-                leftEar,
-                rightEar,
-                tailGroup,
-                flLeg,
-                frLeg,
-                blLeg,
-                brLeg
-            };
-        }
-
-        // =====================================================================
-        // 8. INSTANTIATE THE TRIO & 3D FOOTBALLS IN A COMPACT, IN-FRAME LINEUP
-        // =====================================================================
-        const squadGroup = new THREE.Group();
-        scene.add(squadGroup);
-
-        // 1. Center: Dad / Manager Tomi Gelo (#10)
-        const dadRig = buildHumanPlayerRig({
-            scale: 1.0,
-            isToddler: false,
-            numberStr: '10',
-            skinMat: skinMatDad,
-            hairMat: hairMatBlack
-        });
-        dadRig.root.position.set(0, 0, 0);
-        squadGroup.add(dadRig.root);
-
-        // 2. Left: 1-Year-Old Son (#7, placed close at x = -0.82 so always in-frame!)
-        const sonRig = buildHumanPlayerRig({
-            scale: 0.72,
-            isToddler: true,
-            numberStr: '7',
-            skinMat: skinMatSon,
-            hairMat: hairMatLightBrown
-        });
-        sonRig.root.position.set(-0.82, 0, 0.24);
-        sonRig.root.rotation.y = 0.18;
-        squadGroup.add(sonRig.root);
-
-        // 3. Right: 7-Year-Old Black Schnoodle (placed close at x = +0.82 so always in-frame!)
-        const dogRig = buildSchnoodleRig();
-        dogRig.root.position.set(0.82, 0, 0.28);
-        dogRig.root.rotation.y = -0.22;
-        squadGroup.add(dogRig.root);
-
-        // 3D Match Footballs (Dad's juggling match ball + Son's mini ball)
-        const ballTex = createSoccerBallTexture();
-        const ballMat = new THREE.MeshStandardMaterial({
-            map: ballTex,
-            roughness: 0.35,
-            metalness: 0.1
-        });
-        const matchBall = new THREE.Mesh(new THREE.SphereGeometry(0.135, 24, 24), ballMat);
-        matchBall.castShadow = true;
-        matchBall.position.set(0.16, 0.135, 0.26);
-        squadGroup.add(matchBall);
-
-        const miniBall = new THREE.Mesh(new THREE.SphereGeometry(0.095, 20, 20), ballMat);
-        miniBall.castShadow = true;
-        miniBall.position.set(-0.72, 0.095, 0.46);
-        squadGroup.add(miniBall);
-
-        // 3D Underfoot Rings & Overhead Chevrons attached to each player position
-        const dadRing = createPlayerRing3D(0x00ff68, 0.44);
-        dadRing.group.position.set(0, 0.012, 0.05);
-        squadGroup.add(dadRing.group);
-
-        const sonRing = createPlayerRing3D(0xf5c451, 0.34);
-        sonRing.group.position.set(-0.82, 0.012, 0.26);
-        squadGroup.add(sonRing.group);
-
-        const dogRing = createPlayerRing3D(0x00e5ff, 0.36);
-        dogRing.group.position.set(0.82, 0.012, 0.28);
-        squadGroup.add(dogRing.group);
-
-        const dadChevron = createOverheadChevron3D(0x00ff68);
-        const sonChevron = createOverheadChevron3D(0xf5c451);
-        const dogChevron = createOverheadChevron3D(0x00e5ff);
-        squadGroup.add(dadChevron.group, sonChevron.group, dogChevron.group);
-
-        // =====================================================================
-        // 9. INTERACTIVE CAMERA FOCUS, ORBIT & CELEBRATION STATE MACHINE
-        // =====================================================================
-        const ACTORS = {
-            son: {
-                id: 'son',
-                label: 'JR. TACTICIAN #7',
-                color: '#F5C451',
-                targetPos: new THREE.Vector3(-0.32, 0.96, 0.1),
-                camOffset: new THREE.Vector3(-0.45, 1.08, 3.85),
-                popupText: '👶 GOAL CELEBRATION +99!'
-            },
-            dad: {
-                id: 'dad',
-                label: 'GELO #10',
-                color: '#00FF68',
-                targetPos: new THREE.Vector3(0, 1.05, 0),
-                camOffset: new THREE.Vector3(0, 1.25, 4.55),
-                popupText: '⚽ RAINBOW JUGGLE +99!'
-            },
-            dog: {
-                id: 'dog',
-                label: 'ASST. GAFFER #1',
-                color: '#00E5FF',
-                targetPos: new THREE.Vector3(0.32, 0.88, 0.1),
-                camOffset: new THREE.Vector3(0.45, 1.02, 3.85),
-                popupText: '🐾 ZOOMIE SPIN +100!'
-            }
+        const depthBuffer = buildDepthMap(THREE);
+        const glowSpriteTex = createGlowSpriteTexture(THREE);
+
+        // Pass 1: Full-stage 2.5D background shader quad
+        const bgScene = new THREE.Scene();
+        const bgCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+        const bgMat = createFrostbiteShaderMaterial(THREE, depthBuffer.texture);
+        const bgUniforms = bgMat.uniforms;
+        const bgQuad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), bgMat);
+        bgQuad.frustumCulled = false;
+        bgQuad.renderOrder = -10;
+        bgScene.add(bgQuad);
+
+        // Pass 2: True 3D Perspective Telemetry Scene (rings, chevrons, motes, sparks)
+        const telemetryScene = new THREE.Scene();
+        const telemetryCam = new THREE.PerspectiveCamera(34, IMG_ASPECT, 0.1, 40);
+        telemetryCam.position.set(0, 1.05, 4.35);
+        telemetryCam.lookAt(0, 0.12, 0);
+
+        const hemiLight = new THREE.HemisphereLight(0xe4f5ff, 0x0a2515, 0.9);
+        telemetryScene.add(hemiLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1.15);
+        dirLight.position.set(2.2, 4.5, 3.8);
+        telemetryScene.add(dirLight);
+
+        const rings = {
+            son: createPlayerRing3D(THREE, ACTORS.son.colorHex, ACTORS.son.ringRadius),
+            dad: createPlayerRing3D(THREE, ACTORS.dad.colorHex, ACTORS.dad.ringRadius),
+            dog: createPlayerRing3D(THREE, ACTORS.dog.colorHex, ACTORS.dog.ringRadius)
         };
+        const chevrons = {
+            son: createOverheadChevron3D(THREE, ACTORS.son.colorHex),
+            dad: createOverheadChevron3D(THREE, ACTORS.dad.colorHex),
+            dog: createOverheadChevron3D(THREE, ACTORS.dog.colorHex)
+        };
+        ACTOR_KEYS.forEach((k) => {
+            telemetryScene.add(rings[k].group);
+            telemetryScene.add(chevrons[k].group);
+        });
 
+        // Floating 3D stadium floodlight dust motes
+        const MOTE_COUNT = 84;
+        const motePositions = new Float32Array(MOTE_COUNT * 3);
+        const moteColors = new Float32Array(MOTE_COUNT * 3);
+        const moteSeeds = [];
+        for (let i = 0; i < MOTE_COUNT; i++) {
+            const bx = (Math.random() - 0.5) * 4.4;
+            const by = 0.08 + Math.random() * 1.95;
+            const bz = -1.2 + Math.random() * 2.2;
+            motePositions[i * 3] = bx;
+            motePositions[i * 3 + 1] = by;
+            motePositions[i * 3 + 2] = bz;
+            moteSeeds.push({
+                bx,
+                by,
+                bz,
+                phase: Math.random() * Math.PI * 2,
+                speed: 0.4 + Math.random() * 0.7,
+                amp: 0.04 + Math.random() * 0.07
+            });
+            const tint = i % 3 === 0 ? [0.2, 1.0, 0.55] : (i % 3 === 1 ? [0.25, 0.9, 1.0] : [0.95, 0.92, 0.72]);
+            moteColors[i * 3] = tint[0];
+            moteColors[i * 3 + 1] = tint[1];
+            moteColors[i * 3 + 2] = tint[2];
+        }
+        const moteGeo = new THREE.BufferGeometry();
+        moteGeo.setAttribute('position', new THREE.Float32BufferAttribute(motePositions, 3));
+        moteGeo.setAttribute('color', new THREE.Float32BufferAttribute(moteColors, 3));
+        const moteMat = new THREE.PointsMaterial({
+            size: 0.055,
+            map: glowSpriteTex,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.42,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+            depthTest: false
+        });
+        const motePoints = new THREE.Points(moteGeo, moteMat);
+        telemetryScene.add(motePoints);
+
+        // Celebration 3D pyro sparks
+        const SPARK_COUNT = 120;
+        const sparkPos = new Float32Array(SPARK_COUNT * 3);
+        const sparkCol = new Float32Array(SPARK_COUNT * 3);
+        const sparkMeta = [];
+        for (let i = 0; i < SPARK_COUNT; i++) {
+            sparkPos[i * 3 + 1] = -99;
+            sparkMeta.push({ vx: 0, vy: 0, vz: 0, life: 0, maxLife: 1, r: 1, g: 1, b: 1 });
+        }
+        const sparkGeo = new THREE.BufferGeometry();
+        sparkGeo.setAttribute('position', new THREE.Float32BufferAttribute(sparkPos, 3));
+        sparkGeo.setAttribute('color', new THREE.Float32BufferAttribute(sparkCol, 3));
+        const sparkMat = new THREE.PointsMaterial({
+            size: 0.085,
+            map: glowSpriteTex,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.95,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+            depthTest: false
+        });
+        const sparkPoints = new THREE.Points(sparkGeo, sparkMat);
+        telemetryScene.add(sparkPoints);
+
+        function emitSparks(originVec, rgb, count) {
+            if (reducedMotion) return;
+            let spawned = 0;
+            for (let i = 0; i < SPARK_COUNT && spawned < count; i++) {
+                const m = sparkMeta[i];
+                if (m.life > 0) continue;
+                const ang = Math.random() * Math.PI * 2;
+                const spd = 0.45 + Math.random() * 1.15;
+                sparkPos[i * 3] = originVec.x + (Math.random() - 0.5) * 0.18;
+                sparkPos[i * 3 + 1] = originVec.y + 0.04;
+                sparkPos[i * 3 + 2] = originVec.z + (Math.random() - 0.5) * 0.14;
+                m.vx = Math.cos(ang) * spd * 0.65;
+                m.vy = 1.15 + Math.random() * 1.55;
+                m.vz = Math.sin(ang) * spd * 0.45;
+                m.maxLife = 0.75 + Math.random() * 0.55;
+                m.life = m.maxLife;
+                m.r = rgb[0];
+                m.g = rgb[1];
+                m.b = rgb[2];
+                sparkCol[i * 3] = m.r;
+                sparkCol[i * 3 + 1] = m.g;
+                sparkCol[i * 3 + 2] = m.b;
+                spawned++;
+            }
+            sparkGeo.attributes.position.needsUpdate = true;
+            sparkGeo.attributes.color.needsUpdate = true;
+        }
+
+        // =====================================================================
+        // 2. STATE MACHINE (CAMERA FOCUS, DRAG ORBIT, PARALLAX, CELEBRATION)
+        // =====================================================================
+        let textureReady = false;
         let activeActor = 'dad';
-        let bursts = { son: 0, dad: 0, dog: 0 };
+        let cameraFocus = 'wide'; // 'wide' | 'son' | 'dad' | 'dog'
+        const bursts = { son: 0, dad: 0, dog: 0 };
+        let celebrateGlobalBurst = 0;
+        let shockwaveClock = -1;
+        const popups = [];
+
         let userYaw = 0;
         let isDragging = false;
         let dragStartX = 0;
         let dragMoved = false;
-        let pointerHover = { x: 0, y: 0 };
-        const popups = [];
+        const pointerHover = { x: 0, y: 0 };
+        const smoothHover = { x: 0, y: 0 };
 
-        const currentCamPos = new THREE.Vector3(0, 1.25, 4.65);
-        const currentLookAt = new THREE.Vector3(0, 1.02, 0);
+        // Current smooth camera window in image UV space (bottom-left origin)
+        const currentView = {
+            centerU: 0.505,
+            centerVuv: 0.510,
+            visW: 0.96,
+            visH: 0.96,
+            parallaxX: 0,
+            parallaxY: 0
+        };
+
+        let stageLayoutW = 0;
+        let stageLayoutH = 0;
+        let stageDpr = 1;
+        let hudBarBoxes = [];
+        let hudSafeTopPx = 34;
+
+        function measureStageHudObstacles() {
+            const stageRect = stageEl.getBoundingClientRect();
+            if (stageRect.width < 10 || stageRect.height < 10) return;
+
+            const scaleX = hudCanvas.width / stageRect.width;
+            const scaleY = hudCanvas.height / stageRect.height;
+            const pad = 4 * stageDpr;
+
+            const boxes = [];
+            let maxBottom = 28 * stageDpr;
+            const topBar = stageEl.querySelector('.fc-stage-hud-top');
+            if (topBar) {
+                const items = topBar.querySelectorAll('.fc-stage-engine-pill, .fc-stage-celebrate-btn');
+                items.forEach((el) => {
+                    const r = el.getBoundingClientRect();
+                    if (r.width > 0 && r.height > 0) {
+                        const left = (r.left - stageRect.left) * scaleX - pad;
+                        const right = (r.right - stageRect.left) * scaleX + pad;
+                        const top = (r.top - stageRect.top) * scaleY - pad;
+                        const bottom = (r.bottom - stageRect.top) * scaleY + pad;
+                        boxes.push({ left, right, top, bottom });
+                        if (bottom > maxBottom) maxBottom = bottom;
+                    }
+                });
+            }
+            hudBarBoxes = boxes;
+            hudSafeTopPx = Math.max(30 * stageDpr, maxBottom + 2 * stageDpr);
+        }
+
+        function syncStageSize() {
+            const rect = stageEl.getBoundingClientRect();
+            const layoutW = stageEl.clientWidth || rect.width;
+            const layoutH = stageEl.clientHeight || rect.height;
+            if (layoutW < 10 || layoutH < 10 || rect.width < 10 || rect.height < 10) {
+                return false;
+            }
+
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+            if (stageLayoutW !== layoutW || stageLayoutH !== layoutH || stageDpr !== dpr) {
+                stageLayoutW = layoutW;
+                stageLayoutH = layoutH;
+                stageDpr = dpr;
+                renderer.setPixelRatio(dpr);
+                renderer.setSize(layoutW, layoutH, false);
+                hudCanvas.width = glCanvas.width;
+                hudCanvas.height = glCanvas.height;
+                telemetryCam.aspect = layoutW / layoutH;
+                telemetryCam.updateProjectionMatrix();
+            }
+
+            measureStageHudObstacles();
+            return true;
+        }
+
+        /**
+         * Unified screen-space projection matching the GLSL 2.5D depth parallax
+         * and camera window pixel-for-pixel.
+         */
+        function imageUvToScreen(u, vTop, depthOverride) {
+            const vUv = 1.0 - vTop;
+            const depth = depthOverride !== undefined ? depthOverride : depthBuffer.sample(u, vUv);
+
+            const bx = clamp((u - (currentView.centerU - currentView.visW * 0.5)) / currentView.visW, 0, 1);
+            const by = clamp((vUv - (currentView.centerVuv - currentView.visH * 0.5)) / currentView.visH, 0, 1);
+            const fadeU = smoothstep(0.0, 0.05, u) * (1.0 - smoothstep(0.95, 1.0, u));
+            const fadeV = smoothstep(0.0, 0.05, vUv) * (1.0 - smoothstep(0.95, 1.0, vUv));
+            const edgeFade = fadeU * fadeV;
+
+            const baseU = u - currentView.parallaxX * edgeFade * (depth - PIVOT_DEPTH);
+            const baseVuv = vUv - currentView.parallaxY * edgeFade * (depth - PIVOT_DEPTH);
+
+            const screenU = 0.5 + (baseU - currentView.centerU) / currentView.visW;
+            const screenV = 0.5 + (baseVuv - currentView.centerVuv) / currentView.visH;
+
+            return {
+                screenU,
+                screenV,
+                ndcX: screenU * 2.0 - 1.0,
+                ndcY: screenV * 2.0 - 1.0,
+                hudX: screenU * hudCanvas.width,
+                hudY: (1.0 - screenV) * hudCanvas.height,
+                bx,
+                by
+            };
+        }
+
+        const _rayPoint = new THREE.Vector3();
+        const _rayDir = new THREE.Vector3();
+
+        function ndcToTurfPlane(ndcX, ndcY, outVec) {
+            _rayPoint.set(ndcX, ndcY, 0.5).unproject(telemetryCam);
+            _rayDir.copy(_rayPoint).sub(telemetryCam.position).normalize();
+            if (_rayDir.y < -0.02) {
+                const t = (0.008 - telemetryCam.position.y) / _rayDir.y;
+                outVec.copy(telemetryCam.position).addScaledVector(_rayDir, t);
+            } else {
+                outVec.set(ndcX * 1.5, 0.008, 0);
+            }
+            return outVec;
+        }
+
+        function ndcToVerticalPlane(ndcX, ndcY, planeZ, outVec) {
+            _rayPoint.set(ndcX, ndcY, 0.5).unproject(telemetryCam);
+            _rayDir.copy(_rayPoint).sub(telemetryCam.position).normalize();
+            const denom = Math.abs(_rayDir.z) > 1e-4 ? _rayDir.z : -1e-4;
+            const t = (planeZ - telemetryCam.position.z) / denom;
+            outVec.copy(telemetryCam.position).addScaledVector(_rayDir, t);
+            return outVec;
+        }
+
+        const _projVec = new THREE.Vector3();
+        function worldToHud(vec3) {
+            _projVec.copy(vec3).project(telemetryCam);
+            return {
+                x: (_projVec.x * 0.5 + 0.5) * hudCanvas.width,
+                y: (-_projVec.y * 0.5 + 0.5) * hudCanvas.height
+            };
+        }
+
+        function overlapsHudBar(cx, cy, halfW, halfH) {
+            for (let i = 0; i < hudBarBoxes.length; i++) {
+                const b = hudBarBoxes[i];
+                if (cx + halfW > b.left && cx - halfW < b.right && cy + halfH > b.top && cy - halfH < b.bottom) {
+                    return true;
+                }
+            }
+            return cy - halfH < 4 * stageDpr;
+        }
 
         function updateCalloutHighlight() {
             calloutBtns.forEach((btn) => {
@@ -1291,387 +985,533 @@
             });
         }
 
-        function triggerCelebration(actorKey, celebrateAll = false) {
-            if (celebrateAll) {
-                activeActor = 'dad';
-                bursts.son = 1.8;
-                bursts.dad = 1.8;
-                bursts.dog = 1.8;
-                ['son', 'dad', 'dog'].forEach((k, idx) => {
-                    popups.push({
-                        actor: k,
-                        text: ACTORS[k].popupText,
-                        color: ACTORS[k].color,
-                        life: 1.4,
-                        delay: idx * 0.08
-                    });
-                });
-            } else if (ACTORS[actorKey]) {
-                activeActor = actorKey;
-                bursts[actorKey] = 1.8;
-                popups.push({
-                    actor: actorKey,
-                    text: ACTORS[actorKey].popupText,
-                    color: ACTORS[actorKey].color,
-                    life: 1.4,
-                    delay: 0
-                });
+        function queuePopup(actorKey, delay) {
+            const actor = ACTORS[actorKey];
+            if (!actor) return;
+            if (popups.length >= 6) {
+                popups.shift();
             }
-            updateCalloutHighlight();
-            if (window.tgfcPlaySelectSfx) {
-                window.tgfcPlaySelectSfx();
-            }
+            popups.push({
+                actor: actorKey,
+                text: actor.popupText,
+                color: actor.color,
+                life: 1.45,
+                delay: delay || 0
+            });
         }
 
-        // Stage pointer & drag orbit events
+        function selectActor(actorKey, focusZoom = true) {
+            const actor = ACTORS[actorKey];
+            if (!actor) return;
+            activeActor = actorKey;
+            cameraFocus = focusZoom ? actorKey : 'wide';
+            bursts[actorKey] = 1.6;
+            queuePopup(actorKey, 0);
+            updateCalloutHighlight();
+            emitSparks(rings[actorKey].group.position, actor.colorRgb, 48);
+            if (typeof window.tgfcPlaySelectSfx === 'function') {
+                window.tgfcPlaySelectSfx();
+            }
+            ensureAnimating();
+        }
+
+        function triggerFullCelebration() {
+            activeActor = 'dad';
+            cameraFocus = 'wide';
+            userYaw = 0;
+            celebrateGlobalBurst = 1.85;
+            shockwaveClock = 0.001;
+            ACTOR_KEYS.forEach((k, idx) => {
+                bursts[k] = 1.85;
+                queuePopup(k, idx * 0.08);
+                emitSparks(rings[k].group.position, ACTORS[k].colorRgb, 36);
+            });
+            updateCalloutHighlight();
+            if (typeof window.tgfcPlayCelebrationSfx === 'function') {
+                window.tgfcPlayCelebrationSfx();
+            } else if (typeof window.tgfcPlaySelectSfx === 'function') {
+                window.tgfcPlaySelectSfx();
+            }
+            ensureAnimating();
+        }
+
+        function resetToWideFraming() {
+            cameraFocus = 'wide';
+            userYaw = 0;
+            ensureAnimating();
+        }
+
+        // =====================================================================
+        // 3. POINTER, DRAG ORBIT, HIT-TESTING & BUTTON BINDINGS
+        // =====================================================================
         stageEl.addEventListener('pointerdown', (e) => {
             if (e.target.closest('#fc-stage-celebrate-btn')) return;
             isDragging = true;
             dragMoved = false;
             dragStartX = e.clientX;
+            stageEl.classList.add('is-dragging');
         });
 
         window.addEventListener('pointermove', (e) => {
             const rect = stageEl.getBoundingClientRect();
             if (rect.width > 0 && rect.height > 0) {
-                pointerHover.x = Math.max(-1, Math.min(1, ((e.clientX - rect.left) / rect.width) * 2 - 1));
-                pointerHover.y = Math.max(-1, Math.min(1, ((e.clientY - rect.top) / rect.height) * 2 - 1));
+                pointerHover.x = clamp(((e.clientX - rect.left) / rect.width) * 2 - 1, -1, 1);
+                pointerHover.y = clamp(((e.clientY - rect.top) / rect.height) * 2 - 1, -1, 1);
             }
             if (isDragging) {
                 const dx = e.clientX - dragStartX;
                 if (Math.abs(dx) > 4) dragMoved = true;
-                userYaw = Math.max(-0.65, Math.min(0.65, userYaw + dx * 0.007));
+                userYaw = clamp(userYaw + dx * 0.0045, -1.0, 1.0);
                 dragStartX = e.clientX;
+                ensureAnimating();
             }
         });
 
-        window.addEventListener('pointerup', () => {
+        function endDrag() {
+            if (!isDragging) return;
             isDragging = false;
-        });
+            stageEl.classList.remove('is-dragging');
+        }
+        window.addEventListener('pointerup', endDrag);
+        window.addEventListener('pointercancel', endDrag);
 
         stageEl.addEventListener('click', (e) => {
             if (e.target.closest('#fc-stage-celebrate-btn') || dragMoved) return;
             const rect = stageEl.getBoundingClientRect();
-            const nx = (e.clientX - rect.left) / rect.width;
-            if (nx < 0.35) {
-                triggerCelebration('son', false);
-            } else if (nx > 0.65) {
-                triggerCelebration('dog', false);
+            if (rect.width < 10 || rect.height < 10) return;
+
+            const clickHudX = ((e.clientX - rect.left) / rect.width) * hudCanvas.width;
+            const clickHudY = ((e.clientY - rect.top) / rect.height) * hudCanvas.height;
+            const hitMargin = 14 * stageDpr;
+
+            let hitActor = null;
+            let bestDist = Infinity;
+
+            ACTOR_KEYS.forEach((key) => {
+                const a = ACTORS[key];
+                const topLeft = imageUvToScreen(a.hitbox.minU, a.hitbox.minVtop);
+                const botRight = imageUvToScreen(a.hitbox.maxU, a.hitbox.maxVtop);
+                const minX = Math.min(topLeft.hudX, botRight.hudX) - hitMargin;
+                const maxX = Math.max(topLeft.hudX, botRight.hudX) + hitMargin;
+                const minY = Math.min(topLeft.hudY, botRight.hudY) - hitMargin;
+                const maxY = Math.max(topLeft.hudY, botRight.hudY) + hitMargin;
+
+                if (clickHudX >= minX && clickHudX <= maxX && clickHudY >= minY && clickHudY <= maxY) {
+                    const cx = (minX + maxX) * 0.5;
+                    const cy = (minY + maxY) * 0.5;
+                    const dist = Math.hypot(clickHudX - cx, clickHudY - cy);
+                    if (dist < bestDist) {
+                        bestDist = dist;
+                        hitActor = key;
+                    }
+                }
+            });
+
+            if (hitActor) {
+                selectActor(hitActor, true);
             } else {
-                triggerCelebration('dad', false);
+                resetToWideFraming();
             }
         });
 
         celebrateBtn?.addEventListener('click', (e) => {
             e.stopPropagation();
-            userYaw = 0;
-            triggerCelebration('dad', true);
+            triggerFullCelebration();
         });
 
         calloutBtns.forEach((btn) => {
             btn.addEventListener('click', () => {
                 const actor = btn.getAttribute('data-trio-actor');
-                if (actor) {
+                if (actor && ACTORS[actor]) {
                     userYaw = 0;
-                    triggerCelebration(actor, false);
+                    selectActor(actor, true);
                 }
             });
         });
 
         // =====================================================================
-        // 10. RESPONSIVE FRUSTUM SIZING (GUARANTEES ALL 3 PLAYERS ARE IN-FRAME)
+        // 4. RENDER LOOP, LIFECYCLE PAUSING & 2D HUD TELEMETRY
         // =====================================================================
-        let aspectScaleZ = 1.0;
-
-        function syncStageSize() {
-            const rect = stageEl.getBoundingClientRect();
-            if (rect.width < 10 || rect.height < 10) return;
-
-            const dpr = Math.min(window.devicePixelRatio || 1, 2);
-            const w = Math.round(rect.width * dpr);
-            const h = Math.round(rect.height * dpr);
-
-            if (glCanvas.width !== w || glCanvas.height !== h) {
-                renderer.setSize(rect.width, rect.height, false);
-                hudCanvas.width = w;
-                hudCanvas.height = h;
-                camera.aspect = rect.width / rect.height;
-                camera.updateProjectionMatrix();
-            }
-
-            // If viewport is narrower than 1.55:1, automatically pull camera back so x: [-1.15 .. +1.15] stays 100% inside frustum!
-            const aspect = rect.width / rect.height;
-            aspectScaleZ = aspect < 1.55 ? (1.55 / Math.max(aspect, 0.75)) : 1.0;
-        }
-
-        window.addEventListener('resize', syncStageSize);
-
-        // Project 3D world position to 2D HUD canvas pixel coordinates
-        const tempProj = new THREE.Vector3();
-        function worldToHud(x, y, z) {
-            tempProj.set(x, y, z);
-            tempProj.project(camera);
-            return {
-                x: (tempProj.x * 0.5 + 0.5) * hudCanvas.width,
-                y: (-tempProj.y * 0.5 + 0.5) * hudCanvas.height
-            };
-        }
-
-        // =====================================================================
-        // 11. 60FPS SKELETAL ANIMATION LOOP & 2D TELEMETRY OVERLAY
-        // =====================================================================
-        let lastTime = performance.now();
-        updateCalloutHighlight();
-
-        function animate(now) {
-            requestAnimationFrame(animate);
-
-            // Pause rendering when Work -> Central Hub is hidden
+        function isStageVisible() {
+            if (document.hidden) return false;
             const workScreen = document.getElementById('screen-work');
             const centralView = document.getElementById('work-view-central');
-            if (!workScreen || workScreen.hidden || !centralView || centralView.hidden) {
-                lastTime = now;
-                return;
-            }
+            return Boolean(workScreen && !workScreen.hidden && centralView && !centralView.hidden);
+        }
 
-            syncStageSize();
-            const dt = Math.min((now - lastTime) * 0.001, 0.05);
+        function drawHudPill(ctx, cx, cy, label, color, isSel, dpr) {
+            ctx.save();
+            ctx.font = `800 ${Math.round((isSel ? 9.5 : 8.2) * dpr)}px "JetBrains Mono", monospace`;
+            const tw = ctx.measureText(label).width + 12 * dpr;
+            const th = (isSel ? 15 : 13) * dpr;
+            const x = cx - tw * 0.5;
+            const y = cy - th * 0.5;
+
+            ctx.fillStyle = isSel ? 'rgba(4, 8, 15, 0.92)' : 'rgba(4, 8, 15, 0.74)';
+            ctx.strokeStyle = color;
+            ctx.lineWidth = (isSel ? 1.6 : 1.0) * dpr;
+            ctx.fillRect(x, y, tw, th);
+            ctx.strokeRect(x, y, tw, th);
+
+            // Crisp tactical left accent strip
+            ctx.fillStyle = color;
+            ctx.fillRect(x, y, 2.5 * dpr, th);
+
+            ctx.fillStyle = isSel ? '#FFFFFF' : 'rgba(255, 255, 255, 0.84)';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(label, cx + 1 * dpr, cy + 0.5 * dpr);
+            ctx.restore();
+            return { tw, th };
+        }
+
+        let rafId = 0;
+        let lastTime = performance.now();
+        const _hitVec = new THREE.Vector3();
+
+        function renderFrame(now) {
+            if (!textureReady) return;
+            if (!syncStageSize()) return;
+
+            const dt = Math.min(0.05, Math.max(0.001, (now - lastTime) * 0.001));
             lastTime = now;
             const t = now * 0.001;
 
-            // Decay celebration bursts
-            bursts.son = Math.max(0, bursts.son - dt * 0.85);
-            bursts.dad = Math.max(0, bursts.dad - dt * 0.85);
-            bursts.dog = Math.max(0, bursts.dog - dt * 0.85);
-
-            const bDad = bursts.dad;
-            const bSon = bursts.son;
-            const bDog = bursts.dog;
-
-            // -----------------------------------------------------------------
-            // A. DAD (#10) SKELETAL ANIMATION: Athletic Bounce + Ball Juggling!
-            // -----------------------------------------------------------------
-            const dadJuggleCycle = Math.sin(t * 4.4);
-            const dadJump = bDad > 0 ? Math.abs(Math.sin(t * 10.0)) * bDad * 0.28 : 0;
-
-            dadRig.pelvis.position.y = 0.92 + Math.abs(Math.sin(t * 4.4)) * 0.035 + dadJump;
-            dadRig.pelvis.position.x = Math.sin(t * 2.2) * 0.03;
-            dadRig.torso.rotation.y = Math.sin(t * 2.2) * 0.14 + (bDad > 0 ? Math.sin(t * 8.0) * 0.25 : 0);
-            dadRig.torso.rotation.z = Math.cos(t * 2.2) * 0.04;
-            dadRig.headGroup.rotation.y = Math.sin(t * 1.5) * 0.22;
-            dadRig.headGroup.rotation.x = Math.sin(t * 4.4) * 0.06;
-
-            // Dad's arms: athletic counter-swing or double fist-pump during celebration
-            if (bDad > 0.2) {
-                dadRig.leftArm.shoulder.rotation.z = 2.4 + Math.sin(t * 14.0) * 0.35;
-                dadRig.rightArm.shoulder.rotation.z = -2.4 - Math.cos(t * 14.0) * 0.35;
-                dadRig.leftArm.elbow.rotation.x = -0.6;
-                dadRig.rightArm.elbow.rotation.x = -0.6;
+            // Smooth hover damping (frozen on reduced motion)
+            if (reducedMotion) {
+                smoothHover.x = 0;
+                smoothHover.y = 0;
             } else {
-                dadRig.leftArm.shoulder.rotation.z = 0.22 + Math.sin(t * 4.4) * 0.08;
-                dadRig.leftArm.shoulder.rotation.x = Math.cos(t * 4.4) * 0.28;
-                dadRig.leftArm.elbow.rotation.x = -0.55 - Math.sin(t * 4.4) * 0.15;
-
-                dadRig.rightArm.shoulder.rotation.z = -0.22 - Math.sin(t * 4.4) * 0.08;
-                dadRig.rightArm.shoulder.rotation.x = -Math.cos(t * 4.4) * 0.28;
-                dadRig.rightArm.elbow.rotation.x = -0.55 + Math.sin(t * 4.4) * 0.15;
+                const hLerp = Math.min(1, dt * 6.0);
+                smoothHover.x += (pointerHover.x - smoothHover.x) * hLerp;
+                smoothHover.y += (pointerHover.y - smoothHover.y) * hLerp;
             }
 
-            // Dad's right leg juggling the 3D match ball continuously!
-            const kickLift = Math.max(0, dadJuggleCycle);
-            dadRig.rightLeg.hip.rotation.x = -0.15 - kickLift * 0.65;
-            dadRig.rightLeg.knee.rotation.x = 0.25 + kickLift * 0.55;
-            dadRig.leftLeg.hip.rotation.x = Math.sin(t * 4.4) * 0.06;
-            dadRig.leftLeg.knee.rotation.x = 0.08;
+            // Decay celebration bursts and shockwave
+            celebrateGlobalBurst = Math.max(0, celebrateGlobalBurst - dt * 0.85);
+            ACTOR_KEYS.forEach((k) => {
+                bursts[k] = Math.max(0, bursts[k] - dt * 0.85);
+            });
+            if (shockwaveClock >= 0) {
+                shockwaveClock += dt * 1.15;
+                if (shockwaveClock >= 1.0) shockwaveClock = -1;
+            }
 
-            // 3D Match Ball physics: bounces off Dad's juggling right boot (and flies high on celebration!)
-            const ballBounce = Math.abs(Math.sin(t * 4.4 - 0.35));
-            matchBall.position.y = 0.16 + ballBounce * (0.42 + bDad * 0.65);
-            matchBall.position.x = 0.15 + Math.sin(t * 2.2) * 0.05;
-            matchBall.rotation.x += dt * 5.5;
-            matchBall.rotation.z -= dt * 3.2;
+            // Compute target framing window (wide trio or ~1.14x actor focus)
+            const stageAspect = stageLayoutW / stageLayoutH;
+            const focusedActor = cameraFocus !== 'wide' ? ACTORS[cameraFocus] : null;
+            const targetFraming = focusedActor
+                ? computeFramingWindow(
+                    stageAspect,
+                    focusedActor.focusCenter[0],
+                    focusedActor.focusCenter[1],
+                    1.14,
+                    focusedActor.focusBox
+                )
+                : computeFramingWindow(stageAspect, 0.505, 0.492, 1.0, TRIO_SAFE_BOX);
 
-            // -----------------------------------------------------------------
-            // B. 1-YEAR-OLD SON (#7) SKELETAL ANIMATION: Toddler Jump, Wave & Kick!
-            // -----------------------------------------------------------------
-            const sonBounce = Math.abs(Math.sin(t * 5.2));
-            const sonJump = bSon > 0 ? Math.abs(Math.sin(t * 11.0)) * bSon * 0.32 : 0;
+            // Smoothly interpolate framing + apply bounded drag-orbit pan
+            const camLerp = reducedMotion ? 1.0 : Math.min(1, dt * 6.2);
+            const maxPanMarginU = Math.max(0, (1.0 - targetFraming.visW) * 0.42);
+            const targetOrbitPanU = userYaw * Math.min(0.022, maxPanMarginU);
+            const goalCenterU = targetFraming.centerU + targetOrbitPanU;
 
-            sonRig.pelvis.position.y = 0.48 + sonBounce * 0.055 + sonJump;
-            sonRig.root.rotation.y = 0.18 + Math.sin(t * 2.6) * 0.16 + (bSon > 0 ? t * 6.0 % (Math.PI * 2) * Math.min(1, bSon) : 0);
-            sonRig.torso.rotation.z = Math.sin(t * 2.6) * 0.08;
-            sonRig.headGroup.rotation.z = Math.cos(t * 2.6) * 0.10;
-            sonRig.headGroup.rotation.y = Math.sin(t * 2.0) * 0.20;
+            currentView.centerU += (goalCenterU - currentView.centerU) * camLerp;
+            currentView.centerVuv += (targetFraming.centerVuv - currentView.centerVuv) * camLerp;
+            currentView.visW += (targetFraming.visW - currentView.visW) * camLerp;
+            currentView.visH += (targetFraming.visH - currentView.visH) * camLerp;
 
-            // Son waving both raised 3D arms cheerfully!
-            sonRig.leftArm.shoulder.rotation.z = 2.15 + Math.sin(t * (7.0 + bSon * 6.0)) * 0.42;
-            sonRig.rightArm.shoulder.rotation.z = -2.15 + Math.cos(t * (7.0 + bSon * 6.0)) * 0.42;
-            sonRig.leftArm.elbow.rotation.z = 0.25;
-            sonRig.rightArm.elbow.rotation.z = -0.25;
+            const idleBreathX = reducedMotion ? 0 : Math.sin(t * 0.55) * 0.0022;
+            const idleBreathY = reducedMotion ? 0 : Math.cos(t * 0.42) * 0.0012;
+            const targetParallaxX = (reducedMotion ? userYaw * 0.012 : (userYaw * 0.020 + smoothHover.x * 0.013)) + idleBreathX;
+            const targetParallaxY = (reducedMotion ? 0 : -smoothHover.y * 0.008) + idleBreathY;
+            currentView.parallaxX += (targetParallaxX - currentView.parallaxX) * camLerp;
+            currentView.parallaxY += (targetParallaxY - currentView.parallaxY) * camLerp;
 
-            // Son kicking his mini 3D football
-            const sonKick = Math.sin(t * 5.2);
-            sonRig.leftLeg.hip.rotation.x = sonKick * 0.45;
-            sonRig.leftLeg.knee.rotation.x = Math.max(0, -sonKick * 0.4);
-            sonRig.rightLeg.hip.rotation.x = -sonKick * 0.45;
-            sonRig.rightLeg.knee.rotation.x = Math.max(0, sonKick * 0.4);
+            // Update Background Frostbite Shader Uniforms
+            const selActor = ACTORS[activeActor] || ACTORS.dad;
+            const selSpotlightUv = [selActor.spotlightU, 1.0 - selActor.spotlightVtop];
+            const selFootUv = [selActor.footU, 1.0 - selActor.footVtop];
+            const selBurst = bursts[activeActor] || 0;
 
-            miniBall.position.x = -0.72 + Math.sin(t * 2.6) * 0.12;
-            miniBall.position.y = 0.095 + Math.abs(Math.sin(t * 5.2)) * (0.14 + bSon * 0.48);
-            miniBall.rotation.z -= dt * 6.0;
-            miniBall.rotation.x += dt * 4.0;
+            bgUniforms.uViewCenter.value.set(currentView.centerU, currentView.centerVuv);
+            bgUniforms.uViewSpan.value.set(currentView.visW, currentView.visH);
+            bgUniforms.uParallax.value.set(currentView.parallaxX, currentView.parallaxY);
+            bgUniforms.uTime.value = t;
+            bgUniforms.uReducedMotion.value = reducedMotion ? 1.0 : 0.0;
+            bgUniforms.uActorFocusUv.value.set(selSpotlightUv[0], selSpotlightUv[1]);
+            bgUniforms.uActorFootUv.value.set(selFootUv[0], selFootUv[1]);
+            bgUniforms.uActorColor.value.set(selActor.colorRgb[0], selActor.colorRgb[1], selActor.colorRgb[2]);
+            bgUniforms.uActorIntensity.value = 0.42 + selBurst * 0.65 + (focusedActor ? 0.25 : 0);
+            bgUniforms.uCelebrateBurst.value = Math.max(celebrateGlobalBurst, selBurst * 0.55);
+            bgUniforms.uShockwave.value = shockwaveClock >= 0 ? shockwaveClock : 0.0;
+            bgUniforms.uStageAspect.value = stageAspect;
 
-            // -----------------------------------------------------------------
-            // C. 7-YEAR-OLD SCHNOODLE (#1) SKELETAL ANIMATION: Tail Wag, Hop & Spin!
-            // -----------------------------------------------------------------
-            const dogHop = Math.abs(Math.sin(t * 5.8 + 0.8));
-            const dogJump = bDog > 0 ? Math.abs(Math.sin(t * 12.0)) * bDog * 0.30 : 0;
+            // Update 3D Telemetry Camera with subtle drag-orbit perspective tilt
+            const orbitCamX = userYaw * 0.24 + (reducedMotion ? 0 : smoothHover.x * 0.09);
+            telemetryCam.position.set(orbitCamX, 1.05, 4.35);
+            telemetryCam.lookAt(orbitCamX * 0.14, 0.12, 0);
+            telemetryCam.updateMatrixWorld();
 
-            dogRig.bodyGroup.position.y = 0.34 + dogHop * 0.045 + dogJump;
-            dogRig.bodyGroup.rotation.x = Math.sin(t * 5.8 + 0.8) * 0.12;
-            dogRig.root.rotation.y = -0.22 + Math.sin(t * 2.1) * 0.14 + (bDog > 0 ? Math.sin(t * 7.0) * bDog * 0.8 : 0);
+            const telemetryScale = 0.96 / Math.max(0.45, currentView.visH);
 
-            // Curious head tilt, floppy ear bounce & happy panting tongue
-            dogRig.headGroup.rotation.z = Math.sin(t * 3.2) * 0.18;
-            dogRig.headGroup.rotation.x = -0.08 + Math.cos(t * 5.8) * 0.08;
-            dogRig.leftEar.rotation.z = 0.24 + dogHop * 0.18;
-            dogRig.rightEar.rotation.z = -0.24 - dogHop * 0.18;
-            dogRig.tongue.position.y = -0.012 + Math.sin(t * 14.0) * 0.006;
-
-            // High-speed happy tail wag!
-            dogRig.tailGroup.rotation.z = Math.sin(t * (14.0 + bDog * 10.0)) * 0.55;
-            dogRig.tailGroup.rotation.x = 0.25 + Math.cos(t * 7.0) * 0.12;
-
-            // Prancing paws
-            const pawCycle = Math.sin(t * 5.8);
-            dogRig.flLeg.rotation.x = pawCycle * 0.38;
-            dogRig.brLeg.rotation.x = pawCycle * 0.38;
-            dogRig.frLeg.rotation.x = -pawCycle * 0.38;
-            dogRig.blLeg.rotation.x = -pawCycle * 0.38;
-
-            // -----------------------------------------------------------------
-            // D. ANIMATE 3D UNDERFOOT RINGS & OVERHEAD 3D CHEVRONS (▼)
-            // -----------------------------------------------------------------
-            const ringPairs = [
-                { key: 'dad', ring: dadRing, chev: dadChevron, x: 0, y: 1.98 + dadJump },
-                { key: 'son', ring: sonRing, chev: sonChevron, x: -0.82, y: 1.05 + sonJump },
-                { key: 'dog', ring: dogRing, chev: dogChevron, x: 0.82, y: 0.88 + dogJump }
-            ];
-
-            ringPairs.forEach(({ key, ring, chev, x, y }) => {
+            // Place 3D underfoot rings & 3D spinning overhead chevrons pixel-locked to image anchors
+            const chevHudCoords = {};
+            ACTOR_KEYS.forEach((key, idx) => {
+                const actor = ACTORS[key];
                 const isSel = activeActor === key;
                 const bVal = bursts[key] || 0;
-                ring.innerMesh.rotation.z = t * (isSel ? 2.2 : 0.8);
-                ring.ringMat.opacity = isSel ? 0.95 : 0.38;
-                ring.innerMat.opacity = isSel ? 0.80 : 0.25;
-                const s = (isSel ? 1.08 : 0.92) + bVal * 0.18;
-                ring.group.scale.setScalar(s);
+                const ring = rings[key];
+                const chev = chevrons[key];
 
-                chev.group.position.set(x, y + Math.sin(t * 4.5) * 0.045, key === 'dad' ? 0 : 0.26);
-                chev.cone.rotation.y = t * (isSel ? 3.2 : 1.4);
-                chev.group.scale.setScalar(isSel ? 1.15 : 0.72);
-                chev.coneMat.emissiveIntensity = isSel ? 0.95 : 0.35;
+                // Underfoot ring on turf plane y=0
+                const footProj = imageUvToScreen(actor.footU, actor.footVtop);
+                ndcToTurfPlane(footProj.ndcX, footProj.ndcY, _hitVec);
+                ring.group.position.set(_hitVec.x, 0.008, _hitVec.z);
+
+                const pulseScale = (isSel ? 1.06 : 0.90) + (reducedMotion ? 0 : bVal * 0.16);
+                ring.group.scale.setScalar(telemetryScale * pulseScale);
+                ring.ringMat.opacity = isSel ? 0.92 : 0.40;
+                ring.innerMat.opacity = isSel ? 0.82 : 0.28;
+                ring.ptrMat.opacity = isSel ? 0.95 : 0.45;
+                if (!reducedMotion) {
+                    ring.innerMesh.rotation.z = t * (isSel ? 2.1 : 0.75) + idx * 1.1;
+                }
+
+                // Overhead 3D chevron (test static anchor against HUD bar so bob never oscillates)
+                const bobVtop = reducedMotion ? 0 : Math.sin(t * 4.2 + idx * 1.4) * 0.008;
+                const chevHalf = 10 * stageDpr;
+                const chevCheckHalf = chevHalf + 4 * stageDpr;
+                const baseChevProj = imageUvToScreen(actor.chevU, actor.chevVtop);
+                let chevProj = imageUvToScreen(actor.chevU, actor.chevVtop + bobVtop);
+                const headProj = imageUvToScreen(actor.chevU, actor.headTopVtop);
+                const headInView =
+                    headProj.hudX >= -8 * stageDpr &&
+                    headProj.hudX <= hudCanvas.width + 8 * stageDpr &&
+                    headProj.hudY >= -2 * stageDpr &&
+                    headProj.hudY <= hudCanvas.height + 8 * stageDpr;
+
+                if (
+                    headInView &&
+                    overlapsHudBar(baseChevProj.hudX, baseChevProj.hudY, chevCheckHalf, chevCheckHalf)
+                ) {
+                    if (actor.chevFallback) {
+                        chevProj = imageUvToScreen(actor.chevFallback[0], actor.chevFallback[1] + bobVtop);
+                    }
+                    if (
+                        overlapsHudBar(chevProj.hudX, chevProj.hudY, chevHalf, chevHalf) ||
+                        (actor.chevFallback && chevProj.hudY - chevHalf < hudSafeTopPx)
+                    ) {
+                        const clampedHudY = Math.max(chevProj.hudY, hudSafeTopPx + chevHalf);
+                        chevProj.hudY = clampedHudY;
+                        chevProj.ndcY = 1.0 - (2.0 * clampedHudY) / hudCanvas.height;
+                    }
+                }
+
+                ndcToVerticalPlane(chevProj.ndcX, chevProj.ndcY, ring.group.position.z, _hitVec);
+                chev.group.position.copy(_hitVec);
+                chev.group.scale.setScalar(telemetryScale * (isSel ? 1.10 : 0.76));
+                chev.coneMat.emissiveIntensity = isSel ? 0.95 : 0.36;
+                chev.cone.rotation.y = reducedMotion ? Math.PI / 4 : t * (isSel ? 3.2 : 1.4);
+
+                const chevHud = worldToHud(chev.group.position);
+                chevHudCoords[key] = chevHud;
+                chev.group.visible = !(
+                    chevHud.x < -8 * stageDpr ||
+                    chevHud.x > hudCanvas.width + 8 * stageDpr ||
+                    chevHud.y < -8 * stageDpr ||
+                    chevHud.y > hudCanvas.height + 8 * stageDpr
+                );
             });
 
-            // -----------------------------------------------------------------
-            // E. SMOOTH 3D CAMERA FOCUS & ORBIT
-            // -----------------------------------------------------------------
-            const focusActor = ACTORS[activeActor] || ACTORS.dad;
-            const celebrateAllActive = bDad > 0.3 && bSon > 0.3 && bDog > 0.3;
+            // Animate 3D dust motes
+            if (!reducedMotion) {
+                const posArr = moteGeo.attributes.position.array;
+                for (let i = 0; i < MOTE_COUNT; i++) {
+                    const s = moteSeeds[i];
+                    posArr[i * 3] = s.bx + Math.sin(t * s.speed + s.phase) * s.amp;
+                    posArr[i * 3 + 1] = s.by + Math.cos(t * s.speed * 0.8 + s.phase) * s.amp * 0.75;
+                }
+                moteGeo.attributes.position.needsUpdate = true;
+            }
+            moteMat.opacity = reducedMotion ? 0.25 : 0.38 + Math.min(0.25, celebrateGlobalBurst * 0.16);
 
-            const desiredLook = celebrateAllActive
-                ? new THREE.Vector3(0, 0.98, 0.1)
-                : focusActor.targetPos;
+            // Animate 3D celebration pyro sparks
+            let activeSparks = false;
+            const sPosArr = sparkGeo.attributes.position.array;
+            const sColArr = sparkGeo.attributes.color.array;
+            for (let i = 0; i < SPARK_COUNT; i++) {
+                const m = sparkMeta[i];
+                if (m.life <= 0) {
+                    sPosArr[i * 3 + 1] = -99;
+                    continue;
+                }
+                activeSparks = true;
+                m.life -= dt;
+                if (m.life <= 0) {
+                    sPosArr[i * 3 + 1] = -99;
+                    continue;
+                }
+                m.vy -= 2.8 * dt;
+                m.vx *= 1.0 - 0.9 * dt;
+                m.vz *= 1.0 - 0.9 * dt;
+                sPosArr[i * 3] += m.vx * dt;
+                sPosArr[i * 3 + 1] += m.vy * dt;
+                sPosArr[i * 3 + 2] += m.vz * dt;
 
-            const baseCam = celebrateAllActive
-                ? new THREE.Vector3(Math.sin(t * 2.2) * 0.65, 1.18, 4.35)
-                : focusActor.camOffset.clone();
+                const fade = clamp(m.life / m.maxLife, 0, 1);
+                sColArr[i * 3] = m.r * fade;
+                sColArr[i * 3 + 1] = m.g * fade;
+                sColArr[i * 3 + 2] = m.b * fade;
+            }
+            if (activeSparks) {
+                sparkGeo.attributes.position.needsUpdate = true;
+                sparkGeo.attributes.color.needsUpdate = true;
+            }
 
-            // Apply responsive aspect Z scaling + user drag orbit + pointer parallax
-            const totalYaw = userYaw + pointerHover.x * 0.14;
-            const radiusZ = baseCam.z * aspectScaleZ;
-            const targetCamX = baseCam.x + Math.sin(totalYaw) * radiusZ * 0.45;
-            const targetCamZ = Math.cos(totalYaw) * radiusZ;
-            const targetCamY = baseCam.y - pointerHover.y * 0.12;
-
-            currentCamPos.x += (targetCamX - currentCamPos.x) * Math.min(1, dt * 5.5);
-            currentCamPos.y += (targetCamY - currentCamPos.y) * Math.min(1, dt * 5.5);
-            currentCamPos.z += (targetCamZ - currentCamPos.z) * Math.min(1, dt * 5.5);
-
-            currentLookAt.lerp(desiredLook, Math.min(1, dt * 6.0));
-            camera.position.copy(currentCamPos);
-            camera.lookAt(currentLookAt);
-
-            // Render 3D scene
-            renderer.render(scene, camera);
+            // Two-pass WebGL render: 2.5D background -> clearDepth -> 3D telemetry
+            renderer.clear(true, true, true);
+            renderer.render(bgScene, bgCam);
+            renderer.clearDepth();
+            renderer.render(telemetryScene, telemetryCam);
 
             if (!stageEl.classList.contains('webgl-ready')) {
                 stageEl.classList.add('webgl-ready');
             }
 
-            // -----------------------------------------------------------------
-            // F. DRAW 2D OVERLAY GAMERTAG PILLS & CELEBRATION POPUPS
-            // -----------------------------------------------------------------
+            // =================================================================
+            // 5. DPR-CRISP 2D GAMERTAG PILLS & CELEBRATION POPUPS
+            // =================================================================
             const w = hudCanvas.width;
             const h = hudCanvas.height;
-            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            const dpr = stageDpr;
             ctx2d.clearRect(0, 0, w, h);
 
-            ringPairs.forEach(({ key, chev }) => {
+            ACTOR_KEYS.forEach((key) => {
                 const actor = ACTORS[key];
                 const isSel = activeActor === key;
-                const pt = worldToHud(
-                    chev.group.position.x,
-                    chev.group.position.y + 0.16,
-                    chev.group.position.z
-                );
+                const pt = chevHudCoords[key];
+                if (
+                    !pt ||
+                    pt.x < -8 * dpr ||
+                    pt.x > w + 8 * dpr ||
+                    pt.y < -8 * dpr ||
+                    pt.y > h + 8 * dpr
+                ) {
+                    return;
+                }
 
                 ctx2d.save();
-                ctx2d.font = `800 ${Math.round((isSel ? 9.5 : 8.0) * dpr)}px "JetBrains Mono", monospace`;
-                const tw = ctx2d.measureText(actor.label).width + 10 * dpr;
-                const th = (isSel ? 14.5 : 12.5) * dpr;
-                const px = Math.max(tw * 0.5 + 4 * dpr, Math.min(w - tw * 0.5 - 4 * dpr, pt.x));
-                const py = Math.max(32 * dpr, pt.y);
-
-                ctx2d.fillStyle = isSel ? 'rgba(4, 8, 15, 0.92)' : 'rgba(4, 8, 15, 0.72)';
-                ctx2d.strokeStyle = actor.color;
-                ctx2d.lineWidth = (isSel ? 1.5 : 1.0) * dpr;
-                ctx2d.fillRect(px - tw * 0.5, py - th * 0.5, tw, th);
-                ctx2d.strokeRect(px - tw * 0.5, py - th * 0.5, tw, th);
-
-                ctx2d.fillStyle = isSel ? '#FFFFFF' : 'rgba(255, 255, 255, 0.82)';
-                ctx2d.textAlign = 'center';
-                ctx2d.textBaseline = 'middle';
-                ctx2d.fillText(actor.label, px, py + 0.5 * dpr);
+                ctx2d.font = `800 ${Math.round((isSel ? 9.5 : 8.2) * dpr)}px "JetBrains Mono", monospace`;
+                const tw = ctx2d.measureText(actor.label).width + 12 * dpr;
+                const th = (isSel ? 15 : 13) * dpr;
                 ctx2d.restore();
+
+                let px = clamp(pt.x, tw * 0.5 + 6 * dpr, w - tw * 0.5 - 6 * dpr);
+                let py = pt.y - 16 * dpr;
+                let leaderFromChev = false;
+
+                // Clamp strictly below .fc-stage-hud-top and avoid sitting over the chevron or Dad's face
+                if (py - th * 0.5 < hudSafeTopPx || overlapsHudBar(px, py, tw * 0.5, th * 0.5)) {
+                    const clampedPy = clamp(
+                        Math.max(py, hudSafeTopPx + th * 0.5),
+                        hudSafeTopPx + th * 0.5,
+                        h - th * 0.5 - 6 * dpr
+                    );
+                    if (Math.abs(clampedPy - pt.y) < th * 0.5 + 9 * dpr) {
+                        const rightBeside = pt.x + tw * 0.5 + 14 * dpr;
+                        const leftBeside = pt.x - tw * 0.5 - 14 * dpr;
+                        const sidePy = clamp(pt.y, hudSafeTopPx + th * 0.5, h - th * 0.5 - 6 * dpr);
+                        if (
+                            rightBeside + tw * 0.5 <= w - 6 * dpr &&
+                            !overlapsHudBar(rightBeside, sidePy, tw * 0.5, th * 0.5)
+                        ) {
+                            px = rightBeside;
+                            py = sidePy;
+                            leaderFromChev = true;
+                        } else if (
+                            leftBeside - tw * 0.5 >= 6 * dpr &&
+                            !overlapsHudBar(leftBeside, sidePy, tw * 0.5, th * 0.5)
+                        ) {
+                            px = leftBeside;
+                            py = sidePy;
+                            leaderFromChev = true;
+                        } else {
+                            py = clampedPy;
+                        }
+                    } else {
+                        py = clampedPy;
+                    }
+                }
+                py = clamp(py, hudSafeTopPx + th * 0.5, h - th * 0.5 - 6 * dpr);
+
+                const fTL = imageUvToScreen(actor.faceBox.minU, actor.faceBox.minVtop);
+                const fBR = imageUvToScreen(actor.faceBox.maxU, actor.faceBox.maxVtop);
+                const fLeft = Math.min(fTL.hudX, fBR.hudX) - 6 * dpr;
+                const fRight = Math.max(fTL.hudX, fBR.hudX) + 6 * dpr;
+                const fTop = Math.min(fTL.hudY, fBR.hudY) - 4 * dpr;
+                const fBot = Math.max(fTL.hudY, fBR.hudY) + 4 * dpr;
+
+                if (px + tw * 0.5 > fLeft && px - tw * 0.5 < fRight && py + th * 0.5 > fTop && py - th * 0.5 < fBot) {
+                    const rightOpt = fRight + tw * 0.5 + 8 * dpr;
+                    const leftOpt = fLeft - tw * 0.5 - 8 * dpr;
+                    if (rightOpt + tw * 0.5 <= w - 6 * dpr) {
+                        px = rightOpt;
+                    } else if (leftOpt - tw * 0.5 >= 6 * dpr) {
+                        px = leftOpt;
+                    }
+                    leaderFromChev = true;
+                }
+
+                if (leaderFromChev) {
+                    // Subtle broadcast callout leader line back to chevron
+                    ctx2d.save();
+                    ctx2d.strokeStyle = actor.color;
+                    ctx2d.globalAlpha = isSel ? 0.72 : 0.42;
+                    ctx2d.lineWidth = 1.2 * dpr;
+                    ctx2d.beginPath();
+                    ctx2d.moveTo(pt.x, pt.y);
+                    ctx2d.lineTo(px < pt.x ? px + tw * 0.5 : px - tw * 0.5, py);
+                    ctx2d.stroke();
+                    ctx2d.restore();
+                }
+
+                drawHudPill(ctx2d, px, py, actor.label, actor.color, isSel, dpr);
             });
 
-            // Floating celebration telemetry popups
+            // Rising celebration telemetry popups
             for (let i = popups.length - 1; i >= 0; i--) {
                 const p = popups[i];
                 if (p.delay > 0) {
                     p.delay -= dt;
                     continue;
                 }
-                p.life -= dt * 0.9;
+                p.life -= dt * (reducedMotion ? 1.2 : 0.85);
                 if (p.life <= 0) {
                     popups.splice(i, 1);
                     continue;
                 }
-                const targetChev = p.actor === 'son' ? sonChevron : (p.actor === 'dog' ? dogChevron : dadChevron);
-                const pt = worldToHud(
-                    targetChev.group.position.x,
-                    targetChev.group.position.y + 0.34 + (1.4 - p.life) * 0.25,
-                    targetChev.group.position.z
-                );
+                const pt = chevHudCoords[p.actor];
+                if (
+                    !pt ||
+                    pt.x < -8 * dpr ||
+                    pt.x > w + 8 * dpr ||
+                    pt.y < -8 * dpr ||
+                    pt.y > h + 8 * dpr
+                ) {
+                    continue;
+                }
+                const risePx = reducedMotion ? 18 * dpr : (20 + (1.45 - p.life) * 30) * dpr;
+
                 ctx2d.save();
-                ctx2d.globalAlpha = Math.min(1, p.life * 1.3);
-                ctx2d.font = `900 ${Math.round(10.5 * dpr)}px "JetBrains Mono", monospace`;
-                const tw = ctx2d.measureText(p.text).width + 12 * dpr;
+                ctx2d.globalAlpha = clamp(p.life * 1.4, 0, 1);
+                ctx2d.font = `900 ${Math.round(10.2 * dpr)}px "JetBrains Mono", monospace`;
+                const tw = ctx2d.measureText(p.text).width + 14 * dpr;
                 const th = 18 * dpr;
-                const px = Math.max(tw * 0.5 + 6 * dpr, Math.min(w - tw * 0.5 - 6 * dpr, pt.x));
-                const py = Math.max(36 * dpr, pt.y);
-                ctx2d.fillStyle = 'rgba(4, 8, 15, 0.95)';
+                const px = clamp(pt.x, tw * 0.5 + 6 * dpr, w - tw * 0.5 - 6 * dpr);
+                const py = clamp(pt.y - risePx, hudSafeTopPx + th * 0.5 + 2 * dpr, h - th * 0.5 - 6 * dpr);
+
+                ctx2d.fillStyle = 'rgba(4, 8, 15, 0.94)';
                 ctx2d.strokeStyle = p.color;
                 ctx2d.lineWidth = 1.6 * dpr;
                 ctx2d.fillRect(px - tw * 0.5, py - th * 0.5, tw, th);
@@ -1679,17 +1519,93 @@
                 ctx2d.fillStyle = p.color;
                 ctx2d.textAlign = 'center';
                 ctx2d.textBaseline = 'middle';
-                ctx2d.fillText(p.text, px, py + 1 * dpr);
+                ctx2d.fillText(p.text, px, py + 0.5 * dpr);
                 ctx2d.restore();
             }
         }
 
-        requestAnimationFrame(animate);
+        function animate(now) {
+            rafId = 0;
+            if (!isStageVisible()) {
+                lastTime = now;
+                return;
+            }
+            renderFrame(now);
+            rafId = requestAnimationFrame(animate);
+        }
+
+        function ensureAnimating() {
+            if (!textureReady || !isStageVisible()) return;
+            if (!rafId) {
+                lastTime = performance.now();
+                rafId = requestAnimationFrame(animate);
+            }
+        }
+
+        function pauseAnimation() {
+            if (rafId) {
+                cancelAnimationFrame(rafId);
+                rafId = 0;
+            }
+        }
+
+        function handleVisibilityOrRoute() {
+            if (isStageVisible()) {
+                ensureAnimating();
+            } else {
+                pauseAnimation();
+            }
+        }
+
+        document.addEventListener('visibilitychange', handleVisibilityOrRoute);
+        window.addEventListener('resize', () => {
+            if (isStageVisible() && textureReady) {
+                syncStageSize();
+                renderFrame(performance.now());
+            }
+        });
+
+        const workScreenEl = document.getElementById('screen-work');
+        const centralViewEl = document.getElementById('work-view-central');
+        if (typeof MutationObserver !== 'undefined') {
+            const obs = new MutationObserver(handleVisibilityOrRoute);
+            if (workScreenEl) obs.observe(workScreenEl, { attributes: true, attributeFilter: ['hidden'] });
+            if (centralViewEl) obs.observe(centralViewEl, { attributes: true, attributeFilter: ['hidden'] });
+        }
+
+        // Load photorealistic Frostbite plate via TextureLoader (sRGBEncoding),
+        // rendering the first frame before adding .webgl-ready to prevent black flash.
+        updateCalloutHighlight();
+        const imgUrl = (sourceImg && (sourceImg.currentSrc || sourceImg.getAttribute('src'))) || 'career-dugout-trio.jpg?v=tgfc21';
+        const loader = new THREE.TextureLoader();
+        loader.load(
+            imgUrl,
+            (tex) => {
+                tex.encoding = THREE.sRGBEncoding;
+                tex.minFilter = THREE.LinearFilter;
+                tex.magFilter = THREE.LinearFilter;
+                tex.wrapS = THREE.ClampToEdgeWrapping;
+                tex.wrapT = THREE.ClampToEdgeWrapping;
+                tex.generateMipmaps = false;
+                bgUniforms.uColorMap.value = tex;
+                textureReady = true;
+
+                if (isStageVisible() && syncStageSize()) {
+                    lastTime = performance.now();
+                    renderFrame(lastTime);
+                    ensureAnimating();
+                }
+            },
+            undefined,
+            (err) => {
+                console.warn('Frostbite stage texture load error:', err);
+            }
+        );
     }
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initThreeJsTrioStage);
+        document.addEventListener('DOMContentLoaded', initFrostbiteTrioStage);
     } else {
-        initThreeJsTrioStage();
+        initFrostbiteTrioStage();
     }
 })();

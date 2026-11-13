@@ -368,6 +368,37 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        playCelebration() {
+            if (!this.enabled) return;
+            this.initWebAudio();
+            if (!this.ctx) return;
+
+            const now = this.ctx.currentTime;
+            // EAFC stadium victory fanfare arpeggio + octave shimmer
+            const fanfare = [
+                { f: 523.25, t: 0.00, dur: 0.22, vol: 0.055, type: 'triangle' },
+                { f: 659.25, t: 0.07, dur: 0.22, vol: 0.055, type: 'triangle' },
+                { f: 783.99, t: 0.14, dur: 0.28, vol: 0.065, type: 'triangle' },
+                { f: 987.77, t: 0.21, dur: 0.30, vol: 0.065, type: 'triangle' },
+                { f: 1046.50, t: 0.28, dur: 0.56, vol: 0.085, type: 'triangle' },
+                { f: 1567.98, t: 0.30, dur: 0.48, vol: 0.035, type: 'sine' }
+            ];
+            fanfare.forEach(({ f, t, dur, vol, type }) => {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(f, now + t);
+
+                gain.gain.setValueAtTime(vol, now + t);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + t + dur);
+
+                osc.connect(gain);
+                gain.connect(this.masterGain);
+                osc.start(now + t);
+                osc.stop(now + t + dur + 0.02);
+            });
+        }
+
         playBack() {
             if (!this.enabled) return;
             this.initWebAudio();
@@ -1005,6 +1036,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Expose SFX hook for Three.js 3D Match Pitch Engine
+    // Expose SFX hooks for Frostbite 2.5D Broadcast Stage & Telemetry Engine
     window.tgfcPlaySelectSfx = () => audio.playSelect();
+    window.tgfcPlayCelebrationSfx = () => audio.playCelebration();
 });
