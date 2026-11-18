@@ -14,6 +14,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const DESKTOP_MIN_WIDTH = 960;
+    const THEME_STORAGE_KEY = 'tgfc-central-bento-theme';
+
+    function readSavedTheme() {
+        try {
+            const raw = window.localStorage.getItem(THEME_STORAGE_KEY);
+            return raw === 'dark' || raw === 'pop' ? raw : 'pop';
+        } catch (_) {
+            return 'pop';
+        }
+    }
+
+    let activeSiteTheme = readSavedTheme();
+    document.documentElement.setAttribute('data-theme', activeSiteTheme);
 
     /* ======================================================================
        1. PLACEHOLDER DATA STORE (ITERATION 1)
@@ -441,43 +454,53 @@ document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.getElementById('stadium-canvas');
     if (canvas) {
         const ctx = canvas.getContext('2d');
-        const particles = [];
+        if (ctx) {
+            const particles = [];
 
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+
+            for (let i = 0; i < 38; i++) {
+                particles.push({
+                    x: Math.random() * window.innerWidth,
+                    y: Math.random() * window.innerHeight,
+                    r: Math.random() * 1.8 + 0.5,
+                    vx: (Math.random() - 0.5) * 0.35,
+                    vy: -Math.random() * 0.4 - 0.1,
+                    alpha: Math.random() * 0.45 + 0.1
+                });
+            }
+
+            function renderStadiumParticles() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                const isDark = document.documentElement.getAttribute('data-theme') === 'dark' || activeSiteTheme === 'dark';
+                particles.forEach((p, idx) => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    if (p.y < 0) p.y = canvas.height;
+                    if (p.x < 0) p.x = canvas.width;
+                    if (p.x > canvas.width) p.x = 0;
+
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    if (isDark) {
+                        ctx.fillStyle = `rgba(0, 255, 104, ${p.alpha})`;
+                    } else {
+                        const popAlpha = Math.min(0.32, p.alpha * 0.62);
+                        ctx.fillStyle = idx % 3 === 0
+                            ? `rgba(0, 175, 86, ${popAlpha})`
+                            : `rgba(82, 51, 232, ${popAlpha})`;
+                    }
+                    ctx.fill();
+                });
+                requestAnimationFrame(renderStadiumParticles);
+            }
+            renderStadiumParticles();
         }
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
-
-        for (let i = 0; i < 38; i++) {
-            particles.push({
-                x: Math.random() * window.innerWidth,
-                y: Math.random() * window.innerHeight,
-                r: Math.random() * 1.8 + 0.5,
-                vx: (Math.random() - 0.5) * 0.35,
-                vy: -Math.random() * 0.4 - 0.1,
-                alpha: Math.random() * 0.45 + 0.1
-            });
-        }
-
-        function renderStadiumParticles() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(p => {
-                p.x += p.vx;
-                p.y += p.vy;
-                if (p.y < 0) p.y = canvas.height;
-                if (p.x < 0) p.x = canvas.width;
-                if (p.x > canvas.width) p.x = 0;
-
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(0, 255, 104, ${p.alpha})`;
-                ctx.fill();
-            });
-            requestAnimationFrame(renderStadiumParticles);
-        }
-        renderStadiumParticles();
     }
 
     /* ======================================================================
@@ -931,9 +954,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     /* ======================================================================
-       10. SOUNDTRACK CONTROLS, SETTINGS POPOVER & BENTO THEME PICKER
+       10. SOUNDTRACK CONTROLS, SETTINGS POPOVER & SITE THEME PICKER
        ====================================================================== */
-    const THEME_STORAGE_KEY = 'tgfc-central-bento-theme';
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     const btnAudioToggle = document.getElementById('btn-audio-toggle');
     const audioStatusLabel = document.getElementById('audio-status-label');
     const btnNextTrack = document.getElementById('btn-next-track');
@@ -947,17 +970,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const settingsNextTrack = document.getElementById('settings-next-track');
     const themeOptionBtns = Array.from(document.querySelectorAll('[data-bento-theme-option]'));
 
-    function readSavedBentoTheme() {
-        try {
-            const raw = window.localStorage.getItem(THEME_STORAGE_KEY);
-            return raw === 'dark' || raw === 'pop' ? raw : 'pop';
-        } catch (_) {
-            return 'pop';
-        }
-    }
-
-    function applyCentralBentoTheme(themeName, persist = true) {
+    function applySiteTheme(themeName, persist = true) {
         const theme = themeName === 'dark' ? 'dark' : 'pop';
+        activeSiteTheme = theme;
+        document.documentElement.setAttribute('data-theme', theme);
+        if (themeColorMeta) {
+            themeColorMeta.setAttribute('content', theme === 'dark' ? '#06080c' : '#f4f3ef');
+        }
         if (workViewCentral) {
             workViewCentral.setAttribute('data-bento-theme', theme);
         }
@@ -979,7 +998,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    applyCentralBentoTheme(readSavedBentoTheme(), false);
+    applySiteTheme(activeSiteTheme, false);
 
     function syncAudioButtonsUI(isOn) {
         const text = isOn ? 'AUDIO: ON' : 'AUDIO: MUTED';
@@ -1063,7 +1082,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', () => {
             const targetTheme = btn.getAttribute('data-bento-theme-option');
             audio.playTick();
-            applyCentralBentoTheme(targetTheme, true);
+            applySiteTheme(targetTheme, true);
         });
     });
 
@@ -1174,7 +1193,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const delta = (e.key === 'ArrowRight' || e.key === 'ArrowDown') ? 1 : -1;
                 const nextBtn = themeOptionBtns[(activeOptIdx + delta + themeOptionBtns.length) % themeOptionBtns.length];
                 audio.playTick();
-                applyCentralBentoTheme(nextBtn.getAttribute('data-bento-theme-option'), true);
+                applySiteTheme(nextBtn.getAttribute('data-bento-theme-option'), true);
                 nextBtn.focus();
             }
             return;
