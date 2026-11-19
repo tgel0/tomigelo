@@ -28,6 +28,24 @@ document.addEventListener('DOMContentLoaded', () => {
     let activeSiteTheme = readSavedTheme();
     document.documentElement.setAttribute('data-theme', activeSiteTheme);
 
+    function prefersReducedMotion() {
+        try {
+            return Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+        } catch (_) {
+            return false;
+        }
+    }
+
+    function hasFinePointer() {
+        try {
+            return Boolean(window.matchMedia && window.matchMedia('(pointer: fine)').matches);
+        } catch (_) {
+            return false;
+        }
+    }
+
+    let redrawStaticParticles = null;
+
     /* ======================================================================
        1. LIVE PROJECT CLUBS DATA STORE
        ====================================================================== */
@@ -161,6 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
             this.candidateIndex = 0;
             this.ytPlayer = null;
             this.ytReady = false;
+            this.ytLoadRequested = false;
             this.pendingPlay = false;
             this.onTrackChanged = onTrackChangedCallback;
         }
@@ -180,16 +199,22 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        preloadYouTubeAPI() {
+        ensureYouTubeLoaded() {
+            if (this.ytPlayer) return;
             if (window.YT && window.YT.Player) {
+                this.ytLoadRequested = true;
                 this.createYouTubePlayer();
                 return;
             }
+            if (this.ytLoadRequested) return;
+            this.ytLoadRequested = true;
 
             const prevCallback = window.onYouTubeIframeAPIReady;
             window.onYouTubeIframeAPIReady = () => {
                 if (typeof prevCallback === 'function') prevCallback();
-                this.createYouTubePlayer();
+                if (!this.ytPlayer && window.YT && window.YT.Player) {
+                    this.createYouTubePlayer();
+                }
             };
 
             if (!document.querySelector('script[src*="youtube.com/iframe_api"]')) {
@@ -197,6 +222,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 tag.src = 'https://www.youtube.com/iframe_api';
                 tag.async = true;
                 document.head.appendChild(tag);
+            }
+        }
+
+        syncEqualizerState() {
+            const eqBars = document.getElementById('hud-eq-bars');
+            if (eqBars) {
+                eqBars.classList.toggle('paused', !this.isPlayingMusic || !this.enabled);
             }
         }
 
@@ -266,6 +298,8 @@ document.addEventListener('DOMContentLoaded', () => {
         startSoundtrack() {
             this.initWebAudio();
             this.isPlayingMusic = true;
+            this.ensureYouTubeLoaded();
+            this.syncEqualizerState();
 
             if (this.ytReady && this.ytPlayer && typeof this.ytPlayer.playVideo === 'function') {
                 if (this.enabled) {
@@ -283,6 +317,7 @@ document.addEventListener('DOMContentLoaded', () => {
         stopSoundtrack() {
             this.isPlayingMusic = false;
             this.pendingPlay = false;
+            this.syncEqualizerState();
             if (this.ytReady && this.ytPlayer && typeof this.ytPlayer.pauseVideo === 'function') {
                 this.ytPlayer.pauseVideo();
             }
@@ -453,9 +488,6 @@ document.addEventListener('DOMContentLoaded', () => {
         showNowPlayingChyron(newTrack);
     });
 
-    // Preload YouTube IFrame API immediately while the boot screen is running
-    audio.preloadYouTubeAPI();
-
     /* ======================================================================
        4. STADIUM AMBIENT PARTICLE CANVAS
        ====================================================================== */
@@ -464,18 +496,27 @@ document.addEventListener('DOMContentLoaded', () => {
         const ctx = canvas.getContext('2d');
         if (ctx) {
             const particles = [];
+            let viewportW = window.innerWidth;
+            let viewportH = window.innerHeight;
+            let canvasResizeRaf = null;
+            let particleRafId = null;
 
             function resizeCanvas() {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
+                viewportW = window.innerWidth;
+                viewportH = window.innerHeight;
+                const dpr = Math.min(window.devicePixelRatio || 1, 2);
+                canvas.width = Math.floor(viewportW * dpr);
+                canvas.height = Math.floor(viewportH * dpr);
+                if (typeof ctx.setTransform === 'function') {
+                    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                }
             }
             resizeCanvas();
-            window.addEventListener('resize', resizeCanvas);
 
             for (let i = 0; i < 38; i++) {
                 particles.push({
-                    x: Math.random() * window.innerWidth,
-                    y: Math.random() * window.innerHeight,
+                    x: Math.random() * viewportW,
+                    y: Math.random() * viewportH,
                     r: Math.random() * 1.8 + 0.5,
                     vx: (Math.random() - 0.5) * 0.35,
                     vy: -Math.random() * 0.4 - 0.1,
@@ -483,15 +524,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
 
-            function renderStadiumParticles() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                const isDark = document.documentElement.getAttribute('data-theme') === 'dark' || activeSiteTheme === 'dark';
+            let lastParticleTheme = activeSiteTheme;
+
+            function drawParticleFrame(advance = true) {
+                ctx.clearRect(0, 0, viewportW, viewportH);
+                const isDark = activeSiteTheme === 'dark';
+                lastParticleTheme = activeSiteTheme;
                 particles.forEach((p, idx) => {
-                    p.x += p.vx;
-                    p.y += p.vy;
-                    if (p.y < 0) p.y = canvas.height;
-                    if (p.x < 0) p.x = canvas.width;
-                    if (p.x > canvas.width) p.x = 0;
+                    if (advance) {
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        if (p.y < 0) p.y = viewportH;
+                        if (p.x < 0) p.x = viewportW;
+                        if (p.x > viewportW) p.x = 0;
+                    }
 
                     ctx.beginPath();
                     ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
@@ -505,9 +551,64 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     ctx.fill();
                 });
-                requestAnimationFrame(renderStadiumParticles);
             }
-            renderStadiumParticles();
+
+            function renderStadiumParticles() {
+                particleRafId = null;
+                if (document.hidden || prefersReducedMotion()) return;
+                drawParticleFrame(true);
+                particleRafId = requestAnimationFrame(renderStadiumParticles);
+            }
+
+            function startParticleLoop() {
+                if (prefersReducedMotion()) {
+                    drawParticleFrame(false);
+                    return;
+                }
+                if (!document.hidden && particleRafId === null) {
+                    particleRafId = requestAnimationFrame(renderStadiumParticles);
+                }
+            }
+
+            function stopParticleLoop() {
+                if (particleRafId !== null) {
+                    cancelAnimationFrame(particleRafId);
+                    particleRafId = null;
+                }
+            }
+
+            redrawStaticParticles = () => {
+                if (prefersReducedMotion() && activeSiteTheme !== lastParticleTheme) {
+                    drawParticleFrame(false);
+                }
+            };
+
+            window.addEventListener('resize', () => {
+                if (canvasResizeRaf !== null) return;
+                canvasResizeRaf = requestAnimationFrame(() => {
+                    canvasResizeRaf = null;
+                    resizeCanvas();
+                    if (prefersReducedMotion() && !document.hidden) {
+                        drawParticleFrame(false);
+                    }
+                });
+            });
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    stopParticleLoop();
+                } else {
+                    startParticleLoop();
+                }
+            });
+
+            if (prefersReducedMotion()) {
+                drawParticleFrame(false);
+            } else if (document.hidden) {
+                drawParticleFrame(false);
+            } else {
+                renderStadiumParticles();
+            }
         }
     }
 
@@ -534,6 +635,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const screenHub = document.getElementById('screen-hub');
     const screenProjects = document.getElementById('screen-projects');
     const screenWork = document.getElementById('screen-work');
+    const projectsViewKickoff = document.getElementById('projects-view-kickoff');
+    const workViewCentral = document.getElementById('work-view-central');
+    const workViewTransfers = document.getElementById('work-view-transfers');
+    const projectsBentoGrid = projectsViewKickoff?.querySelector('.kickoff-bento-grid') || null;
+    const centralBentoGrid = workViewCentral?.querySelector('.central-bento-grid') || null;
 
     const hudCategory = document.getElementById('hud-mode-category');
     const hudTitle = document.getElementById('hud-mode-title');
@@ -615,31 +721,96 @@ document.addEventListener('DOMContentLoaded', () => {
     const bootStartPrompt = document.getElementById('boot-start-prompt');
     const btnPressStart = document.getElementById('btn-press-start');
 
-    const bootSteps = [
-        { pct: 22, status: 'INITIALIZING PITCH ENGINE...', detail: 'SHADER CACHE: STADIUM FLOODLIGHTS' },
-        { pct: 54, status: 'LOADING SQUAD FILE: TOMI_GELO_27.PRF...', detail: 'BUFFERING TGFC TRAX SOUNDTRACK STREAM' },
-        { pct: 84, status: 'SYNCING PROJECTS & CAREER DATA...', detail: 'CONNECTING TO BERLIN_EU SERVER' },
-        { pct: 100, status: 'MATCHDAY ENGINE READY', detail: 'ALL SYSTEMS ONLINE // 60 FPS LOCKED' }
+    const bootThresholds = [
+        { minPct: 0, status: 'INITIALIZING PITCH ENGINE...', detail: 'SHADER CACHE: COMPILING STADIUM LIGHTS' },
+        { minPct: 25, status: 'INITIALIZING PITCH ENGINE...', detail: 'SHADER CACHE: STADIUM FLOODLIGHTS' },
+        { minPct: 55, status: 'LOADING SQUAD FILE: TOMI_GELO_27.PRF...', detail: 'BUFFERING TGFC TRAX SOUNDTRACK STREAM' },
+        { minPct: 85, status: 'SYNCING PROJECTS & CAREER DATA...', detail: 'CONNECTING TO BERLIN_EU SERVER' },
+        { minPct: 100, status: 'MATCHDAY ENGINE READY', detail: 'ALL SYSTEMS ONLINE // 60 FPS LOCKED' }
     ];
 
-    let currentStepIdx = 0;
+    let bootRafId = null;
+    let bootCompleted = false;
+
+    function getBootThresholdForPct(pct) {
+        let matched = bootThresholds[0];
+        for (let i = 0; i < bootThresholds.length; i++) {
+            if (pct >= bootThresholds[i].minPct) {
+                matched = bootThresholds[i];
+            }
+        }
+        return matched;
+    }
+
+    function finalizeBootLoader(focusStartBtn = true) {
+        if (bootRafId !== null) {
+            cancelAnimationFrame(bootRafId);
+            bootRafId = null;
+        }
+        bootCompleted = true;
+        const doneStep = bootThresholds[bootThresholds.length - 1];
+        if (bootStatusText) bootStatusText.textContent = doneStep.status;
+        if (bootPercentText) bootPercentText.textContent = '100%';
+        if (bootProgressFill) bootProgressFill.style.transform = 'scaleX(1)';
+        if (bootTelemetryDetail) bootTelemetryDetail.textContent = doneStep.detail;
+        state.bootReady = true;
+        if (bootLoaderBox) bootLoaderBox.hidden = true;
+        if (bootStartPrompt) bootStartPrompt.hidden = false;
+        if (focusStartBtn && btnPressStart) btnPressStart.focus();
+    }
+
     function runBootSequence() {
-        const timer = setInterval(() => {
-            if (currentStepIdx >= bootSteps.length) {
-                clearInterval(timer);
-                state.bootReady = true;
-                bootLoaderBox.hidden = true;
-                bootStartPrompt.hidden = false;
-                btnPressStart.focus();
+        let hasSeenBoot = false;
+        try {
+            hasSeenBoot = window.sessionStorage?.getItem('tgfc-boot-seen') === '1';
+        } catch (_) {
+            hasSeenBoot = false;
+        }
+        const duration = (prefersReducedMotion() || hasSeenBoot) ? 120 : 780;
+
+        if (bootProgressFill) bootProgressFill.style.transform = 'scaleX(0)';
+        if (bootPercentText) bootPercentText.textContent = '0%';
+        const initStep = getBootThresholdForPct(0);
+        if (bootStatusText) bootStatusText.textContent = initStep.status;
+        if (bootTelemetryDetail) bootTelemetryDetail.textContent = initStep.detail;
+
+        let startTime = null;
+        let lastThresholdPct = -1;
+
+        const step = (now) => {
+            if (bootCompleted || state.screen !== 'boot') {
+                bootRafId = null;
                 return;
             }
-            const step = bootSteps[currentStepIdx];
-            bootStatusText.textContent = step.status;
-            bootPercentText.textContent = `${step.pct}%`;
-            bootProgressFill.style.width = `${step.pct}%`;
-            bootTelemetryDetail.textContent = step.detail;
-            currentStepIdx++;
-        }, 360);
+            const ts = typeof now === 'number' ? now : Date.now();
+            if (startTime === null) startTime = ts;
+            const elapsed = Math.max(0, ts - startTime);
+            const t = duration <= 0 ? 1 : Math.min(1, elapsed / duration);
+            const eased = 1 - Math.pow(1 - t, 3);
+            const pct = Math.min(100, Math.round(eased * 100));
+
+            if (bootProgressFill) {
+                bootProgressFill.style.transform = `scaleX(${t >= 1 ? 1 : eased.toFixed(4)})`;
+            }
+            if (bootPercentText) {
+                bootPercentText.textContent = `${pct}%`;
+            }
+
+            const stepInfo = getBootThresholdForPct(pct);
+            if (stepInfo.minPct !== lastThresholdPct) {
+                lastThresholdPct = stepInfo.minPct;
+                if (bootStatusText) bootStatusText.textContent = stepInfo.status;
+                if (bootTelemetryDetail) bootTelemetryDetail.textContent = stepInfo.detail;
+            }
+
+            if (t >= 1) {
+                finalizeBootLoader(true);
+            } else {
+                bootRafId = requestAnimationFrame(step);
+            }
+        };
+
+        bootRafId = requestAnimationFrame(step);
     }
 
     runBootSequence();
@@ -658,6 +829,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function triggerStartFromBoot() {
         if (!state.bootReady || state.screen !== 'boot') return;
         state.hasPassedBoot = true;
+        try {
+            window.sessionStorage?.setItem('tgfc-boot-seen', '1');
+        } catch (_) {
+            // Ignore sessionStorage restrictions cleanly
+        }
         audio.playSelect();
         tryLockLandscapeOrientation();
 
@@ -673,7 +849,19 @@ document.addEventListener('DOMContentLoaded', () => {
         showNowPlayingChyron(audio.getCurrentTrack());
     }
 
-    btnPressStart.addEventListener('click', triggerStartFromBoot);
+    if (btnPressStart) {
+        btnPressStart.addEventListener('pointerenter', () => audio.ensureYouTubeLoaded(), { once: true });
+        btnPressStart.addEventListener('focus', () => audio.ensureYouTubeLoaded(), { once: true });
+        btnPressStart.addEventListener('click', triggerStartFromBoot);
+    }
+
+    screenBoot?.addEventListener('click', () => {
+        if (state.screen !== 'boot') return;
+        if (!state.bootReady) {
+            finalizeBootLoader(false);
+        }
+        triggerStartFromBoot();
+    });
 
     // Handle device rotation between Portrait (locked with Rotate animation) and Landscape (unlocked widescreen)
     function handleViewportOrOrientationChange() {
@@ -764,6 +952,25 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const bentoEnterTimers = new WeakMap();
+    function triggerBentoEntrance(container) {
+        if (!container) return;
+        const existingTimer = bentoEnterTimers.get(container);
+        if (existingTimer) {
+            clearTimeout(existingTimer);
+            bentoEnterTimers.delete(container);
+        }
+        container.classList.remove('bento-enter');
+        if (prefersReducedMotion()) return;
+        void container.offsetWidth;
+        container.classList.add('bento-enter');
+        const timerId = setTimeout(() => {
+            container.classList.remove('bento-enter');
+            bentoEnterTimers.delete(container);
+        }, 600);
+        bentoEnterTimers.set(container, timerId);
+    }
+
     function navigateToScreen(targetScreen) {
         if (isPortraitLocked() && targetScreen !== 'boot') {
             targetScreen = 'mobile-gate';
@@ -800,6 +1007,7 @@ document.addEventListener('DOMContentLoaded', () => {
             hudTitle.textContent = 'KICK OFF: SELECT CLUB';
             promptBackBtn.hidden = false;
             promptBumpers.hidden = true;
+            triggerBentoEntrance(projectsBentoGrid);
         } else if (targetScreen === 'work') {
             hudCategory.textContent = 'WORK // CAREER MODE';
             hudTitle.textContent = state.workTab === 'transfers'
@@ -807,6 +1015,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 : 'MANAGER CAREER CENTRAL';
             promptBackBtn.hidden = false;
             promptBumpers.hidden = false;
+            if (state.workTab === 'central') {
+                triggerBentoEntrance(centralBentoGrid);
+            }
         }
     }
 
@@ -820,6 +1031,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const previewClubCrest = document.getElementById('preview-club-crest');
     const previewClubWatermark = document.getElementById('preview-club-watermark');
     const previewClubOvr = document.getElementById('preview-club-ovr');
+    const previewDialArc = document.getElementById('preview-dial-arc');
+    const previewDialNeedle = document.getElementById('preview-dial-needle');
     const previewClubStars = document.getElementById('preview-club-stars');
     const previewClubStadium = document.getElementById('preview-club-stadium');
     const previewClubName = document.getElementById('preview-club-name');
@@ -837,6 +1050,55 @@ document.addEventListener('DOMContentLoaded', () => {
     const previewClubSeason = document.getElementById('preview-club-season');
     const previewClubLink = document.getElementById('preview-club-link');
     const previewClubCta = document.getElementById('preview-club-cta');
+
+    const statAnimFrames = new WeakMap();
+    function animateStatNumber(el, toVal, suffix = '', duration = 260, animate = true) {
+        if (!el) return;
+        const prevRaf = statAnimFrames.get(el);
+        if (prevRaf !== undefined) {
+            cancelAnimationFrame(prevRaf);
+            statAnimFrames.delete(el);
+        }
+
+        if (el.style) {
+            el.style.fontVariantNumeric = 'tabular-nums';
+        }
+
+        const target = Number(toVal);
+        const parsedFrom = el.dataset && el.dataset.val !== undefined
+            ? Number(el.dataset.val)
+            : parseInt(el.textContent, 10);
+        const fromVal = Number.isFinite(parsedFrom) ? parsedFrom : target;
+
+        if (!animate || prefersReducedMotion() || duration <= 0 || fromVal === target) {
+            if (el.dataset) el.dataset.val = String(target);
+            el.textContent = `${target}${suffix}`;
+            return;
+        }
+
+        let startTime = null;
+        const step = (now) => {
+            const ts = typeof now === 'number' ? now : Date.now();
+            if (startTime === null) startTime = ts;
+            const progress = Math.min(1, Math.max(0, (ts - startTime) / duration));
+            const eased = 1 - Math.pow(1 - progress, 3);
+            const current = Math.round(fromVal + (target - fromVal) * eased);
+            if (el.dataset) el.dataset.val = String(current);
+            el.textContent = `${current}${suffix}`;
+
+            if (progress < 1) {
+                const id = requestAnimationFrame(step);
+                statAnimFrames.set(el, id);
+            } else {
+                if (el.dataset) el.dataset.val = String(target);
+                el.textContent = `${target}${suffix}`;
+                statAnimFrames.delete(el);
+            }
+        };
+
+        const id = requestAnimationFrame(step);
+        statAnimFrames.set(el, id);
+    }
 
     function selectProjectClub(index, playSound = true) {
         if (!PROJECT_CLUBS.length) return;
@@ -861,7 +1123,34 @@ document.addEventListener('DOMContentLoaded', () => {
             previewClubCrest.className = `club-crest-giant ${club.crestClass}`;
         }
         if (previewClubWatermark) previewClubWatermark.textContent = club.code;
-        if (previewClubOvr) previewClubOvr.textContent = club.ovr;
+
+        if (playSound && !prefersReducedMotion()) {
+            [previewClubCrest, previewClubWatermark].forEach(el => {
+                if (!el) return;
+                el.classList.remove('crest-swap-pop');
+                void el.offsetWidth;
+                el.classList.add('crest-swap-pop');
+            });
+        } else {
+            previewClubWatermark?.classList.remove('crest-swap-pop');
+        }
+
+        const numericOvr = parseInt(club.ovr, 10) || 70;
+        animateStatNumber(previewClubOvr, numericOvr, ' OVR', 260, playSound);
+
+        const clampedOvr = Math.max(70, Math.min(99, numericOvr));
+        const ovrNorm = (clampedOvr - 70) / 29;
+        const dialFill = 20 + ovrNorm * 80;
+        const dialOffset = (100 - dialFill).toFixed(1);
+        const needleDeg = (-72 + ovrNorm * 144).toFixed(1);
+        if (previewDialArc) {
+            previewDialArc.setAttribute('stroke-dashoffset', dialOffset);
+            previewDialArc.style.strokeDashoffset = dialOffset;
+        }
+        if (previewDialNeedle) {
+            previewDialNeedle.style.transform = `rotate(${needleDeg}deg)`;
+        }
+
         if (previewClubStars) {
             previewClubStars.textContent = club.stars;
             const starCount = (club.stars.match(/★/g) || []).length;
@@ -884,9 +1173,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (previewClubDesc) previewClubDesc.textContent = club.desc;
 
-        if (previewClubAtt) previewClubAtt.textContent = club.att;
-        if (previewClubMid) previewClubMid.textContent = club.mid;
-        if (previewClubDef) previewClubDef.textContent = club.def;
+        animateStatNumber(previewClubAtt, club.att, '', 260, playSound);
+        animateStatNumber(previewClubMid, club.mid, '', 260, playSound);
+        animateStatNumber(previewClubDef, club.def, '', 260, playSound);
         if (previewBarAtt) previewBarAtt.style.height = `${club.att}%`;
         if (previewBarMid) previewBarMid.style.height = `${club.mid}%`;
         if (previewBarDef) previewBarDef.style.height = `${club.def}%`;
@@ -919,7 +1208,6 @@ document.addEventListener('DOMContentLoaded', () => {
     selectProjectClub(0, false);
 
     const projectsTabBtns = Array.from(document.querySelectorAll('[data-projects-tab]'));
-    const projectsViewKickoff = document.getElementById('projects-view-kickoff');
 
     function switchProjectsTab() {
         state.projectsTab = 'kickoff';
@@ -946,10 +1234,9 @@ document.addEventListener('DOMContentLoaded', () => {
        ====================================================================== */
     const WORK_TABS = ['central', 'transfers'];
     const workTabBtns = Array.from(document.querySelectorAll('[data-work-tab]'));
-    const workViewCentral = document.getElementById('work-view-central');
-    const workViewTransfers = document.getElementById('work-view-transfers');
 
     function switchWorkTab(tabName) {
+        const prevTab = state.workTab;
         const nextTab = WORK_TABS.includes(tabName) ? tabName : 'central';
         audio.playTick();
         state.workTab = nextTab;
@@ -964,6 +1251,10 @@ document.addEventListener('DOMContentLoaded', () => {
         hudTitle.textContent = nextTab === 'transfers'
             ? 'CAREER TRANSFER LEDGER (10)'
             : 'MANAGER CAREER CENTRAL';
+
+        if (nextTab === 'central' && prevTab !== 'central') {
+            triggerBentoEntrance(centralBentoGrid);
+        }
     }
 
     workTabBtns.forEach(btn => {
@@ -998,25 +1289,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const settingsNextTrack = document.getElementById('settings-next-track');
     const themeOptionBtns = Array.from(document.querySelectorAll('[data-bento-theme-option]'));
 
-    function applySiteTheme(themeName, persist = true) {
+    function applySiteTheme(themeName, persist = true, origin = null) {
         const theme = themeName === 'dark' ? 'dark' : 'pop';
-        activeSiteTheme = theme;
-        document.documentElement.setAttribute('data-theme', theme);
-        if (themeColorMeta) {
-            themeColorMeta.setAttribute('content', theme === 'dark' ? '#06080c' : '#f4f3ef');
-        }
-        if (workViewCentral) {
-            workViewCentral.setAttribute('data-bento-theme', theme);
-        }
-        if (projectsViewKickoff) {
-            projectsViewKickoff.setAttribute('data-bento-theme', theme);
-        }
-        themeOptionBtns.forEach(btn => {
-            const isSelected = btn.getAttribute('data-bento-theme-option') === theme;
-            btn.classList.toggle('active', isSelected);
-            btn.setAttribute('aria-checked', isSelected ? 'true' : 'false');
-            btn.setAttribute('tabindex', isSelected ? '0' : '-1');
-        });
+
+        const applyThemeDom = () => {
+            activeSiteTheme = theme;
+            document.documentElement.setAttribute('data-theme', theme);
+            if (themeColorMeta) {
+                themeColorMeta.setAttribute('content', theme === 'dark' ? '#06080c' : '#f4f3ef');
+            }
+            themeOptionBtns.forEach(btn => {
+                const isSelected = btn.getAttribute('data-bento-theme-option') === theme;
+                btn.classList.toggle('active', isSelected);
+                btn.setAttribute('aria-checked', isSelected ? 'true' : 'false');
+                btn.setAttribute('tabindex', isSelected ? '0' : '-1');
+            });
+            redrawStaticParticles?.();
+        };
+
         if (persist) {
             try {
                 window.localStorage.setItem(THEME_STORAGE_KEY, theme);
@@ -1024,6 +1314,49 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Ignore storage quota/privacy-mode errors cleanly
             }
         }
+
+        if (persist && typeof document.startViewTransition === 'function' && !prefersReducedMotion()) {
+            const root = document.documentElement;
+            let rx = window.innerWidth * 0.9;
+            let ry = 40;
+            if (origin && Number.isFinite(origin.x) && Number.isFinite(origin.y)) {
+                rx = origin.x;
+                ry = origin.y;
+            } else if (btnSettingsToggle && typeof btnSettingsToggle.getBoundingClientRect === 'function') {
+                const rect = btnSettingsToggle.getBoundingClientRect();
+                if (rect && (rect.width > 0 || rect.height > 0 || rect.left !== 0 || rect.top !== 0)) {
+                    rx = rect.left + rect.width / 2;
+                    ry = rect.top + rect.height / 2;
+                }
+            }
+
+            const maxX = Math.max(rx, window.innerWidth - rx);
+            const maxY = Math.max(ry, window.innerHeight - ry);
+            const radius = Math.hypot(maxX, maxY);
+
+            root.style.setProperty('--ripple-x', `${rx}px`);
+            root.style.setProperty('--ripple-y', `${ry}px`);
+            root.style.setProperty('--ripple-r', `${Math.ceil(radius)}px`);
+            root.classList.add('theme-transitioning');
+
+            let transition;
+            try {
+                transition = document.startViewTransition(() => {
+                    applyThemeDom();
+                });
+            } catch (_) {
+                root.classList.remove('theme-transitioning');
+                applyThemeDom();
+                return;
+            }
+
+            Promise.resolve(transition && transition.finished).finally(() => {
+                root.classList.remove('theme-transitioning');
+            });
+            return;
+        }
+
+        applyThemeDom();
     }
 
     applySiteTheme(activeSiteTheme, false);
@@ -1036,7 +1369,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (settingsAudioLabel) settingsAudioLabel.textContent = text;
         if (settingsAudioToggle) settingsAudioToggle.setAttribute('aria-pressed', pressed);
         if (hudEqBars) {
-            hudEqBars.classList.toggle('paused', !isOn);
+            hudEqBars.classList.toggle('paused', !isOn || !audio.isPlayingMusic);
         }
     }
 
@@ -1061,14 +1394,26 @@ document.addEventListener('DOMContentLoaded', () => {
         hudSettingsMenu.hidden = false;
         btnSettingsToggle?.setAttribute('aria-expanded', 'true');
         btnSettingsToggle?.classList.add('is-open');
+        const activeThemeBtn = themeOptionBtns.find(
+            btn => btn.classList.contains('active') || btn.getAttribute('aria-checked') === 'true'
+        ) || themeOptionBtns[0];
+        activeThemeBtn?.focus();
     }
 
     function closeSettingsMenu(playSound = false) {
         if (!hudSettingsMenu || hudSettingsMenu.hidden) return;
+        const hadFocusInside = Boolean(
+            document.activeElement &&
+            typeof hudSettingsMenu.contains === 'function' &&
+            hudSettingsMenu.contains(document.activeElement)
+        );
         if (playSound) audio.playTick();
         hudSettingsMenu.hidden = true;
         btnSettingsToggle?.setAttribute('aria-expanded', 'false');
         btnSettingsToggle?.classList.remove('is-open');
+        if (hadFocusInside) {
+            btnSettingsToggle?.focus();
+        }
     }
 
     function toggleSettingsMenu() {
@@ -1107,12 +1452,67 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     themeOptionBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', (e) => {
             const targetTheme = btn.getAttribute('data-bento-theme-option');
             audio.playTick();
-            applySiteTheme(targetTheme, true);
+            const hasPointerCoords = Boolean(
+                e && typeof e.clientX === 'number' && typeof e.clientY === 'number' &&
+                (e.clientX !== 0 || e.clientY !== 0)
+            );
+            let origin = null;
+            if (hasPointerCoords) {
+                origin = { x: e.clientX, y: e.clientY };
+            } else if (typeof btn.getBoundingClientRect === 'function') {
+                const rect = btn.getBoundingClientRect();
+                if (rect && (rect.width > 0 || rect.height > 0 || rect.left !== 0 || rect.top !== 0)) {
+                    origin = {
+                        x: rect.left + rect.width / 2,
+                        y: rect.top + rect.height / 2
+                    };
+                }
+            }
+            applySiteTheme(targetTheme, true, origin);
         });
     });
+
+    if (hasFinePointer() && !prefersReducedMotion()) {
+        const glintContainers = document.querySelectorAll('.kickoff-bento-grid, .central-bento-grid, .hub-showcase-stage');
+        let pendingGlint = null;
+        let glintRafId = null;
+
+        const applyTileGlint = () => {
+            glintRafId = null;
+            const current = pendingGlint;
+            pendingGlint = null;
+            if (!current || prefersReducedMotion() || !hasFinePointer()) return;
+            const { card, clientX, clientY } = current;
+            if (!card || typeof card.getBoundingClientRect !== 'function') return;
+            const rect = card.getBoundingClientRect();
+            if (!rect || rect.width <= 0 || rect.height <= 0) return;
+            const mx = Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100));
+            const my = Math.max(0, Math.min(100, ((clientY - rect.top) / rect.height) * 100));
+            card.style.setProperty('--mx', `${mx.toFixed(1)}%`);
+            card.style.setProperty('--my', `${my.toFixed(1)}%`);
+        };
+
+        glintContainers.forEach(container => {
+            container.addEventListener('pointermove', (e) => {
+                if (prefersReducedMotion() || !hasFinePointer()) return;
+                const target = e.target;
+                if (!(target instanceof Element) || typeof target.closest !== 'function') return;
+                const card = target.closest('.bento-tile, .showcase-billboard');
+                if (!card || !container.contains(card)) return;
+                pendingGlint = {
+                    card,
+                    clientX: e.clientX,
+                    clientY: e.clientY
+                };
+                if (glintRafId === null) {
+                    glintRafId = requestAnimationFrame(applyTileGlint);
+                }
+            });
+        });
+    }
 
     document.addEventListener('click', (e) => {
         if (!isSettingsMenuOpen()) return;
@@ -1150,6 +1550,13 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ======================================================================
        11. GLOBAL KEYBOARD / CONTROLLER SHORTCUTS
        ====================================================================== */
+    function matchesOrClosest(el, selector) {
+        if (!(el instanceof Element)) return false;
+        if (typeof el.closest === 'function') return Boolean(el.closest(selector));
+        if (typeof el.matches === 'function') return el.matches(selector);
+        return false;
+    }
+
     function isTypingTarget(target) {
         if (!(target instanceof Element)) return false;
         const tag = target.tagName;
@@ -1163,9 +1570,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     window.addEventListener('keydown', (e) => {
-        // 1. Boot Screen: Any key starts once loaded
+        // 1. Boot Screen: Enter/Space skips during loading; any key starts once loaded
         if (state.screen === 'boot') {
-            if (state.bootReady) {
+            if (!state.bootReady) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    finalizeBootLoader(false);
+                    triggerStartFromBoot();
+                }
+            } else {
                 e.preventDefault();
                 triggerStartFromBoot();
             }
@@ -1257,6 +1670,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else if (e.key === 'ArrowUp' || (!hasModifier && (e.key === 'w' || e.key === 'W'))) {
                     e.preventDefault();
                     selectProjectClub(state.activeClubIndex - 1, true);
+                } else if (!hasModifier && (e.key === 'Enter' || e.key === ' ')) {
+                    const target = e.target;
+                    const isLaunchLink = Boolean(
+                        previewClubLink &&
+                        (target === previewClubLink ||
+                            (target instanceof Element &&
+                                typeof previewClubLink.contains === 'function' &&
+                                previewClubLink.contains(target)))
+                    );
+                    if (isLaunchLink) {
+                        if (e.key === ' ') {
+                            e.preventDefault();
+                            previewClubLink.click();
+                        }
+                        return;
+                    }
+                    const isOtherInteractive = target instanceof Element &&
+                        matchesOrClosest(target, 'a, button, [role="button"]') &&
+                        !matchesOrClosest(target, '.club-select-card');
+                    if (isOtherInteractive) {
+                        return;
+                    }
+                    e.preventDefault();
+                    previewClubLink?.click();
                 }
             }
             return;

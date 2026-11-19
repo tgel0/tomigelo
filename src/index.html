@@ -33,12 +33,10 @@
     <meta name="twitter:image" content="https://tomigelo.com/og-image.webp">
     <meta name="twitter:image:alt" content="Portrait of Tomi Gelo">
 
-    <link rel="stylesheet" href="styles.css?v=tgfc27">
-    <script defer src="script.js?v=tgfc27"></script>
-    <!-- 3D pitch stage scripts disabled while Central Hub displays manager avatar view; uncomment to re-enable:
-    <script defer src="three.min.js?v=tgfc21"></script>
-    <script defer src="eafc-trio-3d.js?v=tgfc21"></script>
-    -->
+    <link rel="preload" href="/fonts/barlow-condensed-800.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/fonts/space-grotesk-500.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="styles.css?v=tgfc29">
+    <script defer src="script.js?v=tgfc29"></script>
 
     <script type="application/ld+json">
     {
@@ -211,7 +209,7 @@
             <div class="hud-right">
                 <!-- TGFC TRAX SOUNDTRACK MINI CONTROLLER -->
                 <div class="hud-widget hud-trax-pill" id="hud-trax-widget">
-                    <div class="eq-bars" id="hud-eq-bars" aria-hidden="true">
+                    <div class="eq-bars paused" id="hud-eq-bars" aria-hidden="true">
                         <span></span><span></span><span></span><span></span>
                     </div>
                     <div class="trax-meta">
@@ -477,7 +475,7 @@
             </div>
 
             <!-- SUB-VIEW 1: KICK OFF / CLUB & MATCH SELECTOR (ASYMMETRIC BENTO MOSAIC) -->
-            <div id="projects-view-kickoff" class="submode-view active" data-bento-theme="pop">
+            <div id="projects-view-kickoff" class="submode-view active">
                 <div class="kickoff-bento-grid">
 
                     <!-- TILE A (LEFT COLUMN): PROJECT ROSTER SELECTOR -->
@@ -568,7 +566,10 @@
                             <circle cx="160" cy="148" r="122" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 7" opacity="0.36"/>
                             <circle cx="160" cy="148" r="94" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="1 6" opacity="0.26"/>
                             <path d="M 34 148 A 126 126 0 0 1 286 148" fill="none" stroke="currentColor" stroke-width="2.2" opacity="0.24"/>
-                            <polygon points="160,34 154,50 166,50" fill="currentColor" opacity="0.88"/>
+                            <path id="preview-dial-arc" d="M 34 148 A 126 126 0 0 1 286 148" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" pathLength="100" stroke-dasharray="100" stroke-dashoffset="22.1" opacity="0.92" />
+                            <g id="preview-dial-needle" style="transform: rotate(32.3deg);">
+                                <polygon points="160,34 154,50 166,50" fill="currentColor" opacity="0.88"/>
+                            </g>
                         </svg>
 
                         <div class="bento-tile-head">
@@ -691,7 +692,7 @@
             </div>
 
             <!-- SUB-VIEW 1: CAREER CENTRAL BENTO DASHBOARD -->
-            <div id="work-view-central" class="submode-view active" data-bento-theme="pop">
+            <div id="work-view-central" class="submode-view active">
                 <div class="central-bento-grid">
 
                     <!-- TILE A: MANAGER HERO CARD (LEFT-TOP) -->
@@ -869,7 +870,7 @@
                                         <h3 class="bento-spotlight-headline">Not So BigQuery hits landmark Issue #300</h3>
                                     </div>
                                     <div class="bento-spotlight-media">
-                                        <img src="press-nsbq-300.jpg?v=tgfc23" alt="Not So BigQuery Newsletter Issue #300 Milestone Announcement" class="bento-press-img" width="1376" height="768" loading="lazy">
+                                        <img src="press-nsbq-300.webp?v=tgfc29" alt="Not So BigQuery Newsletter Issue #300 Milestone Announcement" class="bento-press-img" width="800" height="450" decoding="async" loading="lazy">
                                     </div>
                                 </div>
 
@@ -887,7 +888,7 @@
                                 <a href="https://careers.mediamarktsaturn.com/" target="_blank" rel="noopener noreferrer" class="bento-rank-row">
                                     <span class="bento-rank-num">02</span>
                                     <div class="bento-rank-thumb">
-                                        <img src="press-mms-transfer.jpg?v=tgfc23" alt="MediaMarktSaturn confirms Data &amp; AI Engineer contract signing" class="bento-press-img" width="1376" height="768" loading="lazy">
+                                        <img src="press-mms-transfer.webp?v=tgfc29" alt="MediaMarktSaturn confirms Data &amp; AI Engineer contract signing" class="bento-press-img" width="800" height="450" decoding="async" loading="lazy">
                                     </div>
                                     <div class="bento-rank-body">
                                         <div class="bento-rank-meta">
@@ -904,7 +905,7 @@
                                 <a href="https://cloud.google.com/blog/products/data-analytics/google-cloud-data-hero-series-meet-tomi" target="_blank" rel="noopener noreferrer" class="bento-rank-row">
                                     <span class="bento-rank-num">03</span>
                                     <div class="bento-rank-thumb">
-                                        <img src="press-google-cloud.jpg?v=tgfc23" alt="Google Cloud Blog Feature: Data Heroes Series interview with Tomi Gelo" class="bento-press-img" width="1376" height="768" loading="lazy">
+                                        <img src="press-google-cloud.webp?v=tgfc29" alt="Google Cloud Blog Feature: Data Heroes Series interview with Tomi Gelo" class="bento-press-img" width="800" height="450" decoding="async" loading="lazy">
                                     </div>
                                     <div class="bento-rank-body">
                                         <div class="bento-rank-meta">
