@@ -1,5 +1,5 @@
 /**
- * TGFC 27 — Tomi Gelo Football Club Portfolio (Iteration 1)
+ * TGFC 27 — Tomi Gelo Football Club Portfolio
  * Widescreen Console State Machine, Boot Loader, YouTube IFrame Radio Engine & Blade Menu
  */
 
@@ -29,66 +29,74 @@ document.addEventListener('DOMContentLoaded', () => {
     document.documentElement.setAttribute('data-theme', activeSiteTheme);
 
     /* ======================================================================
-       1. PLACEHOLDER DATA STORE (ITERATION 1)
+       1. LIVE PROJECT CLUBS DATA STORE
        ====================================================================== */
-    const PLACEHOLDER_CLUBS = [
+    const PROJECT_CLUBS = [
         {
-            id: 'alpha',
-            code: 'P1',
+            id: 'not-so-bigquery',
+            code: 'BQ',
             crestClass: 'crest-volt',
-            league: 'LEAGUE 01 // AI & ANALYTICS (PLACEHOLDER)',
-            name: 'PROJECT ALPHA FC',
-            namePrimary: 'PROJECT ALPHA',
-            nameOutline: 'FC',
-            ovr: '92 OVR',
+            league: 'LEAGUE 01 // GCP DATA & ANALYTICS',
+            statusPill: '304 ISSUES // LIVE',
+            name: 'NOT SO BIGQUERY',
+            namePrimary: 'NOT SO',
+            nameOutline: 'BIGQUERY',
+            ovr: '91 OVR',
             stars: '★★★★★',
-            desc: 'Placeholder description for Project 01. In Iteration 2, this slot will connect to your real project data, live deployment URLs, and architecture telemetry.',
-            att: 94,
-            mid: 92,
-            def: 90,
-            formation: '4-3-3 ATTACKING',
-            stack: 'AUTONOMOUS AGENTS // PLACEHOLDER',
-            season: '2026 SEASON',
-            url: '#projects'
-        },
-        {
-            id: 'beta',
-            code: 'P2',
-            crestClass: 'crest-cyan',
-            league: 'LEAGUE 02 // CONSUMER & AUDIO (PLACEHOLDER)',
-            name: 'PROJECT BETA UNITED',
-            namePrimary: 'PROJECT BETA',
-            nameOutline: 'UNITED',
-            ovr: '89 OVR',
-            stars: '★★★★☆',
-            desc: 'Placeholder description for Project 02. Demonstrates how switching clubs in Kick-Off dynamically updates the ATT / MID / DEF telemetry bars and match facts.',
-            att: 91,
-            mid: 89,
-            def: 88,
-            formation: '4-2-3-1 WIDE',
-            stack: 'WEB AUDIO & QR // PLACEHOLDER',
-            season: '2025 SEASON',
-            url: '#projects'
-        },
-        {
-            id: 'gamma',
-            code: 'P3',
-            crestClass: 'crest-gold',
-            league: 'LEAGUE 03 // OPEN SOURCE & DATA (PLACEHOLDER)',
-            name: 'PROJECT GAMMA ATHLETIC',
-            namePrimary: 'PROJECT GAMMA',
-            nameOutline: 'ATHLETIC',
-            ovr: '94 OVR',
-            stars: '★★★★★',
-            desc: 'Placeholder description for Project 03. Showcases a 5-star Open Source club item with top-tier backend and developer experience ratings.',
-            att: 95,
-            mid: 96,
+            desc: 'Weekly BigQuery & Google Cloud data newsletter curated by Tomi Gelo — 304 issues covering GCP releases, AI functions, and community reads.',
+            att: 88,
+            mid: 93,
             def: 92,
-            formation: '3-4-3 DIAMOND',
-            stack: 'LLM CONTEXT CLI // PLACEHOLDER',
-            stackRole: 'CLI',
+            stadium: 'HOSTING // MAILBREW + CRSSNT',
+            formation: '4-2-3-1 WEEKLY',
+            stack: 'MAILBREW // CRSSNT // SHEETS',
+            season: 'SINCE 2020 • 304#',
+            ctaLabel: 'OPEN NOT SO BIGQUERY ↗',
+            url: 'https://app.mailbrew.com/tgel0/not-so-bigquery-9HLtpmj0Pl8B'
+        },
+        {
+            id: 'songcards',
+            code: 'SC',
+            crestClass: 'crest-cyan',
+            league: 'LEAGUE 02 // MUSIC & PARTY GAME',
+            statusPill: 'WEB APP // FREE',
+            name: 'SONGCARDS',
+            namePrimary: 'SONG',
+            nameOutline: 'CARDS',
+            ovr: '90 OVR',
+            stars: '★★★★☆',
+            desc: 'Convert any public Spotify playlist into printable double-sided A4 QR music trivia cards for timeline party games — free, no sign-up.',
+            att: 92,
+            mid: 90,
+            def: 88,
+            stadium: 'HOSTING // GCP APP HOSTING',
+            formation: '3-3-3 DECK GRID',
+            stack: 'SVELTEKIT // SPOTIFY API + JSPDF',
             season: '2026 SEASON',
-            url: '#projects'
+            ctaLabel: 'LAUNCH SONGCARDS ↗',
+            url: 'https://songcards.de/'
+        },
+        {
+            id: 'crssnt',
+            code: 'CR',
+            crestClass: 'crest-gold',
+            league: 'LEAGUE 03 // OPEN SOURCE & FEEDS',
+            statusPill: 'OPEN SOURCE // MIT',
+            name: 'CRSSNT',
+            namePrimary: 'CRSSNT',
+            nameOutline: 'FEED API',
+            ovr: '93 OVR',
+            stars: '★★★★★',
+            desc: 'Open-source stateless feed & Google Sheet converter turning RSS, Atom, and Sheets into LLM-ready Markdown, JSON Feed, and XML.',
+            att: 89,
+            mid: 96,
+            def: 94,
+            stadium: 'HOSTING // FIREBASE CLOUD V2',
+            formation: '3-4-3 STATELESS',
+            stack: 'NODE 22 // FIREBASE V2 // RSS•MD',
+            season: '2021–26 SEASON',
+            ctaLabel: 'EXPLORE CRSSNT ↗',
+            url: 'https://crssnt.com/'
         }
     ];
 
@@ -808,10 +816,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const clubCards = Array.from(document.querySelectorAll('.club-select-card'));
     const clubCounterLabel = document.getElementById('club-counter-label');
     const previewClubLeague = document.getElementById('preview-club-league');
+    const previewClubStatus = document.getElementById('preview-club-status');
     const previewClubCrest = document.getElementById('preview-club-crest');
     const previewClubWatermark = document.getElementById('preview-club-watermark');
     const previewClubOvr = document.getElementById('preview-club-ovr');
     const previewClubStars = document.getElementById('preview-club-stars');
+    const previewClubStadium = document.getElementById('preview-club-stadium');
     const previewClubName = document.getElementById('preview-club-name');
     const previewClubNamePrimary = document.getElementById('preview-club-name-primary');
     const previewClubNameOutline = document.getElementById('preview-club-name-outline');
@@ -826,15 +836,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const previewClubStack = document.getElementById('preview-club-stack');
     const previewClubSeason = document.getElementById('preview-club-season');
     const previewClubLink = document.getElementById('preview-club-link');
+    const previewClubCta = document.getElementById('preview-club-cta');
 
     function selectProjectClub(index, playSound = true) {
-        if (!PLACEHOLDER_CLUBS.length) return;
-        const clamped = (index + PLACEHOLDER_CLUBS.length) % PLACEHOLDER_CLUBS.length;
+        if (!PROJECT_CLUBS.length) return;
+        const clamped = (index + PROJECT_CLUBS.length) % PROJECT_CLUBS.length;
         if (state.activeClubIndex !== clamped && playSound) {
             audio.playTick();
         }
         state.activeClubIndex = clamped;
-        const club = PLACEHOLDER_CLUBS[clamped];
+        const club = PROJECT_CLUBS[clamped];
 
         clubCards.forEach((card, idx) => {
             const isSelected = idx === clamped;
@@ -842,8 +853,9 @@ document.addEventListener('DOMContentLoaded', () => {
             card.setAttribute('aria-selected', isSelected ? 'true' : 'false');
         });
 
-        if (clubCounterLabel) clubCounterLabel.textContent = `CLUB 0${clamped + 1} / 0${PLACEHOLDER_CLUBS.length}`;
+        if (clubCounterLabel) clubCounterLabel.textContent = `CLUB 0${clamped + 1} / 0${PROJECT_CLUBS.length}`;
         if (previewClubLeague) previewClubLeague.textContent = club.league;
+        if (previewClubStatus && club.statusPill) previewClubStatus.textContent = club.statusPill;
         if (previewClubCrest) {
             previewClubCrest.textContent = club.code;
             previewClubCrest.className = `club-crest-giant ${club.crestClass}`;
@@ -855,6 +867,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const starCount = (club.stars.match(/★/g) || []).length;
             previewClubStars.setAttribute('aria-label', `${starCount} out of 5 stars`);
         }
+        if (previewClubStadium && club.stadium) previewClubStadium.textContent = club.stadium;
 
         if (previewClubNamePrimary && previewClubNameOutline) {
             const parts = club.name ? club.name.split(' ') : ['PROJECT', 'CLUB'];
@@ -881,12 +894,27 @@ document.addEventListener('DOMContentLoaded', () => {
         if (previewClubFormation) previewClubFormation.textContent = club.formation;
         if (previewClubStack) previewClubStack.textContent = club.stack;
         if (previewClubSeason) previewClubSeason.textContent = club.season;
-        if (previewClubLink && club.url) previewClubLink.setAttribute('href', club.url);
+        if (previewClubCta && club.ctaLabel) previewClubCta.textContent = club.ctaLabel;
+        if (previewClubLink && club.url) {
+            previewClubLink.setAttribute('href', club.url);
+            previewClubLink.setAttribute('target', '_blank');
+            previewClubLink.setAttribute('rel', 'noopener noreferrer');
+        }
     }
 
     clubCards.forEach((card, idx) => {
         card.addEventListener('click', () => selectProjectClub(idx, true));
     });
+
+    if (previewClubLink) {
+        previewClubLink.addEventListener('click', () => {
+            try {
+                audio.playSelect();
+            } catch (_) {
+                // Keep external navigation unblocked if Web Audio is unavailable
+            }
+        });
+    }
 
     selectProjectClub(0, false);
 

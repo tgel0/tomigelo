@@ -33,8 +33,8 @@
     <meta name="twitter:image" content="https://tomigelo.com/og-image.webp">
     <meta name="twitter:image:alt" content="Portrait of Tomi Gelo">
 
-    <link rel="stylesheet" href="styles.css?v=tgfc26">
-    <script defer src="script.js?v=tgfc26"></script>
+    <link rel="stylesheet" href="styles.css?v=tgfc27">
+    <script defer src="script.js?v=tgfc27"></script>
     <!-- 3D pitch stage scripts disabled while Central Hub displays manager avatar view; uncomment to re-enable:
     <script defer src="three.min.js?v=tgfc21"></script>
     <script defer src="eafc-trio-3d.js?v=tgfc21"></script>
@@ -363,7 +363,7 @@
 
                         <div class="billboard-top-row">
                             <span class="billboard-mode-pill">MODE 01 // KICK OFF</span>
-                            <span class="billboard-live-tag">★ 3 PLACEHOLDER CLUBS LOADED</span>
+                            <span class="billboard-live-tag">★ 3 LIVE PROJECTS LOADED</span>
                         </div>
 
                         <div class="billboard-main-content">
@@ -376,11 +376,11 @@
                             <!-- Mini Matchup vs Card inside Billboard -->
                             <div class="billboard-matchup-card">
                                 <div class="matchup-team">
-                                    <div class="club-crest-hex crest-volt">P1</div>
+                                    <div class="club-crest-hex crest-volt">BQ</div>
                                     <div class="matchup-team-info">
-                                        <span class="team-tier">HOME CLUB (PLACEHOLDER)</span>
-                                        <strong class="team-name">PROJECT ALPHA FC</strong>
-                                        <span class="team-stars">★★★★★ 92 OVR</span>
+                                        <span class="team-tier">PROJECT 01 // GCP DATA</span>
+                                        <strong class="team-name">NOT SO BIGQUERY</strong>
+                                        <span class="team-stars">★★★★★ 91 OVR</span>
                                     </div>
                                 </div>
 
@@ -388,20 +388,20 @@
 
                                 <div class="matchup-team matchup-team-right">
                                     <div class="matchup-team-info">
-                                        <span class="team-tier">AWAY CLUB (PLACEHOLDER)</span>
-                                        <strong class="team-name">PROJECT BETA UTD</strong>
-                                        <span class="team-stars">★★★★☆ 89 OVR</span>
+                                        <span class="team-tier">PROJECT 02 // MUSIC QR</span>
+                                        <strong class="team-name">SONGCARDS</strong>
+                                        <span class="team-stars">★★★★☆ 90 OVR</span>
                                     </div>
-                                    <div class="club-crest-hex crest-cyan">P2</div>
+                                    <div class="club-crest-hex crest-cyan">SC</div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="billboard-footer-bar">
                             <div class="billboard-stat-chips">
-                                <span><strong>ATT</strong> 94</span>
-                                <span><strong>MID</strong> 92</span>
-                                <span><strong>DEF</strong> 90</span>
+                                <span><strong>BQ</strong> 91 OVR</span>
+                                <span><strong>SC</strong> 90 OVR</span>
+                                <span><strong>CR</strong> 93 OVR</span>
                                 <span><strong>THEMES</strong> POP / DARK</span>
                             </div>
                             <button type="button" class="fc-btn-primary" data-enter-screen="projects">
@@ -464,14 +464,14 @@
         </main>
 
         <!-- =================================================================
-             4. MODE 01: PROJECTS — KICK OFF CLUB SELECTOR (PLACEHOLDER ITERATION 1)
+             4. MODE 01: PROJECTS — KICK OFF CLUB SELECTOR
              ================================================================= -->
         <section id="screen-projects" class="game-screen screen-submode" aria-label="Projects: Kick Off Club Selector" hidden>
             <!-- Single-View Header Bar -->
             <div class="fc-bumper-bar">
                 <div class="bumper-tabs" role="tablist" aria-label="Projects View">
                     <button type="button" role="tab" class="bumper-tab active" data-projects-tab="kickoff" aria-selected="true">
-                        01 // KICK OFF: SELECT CLUB (PLACEHOLDERS)
+                        01 // KICK OFF: SELECT CLUB
                     </button>
                 </div>
             </div>
@@ -489,39 +489,39 @@
 
                         <div class="club-selector-list" role="listbox" aria-label="Project Clubs">
                             <button type="button" class="club-select-card active" data-club-index="0" role="option" aria-selected="true">
-                                <div class="club-crest-hex crest-volt">P1</div>
+                                <div class="club-crest-hex crest-volt">BQ</div>
                                 <div class="club-select-meta">
-                                    <span class="club-league-tag">LEAGUE 01 // AI &amp; ANALYTICS (PLACEHOLDER)</span>
-                                    <strong class="club-select-name">PROJECT ALPHA FC</strong>
+                                    <span class="club-league-tag">LEAGUE 01 // GCP DATA &amp; ANALYTICS</span>
+                                    <strong class="club-select-name">NOT SO BIGQUERY</strong>
                                     <div class="club-select-bottom">
                                         <span class="club-select-stars">★★★★★</span>
-                                        <span class="club-select-ovr">92 OVR</span>
+                                        <span class="club-select-ovr">91 OVR</span>
                                     </div>
                                 </div>
                                 <span class="club-select-chevron" aria-hidden="true">▶</span>
                             </button>
 
                             <button type="button" class="club-select-card" data-club-index="1" role="option" aria-selected="false">
-                                <div class="club-crest-hex crest-cyan">P2</div>
+                                <div class="club-crest-hex crest-cyan">SC</div>
                                 <div class="club-select-meta">
-                                    <span class="club-league-tag">LEAGUE 02 // CONSUMER &amp; AUDIO (PLACEHOLDER)</span>
-                                    <strong class="club-select-name">PROJECT BETA UNITED</strong>
+                                    <span class="club-league-tag">LEAGUE 02 // MUSIC &amp; PARTY GAME</span>
+                                    <strong class="club-select-name">SONGCARDS</strong>
                                     <div class="club-select-bottom">
                                         <span class="club-select-stars">★★★★☆</span>
-                                        <span class="club-select-ovr">89 OVR</span>
+                                        <span class="club-select-ovr">90 OVR</span>
                                     </div>
                                 </div>
                                 <span class="club-select-chevron" aria-hidden="true">▶</span>
                             </button>
 
                             <button type="button" class="club-select-card" data-club-index="2" role="option" aria-selected="false">
-                                <div class="club-crest-hex crest-gold">P3</div>
+                                <div class="club-crest-hex crest-gold">CR</div>
                                 <div class="club-select-meta">
-                                    <span class="club-league-tag">LEAGUE 03 // OPEN SOURCE &amp; DATA (PLACEHOLDER)</span>
-                                    <strong class="club-select-name">PROJECT GAMMA ATHLETIC</strong>
+                                    <span class="club-league-tag">LEAGUE 03 // OPEN SOURCE &amp; FEEDS</span>
+                                    <strong class="club-select-name">CRSSNT</strong>
                                     <div class="club-select-bottom">
                                         <span class="club-select-stars">★★★★★</span>
-                                        <span class="club-select-ovr">94 OVR</span>
+                                        <span class="club-select-ovr">93 OVR</span>
                                     </div>
                                 </div>
                                 <span class="club-select-chevron" aria-hidden="true">▶</span>
@@ -540,25 +540,25 @@
                         <div class="kickoff-corner-slash" aria-hidden="true"></div>
 
                         <div class="bento-tile-head kickoff-hero-head">
-                            <span id="preview-club-league" class="bento-pill kickoff-league-pill">LEAGUE 01 // AI &amp; ANALYTICS (PLACEHOLDER)</span>
-                            <span class="bento-pill kickoff-status-pill">FIRST TEAM PLACEHOLDER</span>
+                            <span id="preview-club-league" class="bento-pill kickoff-league-pill">LEAGUE 01 // GCP DATA &amp; ANALYTICS</span>
+                            <span id="preview-club-status" class="bento-pill kickoff-status-pill">304 ISSUES // LIVE</span>
                         </div>
 
                         <div class="kickoff-hero-stage">
                             <div class="kickoff-hero-identity">
-                                <h2 id="preview-club-name" class="kickoff-hero-name" aria-label="PROJECT ALPHA FC">
-                                    <span id="preview-club-name-primary" class="kickoff-name-solid">PROJECT ALPHA</span>
-                                    <span id="preview-club-name-outline" class="kickoff-name-outline">FC</span>
+                                <h2 id="preview-club-name" class="kickoff-hero-name" aria-label="NOT SO BIGQUERY">
+                                    <span id="preview-club-name-primary" class="kickoff-name-solid">NOT SO</span>
+                                    <span id="preview-club-name-outline" class="kickoff-name-outline">BIGQUERY</span>
                                 </h2>
                             </div>
                             <div class="kickoff-hero-crest-wrap">
-                                <span id="preview-club-watermark" class="kickoff-hero-watermark" aria-hidden="true">P1</span>
-                                <div id="preview-club-crest" class="club-crest-giant crest-volt">P1</div>
+                                <span id="preview-club-watermark" class="kickoff-hero-watermark" aria-hidden="true">BQ</span>
+                                <div id="preview-club-crest" class="club-crest-giant crest-volt">BQ</div>
                             </div>
                         </div>
 
                         <p id="preview-club-desc" class="kickoff-hero-desc">
-                            Placeholder description for Project 01. In Iteration 2, this slot will connect to your real project data, live deployment URLs, and architecture telemetry.
+                            Weekly BigQuery &amp; Google Cloud data newsletter curated by Tomi Gelo — 304 issues covering GCP releases, AI functions, and community reads.
                         </p>
                     </article>
 
@@ -577,12 +577,12 @@
                         </div>
 
                         <div class="kickoff-rating-stage">
-                            <strong id="preview-club-ovr" class="kickoff-rating-ovr">92 OVR</strong>
+                            <strong id="preview-club-ovr" class="kickoff-rating-ovr">91 OVR</strong>
                             <span id="preview-club-stars" class="kickoff-rating-stars" aria-label="5 out of 5 stars">★★★★★</span>
                         </div>
 
                         <div class="kickoff-stadium-pill">
-                            <span>STADIUM // CLOUD PRODUCTION ARENA</span>
+                            <span id="preview-club-stadium">HOSTING // MAILBREW + CRSSNT</span>
                         </div>
                     </article>
 
@@ -596,10 +596,10 @@
                         <div class="kickoff-triad-columns">
                             <div class="kickoff-pill-col kickoff-pill-att">
                                 <div class="kickoff-pill-track" aria-hidden="true">
-                                    <div id="preview-bar-att" class="kickoff-pill-fill" style="height: 94%;"></div>
+                                    <div id="preview-bar-att" class="kickoff-pill-fill" style="height: 88%;"></div>
                                 </div>
                                 <div class="kickoff-pill-meta">
-                                    <strong id="preview-club-att" class="kickoff-pill-value">94</strong>
+                                    <strong id="preview-club-att" class="kickoff-pill-value">88</strong>
                                     <span class="kickoff-pill-code">ATT</span>
                                     <span class="kickoff-pill-label">FRONTEND &amp; UX</span>
                                 </div>
@@ -607,10 +607,10 @@
 
                             <div class="kickoff-pill-col kickoff-pill-mid">
                                 <div class="kickoff-pill-track" aria-hidden="true">
-                                    <div id="preview-bar-mid" class="kickoff-pill-fill" style="height: 92%;"></div>
+                                    <div id="preview-bar-mid" class="kickoff-pill-fill" style="height: 93%;"></div>
                                 </div>
                                 <div class="kickoff-pill-meta">
-                                    <strong id="preview-club-mid" class="kickoff-pill-value">92</strong>
+                                    <strong id="preview-club-mid" class="kickoff-pill-value">93</strong>
                                     <span class="kickoff-pill-code">MID</span>
                                     <span class="kickoff-pill-label">ENGINE &amp; API</span>
                                 </div>
@@ -618,10 +618,10 @@
 
                             <div class="kickoff-pill-col kickoff-pill-def">
                                 <div class="kickoff-pill-track" aria-hidden="true">
-                                    <div id="preview-bar-def" class="kickoff-pill-fill" style="height: 90%;"></div>
+                                    <div id="preview-bar-def" class="kickoff-pill-fill" style="height: 92%;"></div>
                                 </div>
                                 <div class="kickoff-pill-meta">
-                                    <strong id="preview-club-def" class="kickoff-pill-value">90</strong>
+                                    <strong id="preview-club-def" class="kickoff-pill-value">92</strong>
                                     <span class="kickoff-pill-code">DEF</span>
                                     <span class="kickoff-pill-label">INFRA &amp; SCALE</span>
                                 </div>
@@ -635,18 +635,18 @@
 
                         <div class="bento-tile-head">
                             <span class="bento-eyebrow">TACTICAL FORMATION</span>
-                            <span id="preview-club-season" class="bento-pill kickoff-season-pill" title="Release Season">2026 SEASON</span>
+                            <span id="preview-club-season" class="bento-pill kickoff-season-pill" title="Release Season">SINCE 2020 &bull; 304#</span>
                         </div>
 
                         <div class="kickoff-formation-row">
-                            <strong id="preview-club-formation" class="kickoff-formation-value">4-3-3 ATTACKING</strong>
+                            <strong id="preview-club-formation" class="kickoff-formation-value">4-2-3-1 WEEKLY</strong>
                         </div>
 
                         <div class="kickoff-specs-divider" aria-hidden="true"></div>
 
                         <div class="kickoff-stack-split">
                             <span class="kickoff-stack-key">KEY TECH PLAYSTYLE</span>
-                            <strong id="preview-club-stack" class="kickoff-stack-val">AUTONOMOUS AGENTS // PLACEHOLDER</strong>
+                            <strong id="preview-club-stack" class="kickoff-stack-val">MAILBREW // CRSSNT // SHEETS</strong>
                         </div>
                     </article>
 
@@ -658,9 +658,9 @@
                         </div>
 
                         <div class="kickoff-actions-stack">
-                            <a id="preview-club-link" href="#projects" class="fc-btn-primary kickoff-btn-launch">
+                            <a id="preview-club-link" href="https://app.mailbrew.com/tgel0/not-so-bigquery-9HLtpmj0Pl8B" target="_blank" rel="noopener noreferrer" class="fc-btn-primary kickoff-btn-launch">
                                 <span class="controller-key-badge key-a">A</span>
-                                <span>KICK OFF // LAUNCH PROJECT (PLACEHOLDER)</span>
+                                <span id="preview-club-cta">OPEN NOT SO BIGQUERY ↗</span>
                             </a>
                             <button type="button" class="fc-btn-secondary kickoff-btn-back" data-back-to-hub>
                                 <span class="controller-key-badge key-b">B</span>
